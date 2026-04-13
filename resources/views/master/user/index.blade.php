@@ -52,7 +52,7 @@
 
                                         <td class="align-middle">
                                             <div class="d-flex align-items-center">
-                                                {{ $user->opd->nama_opd ?? 'Tidak Ada OPD' }}
+                                                {{ $user->opd->name ?? 'Tidak Ada OPD' }}
                                             </div>
                                         </td>
                                         <td class="align-middle text-center text-sm">

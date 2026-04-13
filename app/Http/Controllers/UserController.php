@@ -15,7 +15,15 @@ use App\Imports\UserImport;
 class UserController extends Controller
 {
     public function index(){
-        $users = User::with('opd')->get();
+        $query = User::with('opd');
+        // Role Walidata
+        if (auth()->user()->role == 'walidata') {
+            $query->whereHas('opd', function ($q) {
+                $q->where('opd_id', '!=', 1);
+            });
+        }
+        // Role Admin
+        $users = $query->get();
         return view('master.user.index', compact('users'));
     }
 

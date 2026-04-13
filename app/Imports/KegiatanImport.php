@@ -17,17 +17,17 @@ class KegiatanImport implements ToModel, WithHeadingRow
     public function model(array $row)
     {
         return new Kegiatan([
-            'nama_kegiatan'         => $row['nama_kegiatan'],
-            'periode_kegiatan'      => $row['periode_kegiatan'],
-            'tahun_kegiatan'        => $row['tahun_kegiatan'],
-            'cara_pengumpulan_data' => $row['cara_pengumpulan_data'],
-            'data_utama'            => $row['data_utama'],
-            'data_prioritas'        => $row['data_prioritas'],
-            'aksesbilitas'          => $row['aksesbilitas'],
-            'opd_id'                => $row['opd_id'],
-            'deskripsi'             => $row['deskripsi'],
-            'metadata_id'           => $row['metadata_id'],
-            'romantik_id'           => $row['romantik_id'],
+            'nama_kegiatan'         => $row['nama_kegiatan'] ?? null,
+            'periode_kegiatan'      => $row['periode_kegiatan'] ?? null,
+            'tahun_kegiatan'        => $row['tahun_kegiatan'] ?? null,
+            'cara_pengumpulan_data' => $row['cara_pengumpulan_data'] ?? null,
+            'data_utama'            => $row['data_utama'] ?? null,
+            'data_prioritas'        => empty($row['data_prioritas']) ? null : $row['data_prioritas'],
+            'aksesbilitas'          => $row['aksesbilitas'] ?? null,
+            'opd_id'                => $row['opd_id'] ?? null,
+            'deskripsi'             => $row['deskripsi'] ?? null,
+            'metadata_id'           => empty($row['metadata_id']) ? null : $row['metadata_id'],
+            'romantik_id'           => empty($row['romantik_id']) ? null : $row['romantik_id'],
         ]);
     }
 }

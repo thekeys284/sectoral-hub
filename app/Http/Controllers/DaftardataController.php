@@ -11,9 +11,16 @@ use App\Imports\DaftarDataImport;
 
 class DaftardataController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $daftardata = DaftarData::with('opd')->get();
+        // if ($request->filled('search')){
+        //     $query->where('nama_data', 'like', '%' . $request->input('search') . '%');
+        // };
+        // if ($request->filled('opd_id')){
+        //     $query->where('opd_id', $request->opd_id);
+        // };
+        // $daftardata = $query->paginate(10)->withQueryString();
         $opds = Opd::all();
         
         return view('data.daftar_data.index', compact('daftardata', 'opds'));

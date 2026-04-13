@@ -3,12 +3,25 @@
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => 'Rekomendasi Kegiatan Statistik'])
     <div class="container-fluid py-4">
+        @if (session('success'))
+            <div class="alert alert-success text-white" role="alert">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger text-white" role="alert">
+                {{ session('error') }}
+            </div>
+        @endif
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                         <h6>Daftar Rekomendasi Kegiatan Statistik</h6>
                         <a href="{{ route('admin.romantik.create') }}" class="btn btn-primary btn-sm">Tambah Romantik</a>
+                        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
+                            <i class="ni ni-cloud-upload-95 me-1"></i> Import Excel
+                        </button>
                     </div>
                     <div class="card-body px-0 pt-0 pb-2">
                         <div class="table-responsive p-4">
@@ -39,7 +52,13 @@
                                         </td>
                                         
                                         <td class="align-middle text-center text-sm">
-                                            <span class="badge badge-sm bg-gradient-info">{{ $item->status_rekomendasi }}</span>
+                                            <span class="badge badge-sm 
+                                                {{ $item->status_rekomendasi == 'dibatalkan' ? 'bg-gradient-danger' : 
+                                                ($item->status_rekomendasi == 'ditolak' ? 'bg-gradient-error' : 
+                                                ($item->status_rekomendasi == 'layak' ? 'bg-gradient-success' : 'bg-gradient-info')) }}">
+                                                
+                                                {{ ucfirst($item->status_rekomendasi) }}
+                                            </span>
                                         </td>
 
                                         <td class="align-middle">

@@ -3,6 +3,18 @@
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => 'Manajemen Kegiatan'])
     <div class="container-fluid py-4">
+
+        @if (session('success'))
+            <div class="alert alert-success text-white" role="alert">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger text-white" role="alert">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
@@ -19,7 +31,7 @@
                                 <thead>
                                     <tr>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama Kegiatan</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Dinas</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tahun Kegiatan</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Cara Pengumpulan</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
                                     </tr>
@@ -32,18 +44,36 @@
                                             <div class="d-flex px-2 py-1">
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-sm">{{ $item->nama_kegiatan }}</h6>
-                                                    <p class="text-xs text-secondary mb-0">Tahun: {{ $item->tahun_kegiatan }}</p>
+                                                    <p class="text-xs text-secondary mb-0">Dinas: {{ $item->opd->name ?? 'Tidak Ada OPD' }}</p>
                                                 </div>
                                             </div>
                                         </td>
 
                                         <td class="align-middle text-sm">
                                             {{-- FIX: Sesuaikan dengan nama kolom 'name' di model Opd --}}
-                                            <span class="font-weight-bold">{{ $item->opd->name ?? 'Tidak Ada OPD' }}</span>
+                                            <span class="font-weight-bold">
+                                            {{ $item->tahun_kegiatan }}
+                                            </span>
                                         </td>
                                         
+                                        @php
+                                            $cara = [
+                                                'sensus' => ['label' => 'Sensus', 'class' => 'bg-gradient-success'],
+                                                'survei' => ['label' => 'Survei', 'class' => 'bg-gradient-info'],
+                                                'kompromin' => ['label' => 'Kompilasi Produk Administrasi', 'class' => 'bg-gradient-warning'],
+                                                'cara_lain' => ['label' => 'Cara Lain', 'class' => 'bg-gradient-secondary'],
+                                            ];
+
+                                            $data = $cara[$item->cara_pengumpulan_data] ?? [
+                                                'label' => ucfirst($item->cara_pengumpulan_data),
+                                                'class' => 'bg-gradient-secondary'
+                                            ];
+                                        @endphp
+
                                         <td class="align-middle text-center text-sm">
-                                            <span class="badge badge-sm bg-gradient-info">{{ $item->cara_pengumpulan_data }}</span>
+                                            <span class="badge badge-sm {{ $data['class'] }}">
+                                                {{ $data['label'] }}
+                                            </span>
                                         </td>
 
                                         <td class="align-middle">

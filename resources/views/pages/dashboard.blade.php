@@ -18,34 +18,50 @@
                                 <thead class="bg-gray-100">
                                     <tr>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Kegiatan & OPD</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Detail Kegiatan</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cara Pengumpulan Data</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status Metadata</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status Romantik</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($monitoringData as $data)
+                                    @foreach ($monitoringData as $item)
                                     <tr>
                                         <td>
                                             <div class="d-flex px-2 py-1">
                                                 <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm">{{ $data->nama_kegiatan }}</h6>
+                                                    <h6 class="mb-0 text-sm">{{ $item->nama_kegiatan }}</h6>
                                                     <p class="text-xs text-primary font-weight-bold mb-0">
-                                                        <i class="ni ni-building me-1"></i>{{ $data->opd->name ?? 'Dinas Tidak Diketahui' }}
+                                                        <i class="ni ni-building me-1"></i>{{ $item->opd->name ?? 'Dinas Tidak Diketahui' }}
                                                     </p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>
-                                            <p class="text-xs font-weight-bold mb-0">{{ ucfirst($data->cara_pengumpulan_data) }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ ucfirst($data->periode_kegiatan) }} - {{ $data->tahun_kegiatan }}</p>
+                                            @php
+                                                $cara = [
+                                                    'sensus' => ['label' => 'Sensus', 'class' => 'bg-gradient-success'],
+                                                    'survei' => ['label' => 'Survei', 'class' => 'bg-gradient-info'],
+                                                    'kompromin' => ['label' => 'Kompilasi Produk Administrasi', 'class' => 'bg-gradient-warning'],
+                                                    'cara_lain' => ['label' => 'Cara Lain', 'class' => 'bg-gradient-secondary'],
+                                                ];
+
+                                                $data = $cara[$item->cara_pengumpulan_data] ?? [
+                                                    'label' => ucfirst($item->cara_pengumpulan_data),
+                                                    'class' => 'bg-gradient-secondary'
+                                                ];
+                                            @endphp
+
+                                        <td class="align-middle text-center text-sm">
+                                            <span class="badge badge-sm {{ $data['class'] }}">
+                                                {{ $data['label'] }}
+                                            </span>
+                                            <p class="text-xs text-secondary mb-0">{{ ucfirst($item->periode_kegiatan) }} - {{ $item->tahun_kegiatan }}</p>
                                         </td>
 
                                         <td>
-                                            @if($data->metadata)
+                                            @if($item->metadata)
                                                 <p class="text-xs font-weight-bold mb-0">{{ Str::limit($data->metadata->judul_kegiatan, 30) }}</p>
                                                 <span class="badge badge-sm bg-gradient-{{ $data->metadata->status == 'approved' ? 'success' : 'secondary' }}">
-                                                    {{ $data->metadata->status }}
+                                                    {{ $item->metadata->status }}
                                                 </span>
                                                 <p class="text-xxs text-secondary mt-1">Periode: {{ $data->metadata->periode_submission }}</p>
                                             @else
@@ -54,14 +70,14 @@
                                         </td>
 
                                         <td>
-                                            @if($data->romantik)
-                                                <p class="text-xs font-weight-bold mb-0">No: {{ $data->romantik->nomor_rekomendasi }}</p>
+                                            @if($item->romantik)
+                                                <p class="text-xs font-weight-bold mb-0">No: {{ $item->romantik->nomor_rekomendasi }}</p>
                                                 <div class="d-flex flex-column">
-                                                    <span class="text-xxs">Pengajuan: {{ $data->romantik->status_pengajuan }}</span>
+                                                    <span class="text-xxs">Pengajuan: {{ $item->romantik->status_pengajuan }}</span>
                                                     <span class="text-xxs font-weight-bold text-{{ $data->romantik->status_rekomendasi == 'layak' ? 'success' : 'danger' }}">
-                                                        Hasil: {{ $data->romantik->status_rekomendasi }}
+                                                        Hasil: {{ $item->romantik->status_rekomendasi }}
                                                     </span>
-                                                    <p class="text-xxs text-secondary mb-0">Tgl: {{ date('d/m/y', strtotime($data->romantik->tgl_pengajuan)) }}</p>
+                                                    <p class="text-xxs text-secondary mb-0">Tgl: {{ date('d/m/y', strtotime($item->romantik->tgl_pengajuan)) }}</p>
                                                 </div>
                                             @else
                                                 <span class="text-xs text-muted italic">Tidak ada rekomendasi</span>

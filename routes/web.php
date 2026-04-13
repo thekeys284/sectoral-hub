@@ -23,6 +23,8 @@ Route::middleware('auth')->group(function () {
     // Semua role bisa lihat event (Logic Create/Edit/Delete dikontrol di Controller/Blade)
     Route::resource('event', EventController::class);
     Route::get('/whatsnext', [EventController::class, 'whatsnext'])->name('pages.whatsnext'); 
+    Route::get('/rekapitulasi', [DashboardController::class, 'rekapitulasi'])->name('pages.rekapitulasi'); 
+    
     Route::get('/event/{event}', [EventController::class, 'show'])->name('event.show');     
 });
 

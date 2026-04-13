@@ -63,13 +63,24 @@
                                         <td class="align-middle"><span class="text-xs font-weight-bold">{{ $item->satuan }}</span></td>
                                         <td class="align-middle text-center"><span class="text-xs">{{ ucfirst($item->periode) }}</span></td>
                                         <td class="align-middle text-center">
-                                            <span class="badge badge-sm {{ $item->sifat_data == 'terbuka' ? 'bg-gradient-success' : 'bg-gradient-secondary' }}">
+                                            <span class="badge badge-sm 
+                                                {{ $item->sifat_data == 'Terbuka' ? 'bg-gradient-success' : 
+                                                ($item->sifat_data == 'Terbatas' ? 'bg-gradient-warning' : 
+                                                'bg-gradient-secondary') }}">
+                                                
                                                 {{ ucfirst($item->sifat_data) }}
                                             </span>
                                         </td>
                                         <td class="align-middle text-center">
                                             <div class="d-flex justify-content-center">
-                                                <button class="btn btn-warning btn-sm me-2 mb-0" data-bs-toggle="modal" data-bs-target="#modalEditdaftardata{{ $item->id }}">Edit</button>
+                                                <button 
+                                                    class="btn btn-warning btn-sm me-2 mb-0 btn-edit"
+                                                    data-id="{{ $item->id }}"
+                                                    data-nama="{{ $item->nama_data }}"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalEdit">
+                                                    Edit
+                                                </button>
                                                 <form action="{{ route('admin.daftardata.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus data ini?')">
                                                     @csrf @method('DELETE')
                                                     <button type="submit" class="btn btn-danger btn-sm mb-0">Hapus</button>
@@ -159,76 +170,28 @@
     </div>
 
     {{-- MODAL EDIT --}}
-    @foreach($daftardata as $item)
-    <div class="modal fade" id="modalEditdaftardata{{ $item->id }}" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal fade" id="modalEdit" tabindex="-1">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <form action="{{ route('admin.daftardata.update', $item->id) }}" method="POST">
-                    @csrf @method('PUT')
-                    <div class="modal-header"><h5>Edit Data: {{ $item->nama_data }}</h5></div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label>Nama Data</label>
-                                <input type="text" name="nama_data" value="{{ $item->nama_data }}" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Satuan</label>
-                                <select name="satuan" class="form-control select2-modal" required>
-                                    @foreach($units as $unit) 
-                                        <option value="{{ $unit }}" {{ $item->satuan == $unit ? 'selected' : '' }}>{{ $unit }}</option> 
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>OPD</label>
-                                <select name="opd_id" class="form-control select2-modal" required>
-                                    @foreach($opds as $opd) 
-                                        <option value="{{ $opd->id }}" {{ $item->opd_id == $opd->id ? 'selected' : '' }}>{{ $opd->name }}</option> 
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Periode</label>
-                                <select name="periode" class="form-control" required>
-                                    @foreach(['hari','bulan','triwulan','semester','tahun'] as $p)
-                                        <option value="{{ $p }}" {{ $item->periode == $p ? 'selected' : '' }}>{{ ucfirst($p) }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Kedalaman Kab/Kot?</label>
-                                <select name="kedalaman_kabkot" class="form-control" required>
-                                    <option value="1" {{ $item->kedalaman_kabkot == 1 ? 'selected' : '' }}>Ya</option>
-                                    <option value="0" {{ $item->kedalaman_kabkot == 0 ? 'selected' : '' }}>Tidak</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Sifat Data</label>
-                                <select name="sifat_data" class="form-control" required>
-                                    <option value="terbuka" {{ $item->sifat_data == 'terbuka' ? 'selected' : '' }}>Terbuka</option>
-                                    <option value="terbatas" {{ $item->sifat_data == 'terbatas' ? 'selected' : '' }}>Terbatas</option>
-                                    <option value="tertutup" {{ $item->sifat_data == 'tertutup' ? 'selected' : '' }}>Tertutup</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label>Sumber Data</label>
-                                <select name="sumber_data" class="form-control select2-modal" required>
-                                    @foreach($sources as $source) 
-                                        <option value="{{ $source }}" {{ $item->sumber_data == $source ? 'selected' : '' }}>{{ $source }}</option> 
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
+                <form id="formEdit" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="modal-header">
+                        <h5>Edit Data</h5>
                     </div>
+
+                    <div class="modal-body">
+                        <input type="text" name="nama_data" id="edit_nama" class="form-control">
+                    </div>
+
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Update Data</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    @endforeach
 
     <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
@@ -261,7 +224,11 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#daftar-data-table').DataTable();
+        $('#daftar-data-table').DataTable({
+            paging: true,
+            searching: true,
+            info: true
+        });
         
         $('.select2-modal').each(function() {
             $(this).select2({

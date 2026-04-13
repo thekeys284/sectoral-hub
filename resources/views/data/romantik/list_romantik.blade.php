@@ -37,7 +37,13 @@
                                         </td>
                                         
                                         <td class="align-middle text-center text-sm">
-                                            <span class="badge badge-sm bg-gradient-success">{{ $item->status_rekomendasi }}</span>
+                                            <span class="badge badge-sm 
+                                                {{ $item->status_rekomendasi == 'dibatalkan' ? 'bg-gradient-danger' : 
+                                                ($item->status_rekomendasi == 'ditolak' ? 'bg-gradient-error' : 
+                                                ($item->status_rekomendasi == 'layak' ? 'bg-gradient-success' : 'bg-gradient-info')) }}">
+                                                
+                                                {{ ucfirst($item->status_rekomendasi) }}
+                                            </span>
                                         </td>
 
                                         <td class="align-middle text-center">
