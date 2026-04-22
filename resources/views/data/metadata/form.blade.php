@@ -20,7 +20,7 @@
                 <h6>{{ $metadata->id ? 'Form Edit Metadata' : 'Form Tambah Metadata' }}</h6>
             </div>
             <div class="card-body">
-                <form action="{{ $metadata->id ? route('admin.metadata.update', $metadata->id) : route('admin.metadata.store') }}" 
+                <form action="{{ $metadata->id ? route('data.metadata.update', $metadata->id) : route('data.metadata.store') }}" 
                       method="POST">
                     @csrf
                     @if($metadata->id) @method('PUT') @endif
@@ -84,7 +84,7 @@
                         <button type="submit" class="btn btn-primary">
                             {{ $metadata->id ? 'Update Metadata' : 'Simpan Metadata' }}
                         </button>
-                        <a href="{{ route('admin.metadata.index') }}" class="btn btn-secondary">Batal</a>
+                        <a href="{{ route('data.metadata.index') }}" class="btn btn-secondary">Batal</a>
                     </div>
                 </form>
             </div>

@@ -1,0 +1,14 @@
+/.git
+/.github
+/.idea
+/.vscode
+/vendor
+/node_modules
+/.env
+/.env.backup
+Dockerfile
+docker-compose.yml
+docker-compose.prod.yml
+.gitignore
+npm-debug.log
+yarn-error.log

@@ -28,6 +28,9 @@ class KegiatanImport implements ToModel, WithHeadingRow
             'deskripsi'             => $row['deskripsi'] ?? null,
             'metadata_id'           => empty($row['metadata_id']) ? null : $row['metadata_id'],
             'romantik_id'           => empty($row['romantik_id']) ? null : $row['romantik_id'],
+            'link_metadata_kegiatan'=> $row['link_metadata_kegiatan'] ?? null,
+            'link_metadata_variabel'=> $row['link_metadata_variabel'] ?? null,
+            'link_metadata_indikator'=> $row['link_metadata_indikator'] ?? null,
         ]);
     }
 }

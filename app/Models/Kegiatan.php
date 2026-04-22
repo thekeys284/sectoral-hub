@@ -13,7 +13,7 @@ class Kegiatan extends Model
     protected $fillable = [
         'nama_kegiatan', 'periode_kegiatan', 'tahun_kegiatan', 'cara_pengumpulan_data',
         'data_utama', 'data_prioritas', 'aksesbilitas', 'opd_id', 'deskripsi',
-        'metadata_id','romantik_id',
+        'metadata_id','romantik_id', 'link_metadata_kegiatan','link_metadata_variabel', 'link_metadata_indikator'
     ];
 
     public function opd() : BelongsTo{

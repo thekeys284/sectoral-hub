@@ -21,7 +21,7 @@
                 <h6>{{ $kegiatan->id ? 'Form Edit Kegiatan' : 'Form Tambah Kegiatan' }}</h6>
             </div>
             <div class="card-body">
-                <form action="{{ $kegiatan->id ? route('admin.kegiatan.update', $kegiatan->id) : route('admin.kegiatan.store') }}" 
+                <form action="{{ $kegiatan->id ? route('master.kegiatan.update', $kegiatan->id) : route('master.kegiatan.store') }}" 
                       method="POST" enctype="multipart/form-data">
                     @csrf
                     @if($kegiatan->id) @method('PUT') @endif
@@ -144,11 +144,29 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Link Metadata Kegiatan</label>
+                                <input type="text" name="link_metadata_kegiatan" class="form-control" value="{{ old('link_metadata_kegiatan', $kegiatan->link_metadata_kegiatan) }}">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Link Metadata Variabel</label>
+                                <input type="text" name="link_metadata_variabel" class="form-control" value="{{ old('link_metadata_variabel', $kegiatan->link_metadata_variabel) }}">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Link Metadata Indikator</label>
+                                <input type="text" name="link_metadata_indikator" class="form-control" value="{{ old('link_metadata_indikator', $kegiatan->link_metadata_indikator) }}">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-4">
                         <button type="submit" class="btn btn-primary">{{ $kegiatan->id ? 'Update Data' : 'Simpan Kegiatan' }}</button>
-                        <a href="{{ route('admin.kegiatan.index') }}" class="btn btn-secondary">Batal</a>
+                        <a href="{{ route('master.kegiatan.index') }}" class="btn btn-secondary">Batal</a>
                     </div>
                 </form>
             </div>

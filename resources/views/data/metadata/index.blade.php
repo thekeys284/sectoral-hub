@@ -8,7 +8,7 @@
                 <div class="card mb-4">
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                         <h6>Daftar Metadata Kegiatan Statistik</h6>
-                        <a href="{{ route('admin.metadata.create') }}" class="btn btn-primary btn-sm">Tambah Metadata</a>
+                        <a href="{{ route('data.metadata.create') }}" class="btn btn-primary btn-sm">Tambah Metadata</a>
                         <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
                             <i class="ni ni-cloud-upload-95 me-1"></i> Import Excel
                         </button>
@@ -41,18 +41,37 @@
                                             <span class="badge badge-sm bg-gradient-info">{{ $item->periode_submission }}</span>
 
                                         </td>
-                                        
+
+                                        @php
+                                            $cara = [
+                                                'submitted' => ['label' => 'Disubmit', 'class' => 'bg-gradient-primary'],
+                                                'approved' => ['label' => 'Disetujui', 'class' => 'bg-gradient-success'],
+                                                'revised' => ['label' => 'Telah Direvisi', 'class' => 'bg-gradient-info'],
+                                                'rejected' => ['label' => 'Ditolak', 'class' => 'bg-gradient-danger'],
+                                                'correction_required' => ['label' => 'Perlu Koreksi', 'class' => 'bg-gradient-warning'],
+                                            ];
+
+                                            // Ambil data berdasarkan status, jika tidak ada, beri default
+                                            $statusKey = $item->status ?? 'unknown';
+                                            $data = $cara[$statusKey] ?? [
+                                                'label' => ucfirst($statusKey), 
+                                                'class' => 'bg-gradient-secondary'
+                                            ];
+                                        @endphp
+
                                         <td class="align-middle text-center text-sm">
-                                            <span class="badge badge-sm bg-gradient-info">{{ $item->status }}</span>
+                                            <span class="badge badge-sm {{ $data['class'] }}">
+                                                {{ $data['label'] }}
+                                            </span>
                                         </td>
 
                                         <td class="align-middle">
                                             <div class="d-flex align-items-center justify-content-center">
-                                                <a href="{{ route('admin.metadata.edit', $item->id) }}" 
+                                                <a href="{{ route('data.metadata.edit', $item->id) }}" 
                                                    class="btn btn-warning font-weight-bold text-xs me-2 mb-0">
                                                     Edit
                                                 </a>
-                                                <form action="{{ route('admin.metadata.destroy', $item->id) }}" method="POST" 
+                                                <form action="{{ route('data.metadata.destroy', $item->id) }}" method="POST" 
                                                     onsubmit="return confirm('Yakin ingin menghapus kegiatan ini?')" class="mb-0">
                                                     @csrf
                                                     @method('DELETE')
@@ -75,7 +94,7 @@
     </div>
         <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
-            <form action="{{ route('admin.metadata.import') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('data.metadata.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-content">
                     <div class="modal-header">

@@ -36,6 +36,19 @@
                 </a>
             </li>
 
+            {{-- MENU PELAPORAN --}}
+            <li class="nav-item mt-3">
+                <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Pelaporan Data</h6>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteName() == 'pelaporan.metadata.index' ? 'active' : '' }}" href="{{ route('pelaporan.metadata.index') }}">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-folder-17 text-info text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Metadata</span>
+                </a>
+            </li>
+            @if(auth()->user()->role !== 'produsen')
             {{-- MENU MONITORING --}}
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Monitoring Data</h6>
@@ -45,8 +58,8 @@
             <li class="nav-item">
                 @php
                     $isMetadataAdmin = auth()->user()->role == 'admin';
-                    $metadataRoute = $isMetadataAdmin ? route('admin.metadata.index') : route('metadata.table');
-                    $metadataActive = request()->routeIs('admin.metadata.*') || request()->routeIs('metadata.table');
+                    $metadataRoute = $isMetadataAdmin ? route('data.metadata.index') : route('metadata.table');
+                    $metadataActive = request()->routeIs('data.metadata.*') || request()->routeIs('metadata.table');
                 @endphp
                 <a class="nav-link {{ $metadataActive ? 'active' : '' }}" href="{{ $metadataRoute }}">
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
@@ -59,10 +72,14 @@
             {{-- ROMANTIK --}}
             <li class="nav-item">
                 @php
-                    $isRomantikAdmin = auth()->user()->role == 'admin';
-                    $romantikRoute = $isRomantikAdmin ? route('admin.romantik.index') : route('romantik.table'); 
-                    $romantikActive = request()->routeIs('admin.romantik.*')|| request()->routeIs('metadata.table');
+                    // Menentukan rute berdasarkan role
+                    $isAdmin = auth()->user()->role == 'admin';
+                    $romantikRoute = $isAdmin ? route('data.romantik.index') : route('romantik.table');
+                    
+                    // Highlight akan menyala jika rute saat ini ada di dalam array tersebut
+                    $romantikActive = request()->routeIs(['data.romantik.*', 'romantik.table']);
                 @endphp
+                
                 <a class="nav-link {{ $romantikActive ? 'active' : '' }}" href="{{ $romantikRoute }}">
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-check-bold text-success text-sm opacity-10"></i>
@@ -77,7 +94,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.kegiatan.*') ? 'active' : '' }}" href="{{ route('admin.kegiatan.index') }}">
+                <a class="nav-link {{ request()->routeIs('master.kegiatan.*') ? 'active' : '' }}" href="{{ route('master.kegiatan.index') }}">
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-bullet-list-67 text-warning text-sm opacity-10"></i>
                     </div>
@@ -86,7 +103,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.daftardata.*') ? 'active' : '' }}" href="{{ route('admin.daftardata.index') }}">
+                <a class="nav-link {{ request()->routeIs('data.daftardata.*') ? 'active' : '' }}" href="{{ route('data.daftardata.index') }}">
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-collection text-primary text-sm opacity-10"></i>
                     </div>
@@ -110,7 +127,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.opd.*') ? 'active' : '' }}" href="{{ route('admin.opd.index') }}">
+                    <a class="nav-link {{ request()->routeIs('master.opd.*') ? 'active' : '' }}" href="{{ route('master.opd.index') }}">
                         <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                             <i class="ni ni-building text-dark text-sm opacity-10"></i>
                         </div>
@@ -119,7 +136,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                    <a class="nav-link {{ request()->routeIs('master.users.*') ? 'active' : '' }}" href="{{ route('master.users.index') }}">
                         <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                             <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
                         </div>
@@ -127,7 +144,7 @@
                     </a>
                 </li>
             @endif
-
+            @endif
             {{-- MENU AKUN --}}
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Akun</h6>

@@ -8,7 +8,7 @@
                 <div class="card mb-4">
                     <div class="card-header pb-0 d-flex justify-content-between align-item-center">
                         <h6>Manajemen User</h6>
-                        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Tambah User</a>
+                        <a href="{{ route('master.users.create') }}" class="btn btn-primary">Tambah User</a>
                         <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
                             <i class="ni ni-cloud-upload-95 me-1"></i> Import Excel
                         </button>
@@ -69,12 +69,12 @@
                                         </td>
                                         <td class="align-middle">
                                             <div class="d-flex align-items-center justify-content-center">
-                                                <a href="{{ route('admin.users.edit', $user->id) }}" 
+                                                <a href="{{ route('master.users.edit', $user->id) }}" 
                                                 class="btn btn-warning font-weight-bold text-xs  me-2">
                                                     Edit
                                                 </a>
                                                 {{-- Form Hapus (PENTING: Harus pakai Form untuk Delete) --}}
-                                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" 
+                                                <form action="{{ route('master.users.destroy', $user->id) }}" method="POST" 
                                                     onsubmit="return confirm('Yakin ingin menghapus user ini?')">
                                                     @csrf
                                                     @method('DELETE')
@@ -97,7 +97,7 @@
     </div>
         <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
-            <form action="{{ route('admin.users.import') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('master.users.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-content">
                     <div class="modal-header">

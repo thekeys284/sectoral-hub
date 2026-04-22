@@ -20,7 +20,7 @@
                 <div class="card mb-4">
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                         <h6>Manajemen Kegiatan</h6>
-                        <a href="{{ route('admin.kegiatan.create') }}" class="btn btn-primary btn-sm">Tambah Kegiatan</a>
+                        <a href="{{ route('master.kegiatan.create') }}" class="btn btn-primary btn-sm">Tambah Kegiatan</a>
                         <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
                             <i class="ni ni-cloud-upload-95 me-1"></i> Import Excel
                         </button>
@@ -78,11 +78,11 @@
 
                                         <td class="align-middle">
                                             <div class="d-flex align-items-center justify-content-center">
-                                                <a href="{{ route('admin.kegiatan.edit', $item->id) }}" 
+                                                <a href="{{ route('master.kegiatan.edit', $item->id) }}" 
                                                    class="btn btn-warning font-weight-bold text-xs me-2 mb-0">
                                                     Edit
                                                 </a>
-                                                <form action="{{ route('admin.kegiatan.destroy', $item->id) }}" method="POST" 
+                                                <form action="{{ route('master.kegiatan.destroy', $item->id) }}" method="POST" 
                                                     onsubmit="return confirm('Yakin ingin menghapus kegiatan ini?')" class="mb-0">
                                                     @csrf
                                                     @method('DELETE')
@@ -105,7 +105,7 @@
     </div>
         <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
-            <form action="{{ route('admin.kegiatan.import') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('master.kegiatan.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-content">
                     <div class="modal-header">

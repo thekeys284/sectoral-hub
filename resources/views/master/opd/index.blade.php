@@ -59,7 +59,7 @@
                                                         data-bs-target="#modalEditOpd{{ $opd->id }}">
                                                     Edit
                                                 </button>
-                                                <form action="{{ route('admin.opd.destroy', $opd->id) }}" method="POST" 
+                                                <form action="{{ route('master.opd.destroy', $opd->id) }}" method="POST" 
                                                     onsubmit="return confirm('Yakin ingin menghapus OPD ini?')" class="mb-0">
                                                     @csrf
                                                     @method('DELETE')
@@ -85,7 +85,7 @@
     <div class="modal fade" id="modalTambahOpd" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form action="{{ route('admin.opd.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('master.opd.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title">Tambah OPD Baru</h5>
@@ -132,7 +132,7 @@
     <div class="modal fade" id="modalEditOpd{{ $opd->id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form action="{{ route('admin.opd.update', $opd->id) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('master.opd.update', $opd->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
                     <div class="modal-header">
                         <h5 class="modal-title">Edit OPD: {{ $opd->name }}</h5>
@@ -179,7 +179,7 @@
 
         <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
-            <form action="{{ route('admin.opd.import') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('master.opd.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-content">
                     <div class="modal-header">

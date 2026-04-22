@@ -34,7 +34,7 @@ class MetadataController extends Controller
 
         Metadata::create($request->all());
 
-        return redirect()->route('admin.metadata.index')->with('success', 'Metadata created successfully');
+        return redirect()->route('data.metadata.index')->with('success', 'Metadata created successfully');
     }
     public function show(Metadata $metadata)
         {
@@ -59,12 +59,12 @@ class MetadataController extends Controller
 
         $metadata->update($request->all());
 
-        return redirect()->route('admin.metadata.index')->with('success', 'Metadata updated successfully');
+        return redirect()->route('data.metadata.index')->with('success', 'Metadata updated successfully');
     }
 
     public function destroy(Metadata $metadata){
         $metadata->delete();
-        return redirect()->route('admin.metadata.index')->with('success', 'Metadata deleted successfully');
+        return redirect()->route('data.metadata.index')->with('success', 'Metadata deleted successfully');
     }
 
    public function table()

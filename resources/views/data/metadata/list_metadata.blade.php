@@ -37,13 +37,28 @@
                                             <span class="badge badge-sm bg-gradient-info">{{ $item->periode_submission }}</span>
                                         </td>
                                         
+                                        @php
+                                            $cara = [
+                                                'SUBMITTED' => ['label' => 'Disubmit', 'class' => 'bg-gradient-primary'],
+                                                'APPROVED' => ['label' => 'Disetujui', 'class' => 'bg-gradient-success'],
+                                                'REVISED' => ['label' => 'Telah Direvisi', 'class' => 'bg-gradient-info'],
+                                                'REJECTED' => ['label' => 'Ditolak', 'class' => 'bg-gradient-danger'],
+                                                'CORRECTION_REQUIRED' => ['label' => 'Perlu Koreksi', 'class' => 'bg-gradient-warning'],
+                                            ];
+
+                                            $statusKey = $item->status ?? 'unknown';
+                                            $data = $cara[$statusKey] ?? ['label' => ucfirst($statusKey), 'class' => 'bg-gradient-secondary'];
+                                        @endphp
+
                                         <td class="align-middle text-center text-sm">
-                                            <span class="badge badge-sm bg-gradient-success">{{ $item->status }}</span>
+                                            <span class="badge badge-sm {{ $data['class'] }}">
+                                                {{ $data['label'] }}
+                                            </span>
                                         </td>
 
                                         <td class="align-middle text-center">
                                             {{-- HANYA TOMBOL SHOW/DETAIL --}}
-                                            <a href="{{ route('admin.metadata.show', $item->id) }}" 
+                                            <a href="{{ route('data.metadata.show', $item->id) }}" 
                                                class="btn btn-info btn-xs font-weight-bold mb-0">
                                                 <i class="fas fa-eye me-1"></i> Detail
                                             </a>

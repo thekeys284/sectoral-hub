@@ -87,8 +87,8 @@
                     <a href="{{ url()->previous() }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Kembali
                     </a>
-                    @if(auth()->user()->role == 'admin')
-                        <a href="{{ route('admin.romantik.edit', $romantik->id) }}" class="btn btn-warning">
+                    @if(auth()->check() && auth()->user()->role == 'admin')
+                        <a href="{{ route('data.romantik.edit', $romantik->id) }}" class="btn btn-warning">
                             <i class="fas fa-edit me-1"></i> Edit Data
                         </a>
                     @endif

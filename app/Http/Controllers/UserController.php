@@ -52,7 +52,7 @@ class UserController extends Controller
 
         User::create($data);
 
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+        return redirect()->route('master.users.index')->with('success', 'User created successfully.');
     }
 
     public function edit(User $user) {
@@ -87,7 +87,7 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+        return redirect()->route('master.users.index')->with('success', 'User updated successfully.');
 
     }
 
@@ -96,7 +96,7 @@ class UserController extends Controller
             \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_photo_path);
         }
         $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        return redirect()->route('master.users.index')->with('success', 'User deleted successfully.');
     }  
     
     public function import(Request $request) 

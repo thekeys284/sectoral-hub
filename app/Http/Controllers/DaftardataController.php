@@ -7,6 +7,7 @@ use App\Models\Opd;
 use App\Models\DaftarData;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\DaftarDataImport;
+use App\Models\Kegiatan;
 
 
 class DaftardataController extends Controller
@@ -22,8 +23,9 @@ class DaftardataController extends Controller
         // };
         // $daftardata = $query->paginate(10)->withQueryString();
         $opds = Opd::all();
+        $kegiatans = \App\Models\Kegiatan::all();
         
-        return view('data.daftar_data.index', compact('daftardata', 'opds'));
+        return view('data.daftar_data.index', compact('daftardata', 'opds', 'kegiatans'));
     }
 
     public function store(Request $request)
@@ -33,9 +35,12 @@ class DaftardataController extends Controller
             'nama_data'         => 'required|string|max:255',
             'satuan'            => 'required|string|max:100',
             'periode'           => 'required|string|max:255',
-            'kedalaman_kabkot'  => 'required|boolean',
+            'kedalaman_kabkot'  => 'required|string|max:255',
             'sifat_data'        => 'required|string|max:255',
             'sumber_data'       => 'required|string|max:255',
+            'kegiatan_id'       => 'nullable|exists:kegiatan,id',
+            'aliran_data'        => 'nullable|string|max:5',
+            'nama_aliran_data'     => 'nullable|string|max:255',
         ]);
 
         DaftarData::create($request->all());
@@ -57,9 +62,12 @@ class DaftardataController extends Controller
             'nama_data'         => 'required|string|max:255',
             'satuan'            => 'required|string|max:100',
             'periode'           => 'required|string|max:255',
-            'kedalaman_kabkot'  => 'required|boolean',
+            'kedalaman_kabkot'  => 'required|string|max:255',
             'sifat_data'        => 'required|string|max:255',
             'sumber_data'       => 'required|string|max:255',
+            'kegiatan_id'       => 'nullable|exists:kegiatan,id',
+            'aliran_data'        => 'nullable|string|max:5',
+            'nama_aliran_data'     => 'nullable|string|max:255',
         ]);
 
         $daftardata = DaftarData::findOrFail($id);

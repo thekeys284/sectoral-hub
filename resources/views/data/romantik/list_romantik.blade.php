@@ -48,7 +48,7 @@
 
                                         <td class="align-middle text-center">
                                             {{-- HANYA TOMBOL SHOW/DETAIL --}}
-                                            <a href="{{ route('admin.romantik.show', $item->id) }}" 
+                                            <a href="{{ route('data.romantik.show', $item->id) }}" 
                                                class="btn btn-info btn-xs font-weight-bold mb-0">
                                                 <i class="fas fa-eye me-1"></i> Detail
                                             </a>

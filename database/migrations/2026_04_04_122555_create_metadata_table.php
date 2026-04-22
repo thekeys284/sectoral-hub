@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('opd_id')->constrained('opd')->onDelete('cascade');
             $table->string('judul_kegiatan');
             $table->string('periode_submission');
-            $table->string('tanggal_submission');
-            $table->enum('status', ['submitted', 'approved', 'revised', 'rejected', 'correction_required'])->default('submitted');            
+            $table->string('tanggal_submission')->nullable();
+            $table->string('status');            
             $table->timestamps();
         });
     }

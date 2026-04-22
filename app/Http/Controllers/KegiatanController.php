@@ -36,16 +36,19 @@ class KegiatanController extends Controller
             'cara_pengumpulan_data' => 'required|string',
             'data_utama' => 'required|string',
             'data_prioritas' => 'required|string',
-            'aksesibilitas' => 'required|string',
+            'aksesbilitas' => 'required|string',
             'opd_id' => 'required|exists:opd,id',
             'deskripsi' => 'nullable|string',
             'metadata_id' => 'nullable|exists:metadata,id',
             'romantik_id' => 'nullable|exists:romantik,id',
+            'link_metadata_kegiatan' => 'nullable|string',
+            'link_metadata_variabel' => 'nullable|string',
+            'link_metadata_indikator' => 'nullable|string',
         ]);
 
         Kegiatan::create($request->all());
 
-        return redirect()->route('admin.kegiatan.index')->with('success', 'Kegiatan created successfully.');
+        return redirect()->route('master.kegiatan.index')->with('success', 'Kegiatan created successfully.');
     }
 
     public function edit(Kegiatan $kegiatan) {
@@ -63,21 +66,24 @@ class KegiatanController extends Controller
             'cara_pengumpulan_data' => 'required|string',
             'data_utama' => 'required|string',
             'data_prioritas' => 'required|string',
-            'aksesibilitas' => 'required|string',
+            'aksesbilitas' => 'required|string',
             'opd_id' => 'required|exists:opd,id',
             'deskripsi' => 'nullable|string',
             'metadata_id' => 'nullable|exists:metadata,id',
             'romantik_id' => 'nullable|exists:romantik,id',
+            'link_metadata_kegiatan' => 'nullable|string',
+            'link_metadata_variabel' => 'nullable|string',
+            'link_metadata_indikator' => 'nullable|string',
         ]);
 
         $kegiatan->update($request->all());
 
-        return redirect()->route('admin.kegiatan.index')->with('success', 'Kegiatan updated successfully.');
+        return redirect()->route('master.kegiatan.index')->with('success', 'Kegiatan updated successfully.');
     }
 
     public function destroy(Kegiatan $kegiatan){
         $kegiatan->delete();
-        return redirect()->route('admin.kegiatan.index')->with('success', 'Kegiatan deleted successfully.');    
+        return redirect()->route('master.kegiatan.index')->with('success', 'Kegiatan deleted successfully.');    
     }
 
     public function import(Request $request) 

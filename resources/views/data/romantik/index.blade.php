@@ -18,7 +18,7 @@
                 <div class="card mb-4">
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                         <h6>Daftar Rekomendasi Kegiatan Statistik</h6>
-                        <a href="{{ route('admin.romantik.create') }}" class="btn btn-primary btn-sm">Tambah Romantik</a>
+                        <a href="{{ route('data.romantik.create') }}" class="btn btn-primary btn-sm">Tambah Romantik</a>
                         <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
                             <i class="ni ni-cloud-upload-95 me-1"></i> Import Excel
                         </button>
@@ -63,11 +63,11 @@
 
                                         <td class="align-middle">
                                             <div class="d-flex align-items-center justify-content-center">
-                                                <a href="{{ route('admin.romantik.edit', $item->id) }}" 
+                                                <a href="{{ route('data.romantik.edit', $item->id) }}" 
                                                    class="btn btn-warning font-weight-bold text-xs me-2 mb-0">
                                                     Edit
                                                 </a>
-                                                <form action="{{ route('admin.romantik.destroy', $item->id) }}" method="POST" 
+                                                <form action="{{ route('data.romantik.destroy', $item->id) }}" method="POST" 
                                                     onsubmit="return confirm('Yakin ingin menghapus kegiatan ini?')" class="mb-0">
                                                     @csrf
                                                     @method('DELETE')
@@ -90,7 +90,7 @@
     </div>
         <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
-            <form action="{{ route('admin.romantik.import') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('data.romantik.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-content">
                     <div class="modal-header">

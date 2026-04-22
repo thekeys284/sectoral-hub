@@ -39,7 +39,7 @@ class RomantikController extends Controller
 
         Romantik::create($request->all());
 
-        return redirect()->route('admin.romantik.index')->with('success', 'Romantik created successfully');
+        return redirect()->route('data.romantik.index')->with('success', 'Romantik created successfully');
     }
 
     public function edit(Romantik $romantik){
@@ -49,13 +49,16 @@ class RomantikController extends Controller
 
     public function show(Romantik $romantik)
     {
-        $romantik->load('opd');
+        // $romantik->load('opd');
         
-        return view('data.romantik.form', [
-            'romantik' => $romantik,
-            'opds'     => Opd::all(),
-            'is_show'  => true
-        ]);
+        // return view('data.romantik.form', [
+        //     'romantik' => $romantik,
+        //     'opds'     => Opd::all(),
+        //     'is_show'  => true
+        // ]);
+        $opds = \App\Models\Opd::all();
+            
+        return view('data.romantik.show', compact('romantik', 'opds'));
     }
 
     public function update(Request $request, Romantik $romantik){
@@ -73,12 +76,12 @@ class RomantikController extends Controller
         ]); 
 
         $romantik->update($request->all());            
-        return redirect()->route('admin.romantik.index')->with('success', 'Romantik updated successfully');
+        return redirect()->route('data.romantik.index')->with('success', 'Romantik updated successfully');
     }
 
     public function destroy(Romantik $romantik){
         $romantik->delete();
-        return redirect()->route('admin.romantik.index')->with('success', 'Romantik deleted successfully');
+        return redirect()->route('data.romantik.index')->with('success', 'Romantik deleted successfully');
     }
 
     public function table()

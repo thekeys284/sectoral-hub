@@ -1,29 +1,18 @@
-FROM php:8.3-fpm
+from php:8.3-fpm
 
-# Install dependensi sistem
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip
+    git curl zip unzip libonig-dev libxml2-dev libzip-dev libicu-dev \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install pdo pdo_mysql mbstring xml intl zip gd opcache netcat-openbsd libjpeg-turbo-dev \
 
-# Install ekstensi PHP yang dibutuhkan Laravel & MySQL
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Ambil Composer terbaru
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+WORKDIR /var/www/html
 
-# Set working directory
-WORKDIR /var/www
-
-# Copy seluruh file project ke dalam container
-COPY . /var/www
-
-# Atur izin akses folder storage dan cache
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+COPY . .
 
 EXPOSE 9000
-CMD ["php-fpm"]
+
+CMD ["php-fpm"];

@@ -18,10 +18,13 @@ return new class extends Migration
             $table->year('tahun_kegiatan');
             $table->string('cara_pengumpulan_data')->nullable();
             $table->string('data_utama')->nullable();
-            $table->boolean('data_prioritas')->nullable();
+            $table->string('data_prioritas')->nullable();
             $table->string('aksesbilitas')->nullable();
-            $table->foreignId('opd_id')->constrained('opd')->onDelete('cascade');            
+            $table->foreignId('opd_id')->nullable()->constrained('opd')->onDelete('cascade');            
             $table->string('deskripsi')->nullable();
+            $table->string('link_metadata_kegiatan')->nullable();
+            $table->string('link_metadata_variabel')->nullable();
+            $table->string('link_metadata_indikator')->nullable();
             $table->unsignedBigInteger('metadata_id')->nullable();
             $table->unsignedBigInteger('romantik_id')->nullable();
             $table->timestamps();

@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::create('romantik', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('opd_id')->constrained('opd')->onDelete('cascade');
+            $table->foreignId('opd_id')->constrained('opd')->onDelete('cascade')->nullable();
             $table->string('judul_kegiatan');
             $table->date('tahun_kegiatan');
-            $table->string('nomor_rekomendasi');
-            $table->date('tgl_pengajuan');
-            $table->date('tgl_perbaikan_terakhir');
-            $table->date('tgl_selesai');
-            $table->string('lama_pemeriksaan');
-            $table->enum('status_pengajuan', ['pemeriksaan', 'penerbitan', 'pengesahan', 'perbaikan', 'selesai'])->default('pemeriksaan');
-            $table->enum('status_rekomendasi', ['dibatalkan', 'ditolak', 'layak'])->default('layak');
+            $table->string('nomor_rekomendasi')->nullable();
+            $table->date('tgl_pengajuan')->nullable();
+            $table->date('tgl_perbaikan_terakhir')->nullable();
+            $table->date('tgl_selesai')->nullable();
+            $table->string('lama_pemeriksaan')->nullable();
+            $table->string('status_pengajuan')->nullable();
+            $table->string('status_rekomendasi')->->nullable();
             $table->timestamps();
         });
     }

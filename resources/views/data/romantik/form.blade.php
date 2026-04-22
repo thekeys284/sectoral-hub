@@ -21,7 +21,7 @@
                 <h6>{{ $romantik->id ? (isset($is_show) ? 'Detail Romantik' : 'Form Edit Romantik') : 'Form Tambah Romantik' }}</h6>
             </div>
             <div class="card-body">
-                <form action="{{ $romantik->id ? route('admin.romantik.update', $romantik->id) : route('admin.romantik.store') }}" 
+                <form action="{{ $romantik->id ? route('data.romantik.update', $romantik->id) : route('data.romantik.store') }}" 
                       method="POST">
                     @csrf
                     @if($romantik->id && !isset($is_show)) @method('PUT') @endif
@@ -123,7 +123,7 @@
                         @if(!isset($is_show))
                             <button type="submit" class="btn btn-primary">{{ $romantik->id ? 'Update Romantik' : 'Simpan Romantik' }}</button>
                         @endif
-                        <a href="{{ route('admin.romantik.index') }}" class="btn btn-secondary">Batal</a>
+                        <a href="{{ route('data.romantik.index') }}" class="btn btn-secondary">Batal</a>
                     </div>
                 </form>
             </div>

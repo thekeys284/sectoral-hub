@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Event extends Model
 {
+    use HasFactory;
     protected $table = 'event';
     protected $fillable = [
         'title','start_at','end_at','lokasi_event','deskripsi','category',
