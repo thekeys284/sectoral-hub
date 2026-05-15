@@ -2,6 +2,7 @@
 
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => 'Pelaporan Metadata'])
+    
     <div class="container-fluid py-4">
         <div class="card shadow-sm">
             <div class="card-header pb-0"><h6>Pelaporan Metadata</h6></div>

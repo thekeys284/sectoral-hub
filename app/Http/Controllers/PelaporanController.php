@@ -17,13 +17,29 @@ class PelaporanController extends Controller
     {
         // $daftardata = Daftardata::with(['opd', 'kegiatan'])->latest()->get();
         // return view('pelaporan.metadata.index', compact('daftardata'));
-        $opdId = Auth::user()->opd_id;
-        $daftardata = Daftardata::with(['opd', 'kegiatan'])
-                    ->where('opd_id', $opdId)
-                    ->whereNotNull('kegiatan_id') //nnti di comment, harus semua ada kegiatan idnya 
-                    ->latest()
-                    ->get()
-                    ->groupBy('kegiatan_id');
+        // $opdId = Auth::user()->opd_id;
+        // $daftardata = Daftardata::with(['opd', 'kegiatan'])
+        //             ->where('opd_id', $opdId)
+        //             ->whereNotNull('kegiatan_id')
+        //             ->latest()
+        //             ->get()
+        //             ->groupBy('kegiatan_id');
+
+        // return view('pelaporan.metadata.index', compact('daftardata'));
+        $user = Auth::user();
+    
+        // Gunakan query builder dengan 'when' untuk kondisi dinamis
+        $query = Daftardata::with(['opd', 'kegiatan'])
+                    ->whereNotNull('kegiatan_id');
+
+        // Jika user BUKAN admin dan BUKAN walidata, maka filter berdasarkan OPD-nya
+        if (!in_array($user->role, ['admin', 'walidata'])) {
+            $query->where('opd_id', $user->opd_id);
+        }
+
+        $daftardata = $query->latest()
+                            ->get() // Tetap gunakan paginate(10) agar rowspan aman
+                            ->groupBy('kegiatan_id');
 
         return view('pelaporan.metadata.index', compact('daftardata'));
     }

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->date('tgl_selesai')->nullable();
             $table->string('lama_pemeriksaan')->nullable();
             $table->string('status_pengajuan')->nullable();
-            $table->string('status_rekomendasi')->->nullable();
+            $table->string('status_rekomendasi')->nullable();
             $table->timestamps();
         });
     }

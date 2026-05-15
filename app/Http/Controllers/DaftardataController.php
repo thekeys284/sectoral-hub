@@ -14,14 +14,23 @@ class DaftardataController extends Controller
 {
     public function index(Request $request)
     {
-        $daftardata = DaftarData::with('opd')->get();
-        // if ($request->filled('search')){
-        //     $query->where('nama_data', 'like', '%' . $request->input('search') . '%');
-        // };
-        // if ($request->filled('opd_id')){
-        //     $query->where('opd_id', $request->opd_id);
-        // };
-        // $daftardata = $query->paginate(10)->withQueryString();
+        // 1. Inisialisasi Query Builder (Bukan langsung memanggil ->get())
+        $query = DaftarData::with(['opd', 'kegiatan']);
+
+        // 2. Filter Pencarian Nama Data (Aktifkan kembali dengan benar)
+        if ($request->filled('search')) {
+            $query->where('nama_data', 'like', '%' . $request->input('search') . '%');
+        }
+
+        // 3. Filter Berdasarkan OPD (Aktifkan kembali dengan benar)
+        if ($request->filled('opd_id')) {
+            $query->where('opd_id', $request->opd_id);
+        }
+
+        // 4. Eksekusi Query menggunakan Paginate agar performa server aman
+        $daftardata = $query->latest()->paginate(10)->withQueryString();
+
+        // 5. Ambil data master untuk Dropdown Filter di Blade
         $opds = Opd::all();
         $kegiatans = \App\Models\Kegiatan::all();
         

@@ -25,6 +25,11 @@
                 {{ session('success') }}
             </div>
         @endif
+        @if (session('error'))
+            <div class="alert alert-danger text-white" role="alert">
+                {{ session('error') }}
+            </div>
+        @endif
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
@@ -77,6 +82,13 @@
                                                     class="btn btn-warning btn-sm me-2 mb-0 btn-edit"
                                                     data-id="{{ $item->id }}"
                                                     data-nama="{{ $item->nama_data }}"
+                                                    data-satuan="{{ $item->satuan }}"
+                                                    data-opd="{{ $item->opd_id }}"
+                                                    data-periode="{{ strtolower($item->periode) }}"
+                                                    data-kedalaman="{{ $item->kedalaman_kabkot }}"
+                                                    data-sifat="{{ strtolower($item->sifat_data) }}"
+                                                    data-sumber="{{ $item->sumber_data }}"
+                                                    data-kegiatan="{{ $item->kegiatan_id }}"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#modalEdit">
                                                     Edit
@@ -141,14 +153,17 @@
                                 <label>Kedalaman Kab/Kot?</label>
                                 <select name="kedalaman_kabkot" class="form-control" required>
                                     <option value="" disabled selected>-- Pilih Opsi --</option>
-                                <option value="Ya">Ya</option><option value="Tidak">Tidak</option>
+                                    <option value="Ya">Ya</option>
+                                    <option value="Tidak">Tidak</option>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Sifat Data</label>
                                 <select name="sifat_data" class="form-control" required>
                                     <option value="" disabled selected>-- Pilih Sifat --</option>
-                                    <option value="terbuka">Terbuka</option><option value="terbatas">Terbatas</option><option value="tertutup">Tertutup</option>
+                                    <option value="terbuka">Terbuka</option>
+                                    <option value="terbatas">Terbatas</option>
+                                    <option value="tertutup">Tertutup</option>
                                 </select>
                             </div>
                             <div class="col-md-12 mb-3">
@@ -178,7 +193,7 @@
         </div>
     </div>
 
-    {{-- MODAL EDIT --}}
+     {{-- MODAL EDIT --}}
     <div class="modal fade" id="modalEdit" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -191,7 +206,63 @@
                     </div>
 
                     <div class="modal-body">
-                        <input type="text" name="nama_data" id="edit_nama" class="form-control">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>Nama Data</label>
+                                <input type="text" name="nama_data" id="edit_nama_data" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Satuan</label>
+                                <select name="satuan" id="edit_satuan" class="form-control select2-modal" required>
+                                    <option value="" disabled>-- Pilih Satuan --</option>
+                                    @foreach($units as $unit) <option value="{{ $unit }}">{{ $unit }}</option> @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>OPD Pemilik Data</label>
+                                <select name="opd_id" id="edit_opd" class="form-control select2-modal" required>
+                                    <option value="" disabled>-- Pilih OPD --</option>
+                                    @foreach($opds as $opd) <option value="{{ $opd->id }}">{{ $opd->name }}</option> @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Periode</label>
+                                <select name="periode" id="edit_periode" class="form-control" required>
+                                    <option value="" disabled>-- Pilih Periode --</option>
+                                    <option value="hari">Hari</option><option value="bulan">Bulan</option><option value="triwulan">Triwulan</option><option value="semester">Semester</option><option value="tahun">Tahun</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Kedalaman Kab/Kot?</label>
+                                <select name="kedalaman_kabkot" id="edit_kedalaman" class="form-control" required>
+                                    <option value="" disabled>-- Pilih Opsi --</option>
+                                    <option value="Ya">Ya</option><option value="Tidak">Tidak</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Sifat Data</label>
+                                <select name="sifat_data" id="edit_sifat" class="form-control" required>
+                                    <option value="" disabled>-- Pilih Sifat --</option>
+                                    <option value="terbuka">Terbuka</option><option value="terbatas">Terbatas</option><option value="tertutup">Tertutup</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label>Sumber Data</label>
+                                <select name="sumber_data" id="edit_sumber" class="form-control select2-modal" required>
+                                    <option value="" disabled>-- Pilih Sumber Data --</option>
+                                    @foreach($sources as $source) <option value="{{ $source }}">{{ $source }}</option> @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label>Kegiatan Statistik Terkait (Opsional)</label>
+                                <select name="kegiatan_id" id="edit_kegiatan" class="form-control select2-modal">
+                                    <option value="">-- Pilih Kegiatan (Opsional) --</option>
+                                    @foreach($kegiatans as $keg)
+                                        <option value="{{ $keg->id }}">{{ $keg->nama_kegiatan }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-footer">
@@ -240,11 +311,49 @@
         });
         
         $('.select2-modal').each(function() {
+            let allowTags = $(this).attr('name') === 'satuan' || $(this).attr('name') === 'sumber_data';
             $(this).select2({
                 dropdownParent: $(this).closest('.modal'),
                 theme: 'bootstrap-5',
-                width: '100%'
+                width: '100%',
+                tags: allowTags
             });
+        });
+
+        // Menangani klik tombol edit untuk mengisi data ke dalam modal
+        $(document).on('click', '.btn-edit', function() {
+            let id = $(this).data('id');
+            let actionUrl = "{{ route('data.daftardata.update', ':id') }}".replace(':id', id);
+            $('#formEdit').attr('action', actionUrl);
+
+            $('#edit_nama_data').val($(this).data('nama'));
+            $('#edit_opd').val($(this).data('opd')).trigger('change');
+            $('#edit_kegiatan').val($(this).data('kegiatan')).trigger('change');
+
+            // Fungsi helper untuk pencocokan dropdown yang mengabaikan huruf besar/kecil & spasi (Case-Insensitive)
+            function setSelectValue(selectId, value, useSelect2 = false) {
+                if (value != null && value !== '') {
+                    let matchedValue = $(selectId + ' option').filter(function() {
+                        return $(this).val().trim().toLowerCase() == String(value).trim().toLowerCase();
+                    }).val();
+                    
+                    if (!matchedValue) {
+                        $(selectId).append(new Option(value, value, true, true));
+                    } else {
+                        $(selectId).val(matchedValue);
+                    }
+                } else {
+                    $(selectId).val('');
+                }
+                
+                if (useSelect2) $(selectId).trigger('change');
+            }
+
+            setSelectValue('#edit_satuan', $(this).data('satuan'), true);
+            setSelectValue('#edit_sumber', $(this).data('sumber'), true);
+            setSelectValue('#edit_kedalaman', $(this).data('kedalaman'), false);
+            setSelectValue('#edit_periode', $(this).data('periode'), false);
+            setSelectValue('#edit_sifat', $(this).data('sifat'), false);
         });
     });
 </script>

@@ -3,12 +3,14 @@
 use App\Http\Controllers\{
     ProfileController, UserController, OpdController, 
     KegiatanController, MetadataController, RomantikController, 
-    DaftardataController, EventController, DashboardController, PelaporanController
+    DaftardataController, EventController, DashboardController, PelaporanController, SdsnController
 };
 use Illuminate\Support\Facades\Route;
 
 // 1. PUBLIC / DASHBOARD (Semua yang login bisa akses)
-Route::get('/', [DashboardController::class, 'index'])->name('home');
+Route::get('/', function (){
+    return redirect()->route('login');
+})->name('home');
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -23,6 +25,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('event', EventController::class);
     Route::get('/whatsnext', [EventController::class, 'whatsnext'])->name('pages.whatsnext'); 
     Route::get('/rekapitulasi', [DashboardController::class, 'rekapitulasi'])->name('pages.rekapitulasi'); 
+    Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('pages.monitoring'); 
+    Route::get('/monitoring/detail/{opd_id}/{type}', [DashboardController::class, 'detailMonitoring'])->name('monitoring.detail');
+
 });
 
 // 3. MASTER & DATA (MULTI-ROLE)
@@ -30,6 +35,9 @@ Route::middleware(['auth'])->group(function () {
     // Master
     Route::prefix('master')->name('master.')->group(function () {
         Route::resource('kegiatan', KegiatanController::class);
+        Route::resource('sdsn', SdsnController::class);
+        Route::post('sdsn/import', [SdsnController::class, 'import'])->name('sdsn.import');
+
 
         // Role Admin dan walidata
         Route::middleware(['role:admin,walidata'])->group(function() {
