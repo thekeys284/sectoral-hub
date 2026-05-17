@@ -5,7 +5,7 @@ use App\Models\Kegiatan;
 use App\Models\Opd;
 use App\Models\Metadata;
 use App\Models\Romantik;
-use App\Models\Daftardata;
+use App\Models\DaftarData;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -29,8 +29,9 @@ class PelaporanController extends Controller
         $user = Auth::user();
     
         // Gunakan query builder dengan 'when' untuk kondisi dinamis
-        $query = Daftardata::with(['opd', 'kegiatan'])
-                    ->whereNotNull('kegiatan_id');
+        $query = DaftarData::with(['opd', 'kegiatan'])
+                    ->whereNotNull('kegiatan_id')
+                    ->has('kegiatan'); // Memastikan data Kegiatan-nya benar-benar ada, bukan sekedar id-nya tidak null
 
         // Jika user BUKAN admin dan BUKAN walidata, maka filter berdasarkan OPD-nya
         if (!in_array($user->role, ['admin', 'walidata'])) {
@@ -70,7 +71,7 @@ class PelaporanController extends Controller
         ]);
 
         // 2. Simpan ke database
-        Daftardata::create($validated);
+        DaftarData::create($validated);
 
         // 3. Redirect
         return redirect()->route('pelaporan.metadata.index')->with('success', 'Data baru berhasil ditambahkan!');
