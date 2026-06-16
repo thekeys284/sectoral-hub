@@ -103,7 +103,6 @@
                         </form>
                     </div>
                 </div>
-
                 @endif
 
                 <div class="card card-profile">

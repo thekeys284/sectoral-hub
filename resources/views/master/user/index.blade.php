@@ -61,7 +61,7 @@
                                         </td>
 
                                         <td class="align-middle">
-                                            <div class="d-flex align-items-center">
+                                            <div class="d-flex align-items-center text-wrap">
                                                 {{ $user->opd->name ?? 'Tidak Ada OPD' }}
                                             </div>
                                         </td>

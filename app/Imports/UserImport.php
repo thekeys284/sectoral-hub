@@ -24,12 +24,17 @@ class UserImport implements ToModel, WithHeadingRow
         if (!empty($row['tim'])) {
             $arrayTim = array_map('trim', explode(',', $row['tim']));
         }
+
+        $arrayRole = null;
+        if (!empty($row['role'])) {
+            $arrayRole = array_map('trim', explode(',', $row['role']));
+        }
         return new User([
             'name'      => $row['name'],
             'email'     => $row['email']??null,
             'username'  => $row['username']??null,
             'password'  => $row['password'],
-            'role'      => strtolower($row['role'] ?? 'operator'),
+            'role'      => $arrayRole,
             'opd_id'    => $row['opd_id']??null,
             'no_hp'     => $row['no_hp']??null,
             'tim'       => $arrayTim,
