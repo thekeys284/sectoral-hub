@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('opd_id')->constrained('opd')->onDelete('cascade')->nullable();
             $table->string('judul_kegiatan');
-            $table->date('tahun_kegiatan');
+            $table->string('tahun_kegiatan');
             $table->string('nomor_rekomendasi')->nullable();
             $table->date('tgl_pengajuan')->nullable();
             $table->date('tgl_perbaikan_terakhir')->nullable();
@@ -23,7 +23,6 @@ return new class extends Migration
             $table->string('lama_pemeriksaan')->nullable();
             $table->string('status_pengajuan')->nullable();
             $table->string('status_rekomendasi')->nullable();
-            $table->foreignId('kegiatan_id')->nullable();
             $table->timestamps();
         });
     }

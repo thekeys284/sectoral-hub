@@ -102,13 +102,13 @@ class AppServiceProvider extends ServiceProvider
                             'title' => 'Daftar Data',
                             'icon'  => 'ni ni-check-bold text-dark',
                             'route' => match(auth()->user()->role) {
-                                'admin'    => 'data.romantik.index',
-                                'pembina'  => 'romantik.table',
-                                'walidata' => 'romantik.table',
-                                'produsen' => 'romantik.table',
-                                default    => 'romantik.table', 
+                                'admin'    => 'data.daftardata.index',
+                                'pembina'  => 'daftardata.table',
+                                'walidata' => 'daftardata.table',
+                                'produsen' => 'daftardata.table',
+                                default    => 'daftardata.table', 
                             },
-                            'active' => request()->routeIs('data.romantik.*') || request()->routeIs('romantik.table')
+                            'active' => request()->routeIs('data.daftardata.*') || request()->routeIs('daftardata.table')
                         ],
                     ])
                 ],

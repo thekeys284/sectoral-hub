@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('periode_submission');
             $table->string('tanggal_submission')->nullable();
             $table->string('status');    
-            $table->foreignId('kegiatan_id')->nullable();        
             $table->timestamps();
         });
     }

@@ -33,9 +33,11 @@ class PelaporanController extends Controller
                     ->whereNotNull('kegiatan_id')
                     ->has('kegiatan'); // Memastikan data Kegiatan-nya benar-benar ada, bukan sekedar id-nya tidak null
 
-        // Jika user BUKAN admin dan BUKAN walidata, maka filter berdasarkan OPD-nya
-        if (!in_array($user->role, ['admin', 'walidata'])) {
+        if ($user->role === 'produsen') {
             $query->where('opd_id', $user->opd_id);
+        } elseif ($user->role === 'pembina') {
+            $opdBinaanIds = \App\Models\Opd::where('pembina_id', $user->id)->pluck('id')->toArray();
+            $query->whereIn('opd_id', $opdBinaanIds);
         }
 
         $daftardata = $query->latest()

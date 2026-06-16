@@ -3,6 +3,16 @@
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => 'Manajemen User'])
     <div class="container-fluid py-4">
+        @if (session('success'))
+            <div class="alert alert-success text-white" role="alert">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger text-white" role="alert">
+                {{ session('error') }}
+            </div>
+        @endif
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">

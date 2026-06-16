@@ -47,4 +47,9 @@ class User extends Authenticatable
     public function opd(){
         return $this->belongsTo(Opd::class, 'opd_id');
     }
+
+    public function opdBinaan()
+    {
+        return $this->hasMany(Opd::class, 'pembina_id', 'id');
+    }
 }

@@ -105,4 +105,24 @@ class DaftardataController extends Controller
             return redirect()->back()->with('error', 'Gagal import: ' . $e->getMessage());
         }
     }
+
+    public function table()
+    {
+        $query = DaftarData::with(['opd', 'kegiatan']);
+        
+        // Jika role produsen, hanya tampilkan data miliknya sendiri berdasarkan opd_id
+        if (auth()->user()->role == 'produsen') {
+            $query->where('opd_id', auth()->user()->opd_id);
+        }
+        
+        $daftardata = $query->get(); 
+        
+        return view('data.daftar_data.list_daftardata', compact('daftardata'));
+    }
+
+    public function show($id)
+    {
+        $daftardata = DaftarData::with(['opd', 'kegiatan'])->findOrFail($id);
+        return view('data.daftar_data.show', compact('daftardata'));
+    }
 }

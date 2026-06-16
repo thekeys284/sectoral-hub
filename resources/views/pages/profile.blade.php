@@ -103,11 +103,59 @@
                         </div>
                     </div>
                 </div>
-            @if($user->opd && $user->opd->name !== 'Badan Pusat Statistik Provinsi Jawa Timur')
+            @if($user->role === 'pembina')
                 <div class="card card-profile pt-0 mt-4">
                     <div class="card-body pt-0">
                         <div class="text-center mt-4">
-                            <h5>PIC Pembina</h5>
+                            <h5>Daftar Dinas Binaan</h5>
+                        </div>
+                        <ul class="list-group list-group-flush mt-3 text-start">
+                            @forelse($opdBinaan as $opd)
+                                <li class="list-group-item px-0 border-0 mb-2">
+                                    <div class="h6 mb-1 text-sm"><i class="ni ni-building me-2"></i>{{ $opd->name }}</div>
+                                    @if(isset($opd->pic) && $opd->pic->count() > 0)
+                                        @foreach($opd->pic as $pic)
+                                            <div class="text-xs text-muted ms-4 mb-1">
+                                                <i class="fas fa-user me-1"></i> {{ $pic->name }} <br>
+                                                <span class="text-xs text-secondary mt-1">
+                                                    <i class="fas fa-phone me-1"></i>
+                                                    @if($pic && $pic->no_hp)
+                                                        @php
+                                                            // Bersihkan nomor dari spasi, strip, atau tanda + yang tidak sengaja terinput
+                                                            $clean_phone = preg_replace('/[^0-9]/', '', $pic->no_hp);
+                                                            // Jika nomor masih diawali angka 0, ubah menjadi 62
+                                                            if (str_starts_with($clean_phone, '0')) {
+                                                                $clean_phone = '62' . substr($clean_phone, 1);
+                                                            }
+                                                        @endphp
+                                                        <a href="https://wa.me/{{ $clean_phone }}" target="_blank" class="text-info font-weight-bold">
+                                                            {{ $pic->no_hp }}
+                                                        </a>
+                                                    @else
+                                                        <span class="text-muted">Belum ada No HP</span>
+                                                    @endif
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <div class="text-xs text-muted ms-4 mb-1">
+                                            <i class="fas fa-info-circle me-1"></i> Belum ada PIC Produsen
+                                        </div>
+                                    @endif
+                                </li>
+                            @empty
+                                <li class="list-group-item px-0 text-center text-sm text-muted">
+                                    Belum ada dinas binaan.
+                                </li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+            @elseif($user->role === 'produsen' && $user->opd)
+                <div class="card card-profile pt-0 mt-4">
+                    <div class="card-body pt-0">
+                        <div class="text-center mt-4">
+                            <h5>Informasi Pembina</h5>
                             @if($user->opd->pembina)
                                 <div class="h6 mt-4 mb-0">
                                     <i class="ni ni-single-02 me-2"></i>{{ $user->opd->pembina->name }}
@@ -116,11 +164,28 @@
                                     <i class="ni ni-email-83 me-2"></i>{{ $user->opd->pembina->email }}
                                 </div>
                                 <div class="text-sm mt-2">
-                                    <i class="fas fa-phone me-2"></i>{{ $user->opd->pembina->no_hp ?? '-' }}
+                                    <span class="text-xs text-secondary mt-1">
+                                        <i class="fas fa-phone me-1"></i>
+                                    @if($user->opd->pembina->no_hp)
+                                            @php
+                                                // Bersihkan nomor dari spasi, strip, atau tanda + yang tidak sengaja terinput
+                                            $clean_phone = preg_replace('/[^0-9]/', '', $user->opd->pembina->no_hp);
+                                                // Jika nomor masih diawali angka 0, ubah menjadi 62
+                                                if (str_starts_with($clean_phone, '0')) {
+                                                    $clean_phone = '62' . substr($clean_phone, 1);
+                                                }
+                                            @endphp
+                                            <a href="https://wa.me/{{ $clean_phone }}" target="_blank" class="text-info font-weight-bold">
+                                            {{ $user->opd->pembina->no_hp }}
+                                            </a>
+                                        @else
+                                            <span class="text-muted">Belum ada No HP</span>
+                                        @endif
+                                    </span>
                                 </div>
                             @else
                                 <div class="h6 mt-4 text-muted text-sm font-weight-normal">
-                                    Belum ada PIC Pembina
+                                    Belum ada Pembina yang ditugaskan
                                 </div>
                             @endif
                         </div>

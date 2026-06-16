@@ -12,9 +12,18 @@ class ProfileController extends Controller
     // Menampilkan halaman profil
     public function edit()
     {
-        return view('pages.profile', [
-            'user' => Auth::user()
-        ]);
+        $user = Auth::user();
+        $opdBinaan = [];
+
+        if ($user->role === 'pembina') {
+            $opdBinaan = \App\Models\Opd::where('pembina_id', $user->id)->get();
+            // Mengambil data PIC/Produsen dari masing-masing OPD binaan
+            foreach ($opdBinaan as $opd) {
+                $opd->pic = \App\Models\User::where('opd_id', $opd->id)->where('role', 'produsen')->get();
+            }
+        }
+
+        return view('pages.profile', compact('user', 'opdBinaan'));
     }
 
     // Mengupdate informasi profil
@@ -47,5 +56,18 @@ class ProfileController extends Controller
         ]);
 
         return redirect()->route('profile')->with('success', 'Password berhasil diganti.');
+    }
+
+    // Switch Role Mode (Development/Testing)
+    public function switchRole(Request $request)
+    {
+        $request->validate([
+            'target_role' => 'required|in:admin,walidata,pembina,produsen,operator'
+        ]);
+
+        $user = Auth::user();
+        $user->update(['role' => $request->target_role]);
+
+        return redirect()->back()->with('success', 'Berhasil berganti role menjadi ' . strtoupper($request->target_role));
     }
 }

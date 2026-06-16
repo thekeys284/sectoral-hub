@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('sifat_data')->nullable();
             $table->string('sumber_data')->nullable();
             $table->string('kode_sdsn')->nullable();
+            $table->boolean('is_aliran_data')->nullable();
+            $table->string('nama_aliran_data')->nullable();
             $table->string('status')->nullable();
             $table->foreignId('opd_id')->nullable();
             $table->foreignId('kegiatan_id')->nullable();

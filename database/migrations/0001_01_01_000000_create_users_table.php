@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('username')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('role')->default('operator');
+            $table->json('role')->default('["operator"]');
             $table->unsignedBigInteger('opd_id')->nullable();
             $table->json('tim')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();

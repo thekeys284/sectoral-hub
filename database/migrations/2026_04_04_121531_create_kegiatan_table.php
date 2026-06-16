@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('kegiatan', function (Blueprint $table) {
             $table->id();
             $table->string('nama_kegiatan');
-            $table->date('periode_kegiatan')->nullable();
+            $table->string('periode_kegiatan')->nullable();
             $table->year('tahun_kegiatan');
             $table->string('cara_pengumpulan_data')->nullable();
             $table->string('data_utama')->nullable();

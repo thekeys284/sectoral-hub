@@ -12,10 +12,10 @@ class RoleMiddleware
     /**
      * Handle an incoming request.
      */
-    public function handle(Request $request, Closure $next, $role): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
         // Cek apakah user sudah login dan memiliki role yang sesuai
-        if (!Auth::check() || Auth::user()->role !== $role) {
+        if (!Auth::check() || !in_array(Auth::user()->role, $roles)) {
             abort(403, 'Unauthorized action.');
         }
 

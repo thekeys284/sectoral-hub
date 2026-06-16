@@ -19,8 +19,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::post('/role/switch', [ProfileController::class, 'switchRole'])->name('role.switch');
     Route::get('/metadata-list', [MetadataController::class, 'table'])->name('metadata.table');  
-    Route::get('/romantik-list', [RomantikController::class, 'table'])->name('romantik.table');      
+    Route::get('/romantik-list', [RomantikController::class, 'table'])->name('romantik.table');   
+    Route::get('/daftardata-list', [DaftardataController::class, 'table'])->name('daftardata.table');         
     Route::get('/whatsnext', [EventController::class, 'whatsnext'])->name('pages.whatsnext'); 
     Route::get('/rekapitulasi', [DashboardController::class, 'rekapitulasi'])->name('pages.rekapitulasi'); 
     Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('pages.monitoring'); 

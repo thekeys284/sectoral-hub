@@ -17,13 +17,17 @@ class KegiatanController extends Controller
 {
     public function index(){ 
         $query = Kegiatan::with(['opd', 'metadata', 'romantik'])->latest();
+        $user = auth()->user();
         
-        // Role Produsen
-        if (auth()->user()->role == 'produsen') {
-            $query->where('opd_id', auth()->user()->opd_id);
+        if ($user->role === 'produsen') {
+            $query->where('opd_id', $user->opd_id);
         }
-        
-        // Eksekusi query (Role Walidata dan Admin akan melewati IF dan mengambil semua data)
+        elseif ($user->role === 'pembina') {
+            $opdBinaanIds = \App\Models\Opd::where('pembina_id', $user->id)->pluck('id')->toArray();
+            
+            $query->whereIn('opd_id', $opdBinaanIds);
+        }
+
         $kegiatan = $query->get();
         
         return view('master.kegiatan.index', compact('kegiatan'));

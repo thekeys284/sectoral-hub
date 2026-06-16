@@ -10,19 +10,40 @@ use App\Models\Romantik;
 use App\Models\Sdsn;
 
 class DashboardController extends Controller
-{
+{ 
     public function index()
     {
         $monitoringData = Kegiatan::with(['opd', 'metadata', 'romantik'])->latest()->get();
 
+        $total_kegiatan = Kegiatan::count();
+        $kegiatan_with_romantik = Kegiatan::whereNotNull('romantik_id')->count();
+        $kegiatan_with_metadata = Kegiatan::whereNotNull('metadata_id')->count();
+
+        $total_daftardata = \App\Models\DaftarData::count();
+        $daftardata_eligible = \App\Models\DaftarData::whereNotNull('kegiatan_id')->count();
+        $daftardata_with_romantik = \App\Models\DaftarData::whereHas('kegiatan', function($q) {
+            $q->whereNotNull('romantik_id');
+        })->count();
+        $daftardata_with_metadata = \App\Models\DaftarData::whereHas('kegiatan', function($q) {
+            $q->whereNotNull('metadata_id');
+        })->count();
+
         $stats = [
-            'total_kegiatan' => Kegiatan::count(),
+            'total_kegiatan' => $total_kegiatan,
             'total_opd'      => Opd::count(),
             'total_metadata' => Metadata::count(),
             'total_romantik' => Romantik::count(),
         ];
 
-        return view('pages.dashboard', compact('monitoringData', 'stats'));
+        $charts = [
+            'kegiatan_romantik' => [$kegiatan_with_romantik, $total_kegiatan - $kegiatan_with_romantik],
+            'kegiatan_metadata' => [$kegiatan_with_metadata, $total_kegiatan - $kegiatan_with_metadata],
+            'daftardata_eligible' => [$daftardata_eligible, $total_daftardata - $daftardata_eligible],
+            'daftardata_romantik' => [$daftardata_with_romantik, $total_daftardata - $daftardata_with_romantik],
+            'daftardata_metadata' => [$daftardata_with_metadata, $total_daftardata - $daftardata_with_metadata],
+        ];
+
+        return view('pages.dashboard', compact('monitoringData', 'stats', 'charts'));
     }
     
     public function rekapitulasi()

@@ -12,9 +12,8 @@
                             <div class="col-8">
                                 <div class="numbers">
                                     <p class="text-lg mb-0 text-uppercase font-weight-bold">Jumlah OPD</p>
-                                    <br>
                                     <h2 class="font-weight-bolder">
-                                        $53,000
+                                        {{ $stats['total_opd'] ?? 0 }} 
                                     </h2>
                                 </div>
                             </div>
@@ -35,7 +34,7 @@
                                 <div class="numbers">
                                     <p class="text-lg mb-0 text-uppercase font-weight-bold">Kegiatan Statistik</p>
                                     <h2 class="font-weight-bolder">
-                                        2,300
+                                        {{ $stats['total_kegiatan'] ?? 0 }}
                                     </h2>
                                 </div>
                             </div>
@@ -56,7 +55,7 @@
                                 <div class="numbers">
                                     <p class="text-lg mb-0 text-uppercase font-weight-bold">Pengajuan Romantik</p>
                                     <h2 class="font-weight-bolder">
-                                        +3,462
+                                        {{ $stats['total_romantik'] ?? 0 }}
                                     </h2>
                                 </div>
                             </div>
@@ -77,7 +76,7 @@
                                 <div class="numbers">
                                     <p class="text-lg mb-0 text-uppercase font-weight-bold">Jumlah Metadata</p>
                                     <h2 class="font-weight-bolder">
-                                        $103,43
+                                        {{ $stats['total_metadata'] ?? 0 }}
                                     </h2>
                                 </div>
                             </div>
@@ -99,7 +98,7 @@
                     </div>
                     <div class="card-body p-3">
                         <div class="chart">
-                            <canvas id="chart-doughnut" class="chart-canvas" height="300"></canvas>
+                            <canvas id="chart-kegiatan-romantik" class="chart-canvas" height="300"></canvas>
                         </div>
                     </div>
                 </div>
@@ -111,7 +110,7 @@
                     </div>
                     <div class="card-body p-3">
                         <div class="chart">
-                            <canvas id="chart-doughnut" class="chart-canvas" height="300"></canvas>
+                            <canvas id="chart-kegiatan-metadata" class="chart-canvas" height="300"></canvas>
                         </div>
                     </div>
                 </div>
@@ -125,7 +124,7 @@
                     </div>
                     <div class="card-body p-3">
                         <div class="chart">
-                            <canvas id="chart-doughnut" class="chart-canvas" height="300"></canvas>
+                            <canvas id="chart-daftardata-eligible" class="chart-canvas" height="300"></canvas>
                         </div>
                     </div>
                 </div>
@@ -137,7 +136,7 @@
                     </div>
                     <div class="card-body p-3">
                         <div class="chart">
-                            <canvas id="chart-doughnut" class="chart-canvas" height="300"></canvas>
+                            <canvas id="chart-daftardata-romantik" class="chart-canvas" height="300"></canvas>
                         </div>
                     </div>
                 </div>
@@ -149,7 +148,7 @@
                     </div>
                     <div class="card-body p-3">
                         <div class="chart">
-                            <canvas id="chart-doughnut" class="chart-canvas" height="300"></canvas>
+                            <canvas id="chart-daftardata-metadata" class="chart-canvas" height="300"></canvas>
                         </div>
                     </div>
                 </div>
@@ -163,41 +162,98 @@
 @push('js')
     <script src="./assets/js/plugins/chartjs.min.js"></script>
     <script>
-        var ctx1 = document.getElementById("chart-doughnut").getContext("2d");
+        // Plugin kustom untuk menampilkan persentase di tengah masing-masing slice doughnut
+        const doughnutLabelPlugin = {
+            id: 'doughnutLabel',
+            afterDraw(chart, args, options) {
+                const { ctx } = chart;
+                chart.data.datasets.forEach((dataset, i) => {
+                    chart.getDatasetMeta(i).data.forEach((datapoint, index) => {
+                        let total = dataset.data.reduce((a, b) => a + b, 0);
+                        let value = dataset.data[index];
+                        if (value === 0) return; // Jangan tampilkan teks jika nilainya 0
+                        
+                        let percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                        percentage = percentage.replace('.0%', '%'); // Hapus .0 jika bilangannya bulat
 
-        new Chart(ctx1, {
-            type: "doughnut",
-            data: {
-                labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                datasets: [{
-                    label: "Mobile apps",
-                    backgroundColor: ['#fb6340', '#f5365c', '#11cdef', '#2dce89', '#8965e0', '#f3a4b5', '#ffd600', '#5e72e4', '#172b4d'],
-                    data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-                }],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'right',
-                        labels: {
-                            padding: 20,
-                            font: {
-                                size: 11,
-                                family: "Open Sans",
-                                style: 'normal',
-                                lineHeight: 2
-                            },
-                        }
+                        const position = datapoint.tooltipPosition();
+                        
+                        ctx.save();
+                        ctx.font = 'bold 12px "Open Sans"';
+                        ctx.fillStyle = '#ffffff';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        // Menambahkan shadow agar teks putih tetap terbaca di warna cerah
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                        ctx.shadowBlur = 4;
+                        ctx.fillText(percentage, position.x, position.y);
+                        ctx.restore();
+                    });
+                });
+            }
+        };
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: {
+                            size: 11,
+                            family: "Open Sans",
+                            style: 'normal',
+                            lineHeight: 2
+                        },
                     }
                 },
-                interaction: {
-                    intersect: false,
-                    mode: 'index',
-                },
+                // Menambahkan informasi persentase pada tooltip saat chart di-hover
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let value = context.parsed || context.raw;
+                            let percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                            percentage = percentage.replace('.0%', '%');
+                            label += value + ' (' + percentage + ')';
+                            return label;
+                        }
+                    }
+                }
             },
-        });
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+        };
+
+        const createDoughnutChart = (ctxId, labels, data, colors) => {
+            const ctx = document.getElementById(ctxId).getContext("2d");
+            new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        backgroundColor: colors,
+                        data: data,
+                    }],
+                },
+                options: chartOptions,
+                plugins: [doughnutLabelPlugin] // Daftarkan plugin kustom di sini
+            });
+        };
+
+        createDoughnutChart("chart-kegiatan-romantik", ["Mempunyai Romantik", "Belum/Tidak Mempunyai"], @json($charts['kegiatan_romantik'] ?? [0, 0]), ['#2dce89', '#f5365c']);
+        createDoughnutChart("chart-kegiatan-metadata", ["Mempunyai Metadata", "Belum/Tidak Mempunyai"], @json($charts['kegiatan_metadata'] ?? [0, 0]), ['#11cdef', '#f5365c']);
+        createDoughnutChart("chart-daftardata-eligible", ["Eligible", "Tidak Eligible"], @json($charts['daftardata_eligible'] ?? [0, 0]), ['#5e72e4', '#f5365c']);
+        createDoughnutChart("chart-daftardata-romantik", ["Mempunyai Romantik", "Belum/Tidak Mempunyai"], @json($charts['daftardata_romantik'] ?? [0, 0]), ['#2dce89', '#f5365c']);
+        createDoughnutChart("chart-daftardata-metadata", ["Mempunyai Metadata", "Belum/Tidak Mempunyai"], @json($charts['daftardata_metadata'] ?? [0, 0]), ['#11cdef', '#f5365c']);
     </script>
 @endpush
