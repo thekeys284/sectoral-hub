@@ -15,10 +15,19 @@ use App\Imports\KegiatanImport;
 
 class KegiatanController extends Controller
 {
-    public function index(){
-        $kegiatan = Kegiatan::with('opd', 'metadata', 'romantik')->get();
-        return view('master.kegiatan.index', compact('kegiatan'));  
-    }
+    public function index(){ 
+        $query = Kegiatan::with(['opd', 'metadata', 'romantik'])->latest();
+        
+        // Role Produsen
+        if (auth()->user()->role == 'produsen') {
+            $query->where('opd_id', auth()->user()->opd_id);
+        }
+        
+        // Eksekusi query (Role Walidata dan Admin akan melewati IF dan mengambil semua data)
+        $kegiatan = $query->get();
+        
+        return view('master.kegiatan.index', compact('kegiatan'));
+    } 
 
     public function create() {
         $kegiatan = new Kegiatan(); 

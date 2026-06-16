@@ -25,7 +25,8 @@ class ProfileController extends Controller
         $request->validate([
             'name'  => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            // Tambahkan kolom lain jika perlu, misal: 'nip' => ['nullable', 'string']
+            'username' => ['nullable', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'no_hp' => ['nullable', 'string', 'max:20'],
         ]);
 
         $user->update($request->all());

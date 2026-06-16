@@ -60,12 +60,12 @@
                                         <td>
                                             <div class="d-flex px-2 py-1">
                                                 <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm">{{ $item->nama_data }}</h6>
-                                                    <p class="text-xs text-secondary mb-0">Dinas: {{ $item->opd->name ?? 'N/A' }}</p>
+                                                    <h6 class="mb-0 text-sm text-wrap">{{ $item->nama_data }}</h6>
+                                                    <p class="text-xs text-secondary mb-0 text-wrap">Dinas: {{ $item->opd->name ?? 'N/A' }}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="align-middle"><span class="text-xs font-weight-bold">{{ $item->satuan }}</span></td>
+                                        <td class="align-middle"><span class="text-xs font-weight-bold text-wrap">{{ $item->satuan }}</span></td>
                                         <td class="align-middle text-center"><span class="text-xs">{{ ucfirst($item->periode) }}</span></td>
                                         <td class="align-middle text-center">
                                             <span class="badge badge-sm 

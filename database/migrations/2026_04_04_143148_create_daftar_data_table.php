@@ -20,8 +20,9 @@ return new class extends Migration
             $table->string('sifat_data')->nullable();
             $table->string('sumber_data')->nullable();
             $table->string('kode_sdsn')->nullable();
-            $table->foreignId('opd_id')->nullable()->constrained('opd')->onDelete('cascade');
-            $table->foreignId('kegiatan_id')->nullable()->constrained('kegiatan')->onDelete('cascade');
+            $table->string('status')->nullable();
+            $table->foreignId('opd_id')->nullable();
+            $table->foreignId('kegiatan_id')->nullable();
             $table->timestamps();
         });
     }

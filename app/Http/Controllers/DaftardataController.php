@@ -28,7 +28,7 @@ class DaftardataController extends Controller
         }
 
         // 4. Eksekusi Query menggunakan Paginate agar performa server aman
-        $daftardata = $query->latest()->paginate(10)->withQueryString();
+        $daftardata = $query->get();
 
         // 5. Ambil data master untuk Dropdown Filter di Blade
         $opds = Opd::all();

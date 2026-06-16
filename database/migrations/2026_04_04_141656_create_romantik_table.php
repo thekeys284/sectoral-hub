@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('lama_pemeriksaan')->nullable();
             $table->string('status_pengajuan')->nullable();
             $table->string('status_rekomendasi')->nullable();
+            $table->foreignId('kegiatan_id')->nullable();
             $table->timestamps();
         });
     }

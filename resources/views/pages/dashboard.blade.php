@@ -3,111 +3,201 @@
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => 'Dashboard'])
     <div class="container-fluid py-4">
-        
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header pb-0 d-flex justify-content-between">
-                        <h6>Dashboard</h6>
+        <h1 class="font-weight-bolder">Kegiatan Statistik Sektoral</h1>
+        <div class="row">
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                <div class="card">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="numbers">
+                                    <p class="text-lg mb-0 text-uppercase font-weight-bold">Jumlah OPD</p>
+                                    <br>
+                                    <h2 class="font-weight-bolder">
+                                        $53,000
+                                    </h2>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle">
+                                    <i class="ni ni-building text-lg opacity-10" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body px-0 pt-0 pb-2">
-                        <div class="table-responsive p-4">
-                            <table class="table align-items-center mb-0" id="monitoring-table">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Kegiatan & OPD</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cara Pengumpulan Data</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status Metadata</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status Romantik</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($monitoringData as $item)
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex px-2 py-1">
-                                                <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm text-wrap">{{ $item->nama_kegiatan }}</h6>
-                                                    <p class="text-xs text-primary font-weight-bold mb-0">
-                                                        <i class="ni ni-building me-1"></i>{{ $item->opd->name ?? 'Dinas Tidak Diketahui' }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                            @php
-                                                $statusMapping = [
-                                                    'sensus' => ['label' => 'Sensus', 'class' => 'bg-gradient-success'],
-                                                    'survei' => ['label' => 'Survei', 'class' => 'bg-gradient-info'],
-                                                    'kompromin' => ['label' => 'Kompilasi Produk Administrasi', 'class' => 'bg-gradient-warning'],
-                                                    'cara_lain' => ['label' => 'Cara Lain', 'class' => 'bg-gradient-secondary'],
-                                                ];
-
-                                                $statusData = $statusMapping[$item->cara_pengumpulan_data] ?? [
-                                                    'label' => ucfirst($item->cara_pengumpulan_data),
-                                                    'class' => 'bg-gradient-secondary'
-                                                ];
-                                            @endphp
-
-                                        <td class="align-middle text-center text-sm text-wrap">
-                                            <span class="badge badge-sm {{ $statusData['class'] }}">
-                                                {{ $statusData['label'] }}
-                                            </span>
-                                            <p class="text-xs text-secondary mb-0">{{ ucfirst($item->periode_kegiatan) }} - {{ $item->tahun_kegiatan }}</p>
-                                        </td>
-
-                                        <td>
-                                            @if($item->metadata)
-                                                <p class="text-xs font-weight-bold mb-0 text-wrap">{{ Str::limit($item->metadata->judul_kegiatan, 30) }}</p>
-                                                <span class="badge badge-sm bg-gradient-{{ $item->metadata->status == 'approved' ? 'success' : 'secondary' }}">
-                                                    {{ $item->metadata->status }}
-                                                </span>
-                                                <p class="text-xxs text-secondary mt-1">Periode: {{ $item->metadata->periode_submission }}</p>
-                                            @else
-                                                <span class="text-xs text-muted">Belum lapor metadata</span>
-                                            @endif
-                                        </td>
-
-                                        <td>
-                                            @if($item->romantik)
-                                                <p class="text-xs font-weight-bold mb-0 text-wrap">No: {{ $item->romantik->nomor_rekomendasi }}</p>
-                                                <div class="d-flex flex-column">
-                                                    <span class="text-xxs">Pengajuan: {{ $item->romantik->status_pengajuan }}</span>
-                                                    <span class="text-xxs font-weight-bold text-{{ $item->romantik->status_rekomendasi == 'layak' ? 'success' : 'danger' }}">
-                                                        Hasil: {{ $item->romantik->status_rekomendasi }}
-                                                    </span>
-                                                    <p class="text-xxs text-secondary mb-0">Tgl: {{ date('d/m/y', strtotime($item->romantik->tgl_pengajuan)) }}</p>
-                                                </div>
-                                            @else
-                                                <span class="text-xs text-muted italic">Tidak ada rekomendasi</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                <div class="card">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="numbers">
+                                    <p class="text-lg mb-0 text-uppercase font-weight-bold">Kegiatan Statistik</p>
+                                    <h2 class="font-weight-bolder">
+                                        2,300
+                                    </h2>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon icon-shape bg-gradient-danger shadow-danger text-center rounded-circle">
+                                    <i class="ni ni-books text-lg opacity-10" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                <div class="card">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="numbers">
+                                    <p class="text-lg mb-0 text-uppercase font-weight-bold">Pengajuan Romantik</p>
+                                    <h2 class="font-weight-bolder">
+                                        +3,462
+                                    </h2>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                                    <i class="ni ni-check-bold text-lg opacity-10" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="numbers">
+                                    <p class="text-lg mb-0 text-uppercase font-weight-bold">Jumlah Metadata</p>
+                                    <h2 class="font-weight-bolder">
+                                        $103,43
+                                    </h2>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
+                                    <i class="ni ni-folder-17 text-lg opacity-10" aria-hidden="true"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
+        <div class="row mt-4">
+            <div class="col-lg-6 mb-lg-0 mb-4">
+                <div class="card z-index-2 h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent">
+                        <h6 class="text-capitalize">Persentase Kegiatan Statistik Mempunyai Romantik</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="chart">
+                            <canvas id="chart-doughnut" class="chart-canvas" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-lg-0 mb-4">
+                <div class="card z-index-2 h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent">
+                        <h6 class="text-capitalize">Persentase Kegiatan Statistik Mempunyai Metadata</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="chart">
+                            <canvas id="chart-doughnut" class="chart-canvas" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-lg-4 mb-lg-0 mb-4">
+                <div class="card z-index-2 h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent">
+                        <h6 class="text-capitalize">Persentase Daftar Data Eligible</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="chart">
+                            <canvas id="chart-doughnut" class="chart-canvas" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-lg-0 mb-4">
+                <div class="card z-index-2 h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent">
+                        <h6 class="text-capitalize">Persentase Daftar Data Mempunyai Romantik</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="chart">
+                            <canvas id="chart-doughnut" class="chart-canvas" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-lg-0 mb-4">
+                <div class="card z-index-2 h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent">
+                        <h6 class="text-capitalize">Persentase Daftar Data Mempunyai Metadata</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="chart">
+                            <canvas id="chart-doughnut" class="chart-canvas" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         @include('layouts.footers.auth.footer')
     </div>
 @endsection
 
 @push('js')
-<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#monitoring-table').DataTable({
-            "pageLength": 10,
-            "language": {
-                "search": "Cari Data Gabungan:",
-                "paginate": { "previous": "<", "next": ">" }
-            }
+    <script src="./assets/js/plugins/chartjs.min.js"></script>
+    <script>
+        var ctx1 = document.getElementById("chart-doughnut").getContext("2d");
+
+        new Chart(ctx1, {
+            type: "doughnut",
+            data: {
+                labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                datasets: [{
+                    label: "Mobile apps",
+                    backgroundColor: ['#fb6340', '#f5365c', '#11cdef', '#2dce89', '#8965e0', '#f3a4b5', '#ffd600', '#5e72e4', '#172b4d'],
+                    data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'right',
+                        labels: {
+                            padding: 20,
+                            font: {
+                                size: 11,
+                                family: "Open Sans",
+                                style: 'normal',
+                                lineHeight: 2
+                            },
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                },
+            },
         });
-    });
-</script>
+    </script>
 @endpush

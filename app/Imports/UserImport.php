@@ -13,15 +13,26 @@ class UserImport implements ToModel, WithHeadingRow
     *
     * @return \Illuminate\Database\Eloquent\Model|null
     */
+    
     public function model(array $row)
     {
+        if (empty($row['name']) || (empty($row['email']) && empty($row['username']))) {
+            return null;
+        }
+        
+        $arrayTim = null;
+        if (!empty($row['tim'])) {
+            $arrayTim = array_map('trim', explode(',', $row['tim']));
+        }
         return new User([
             'name'      => $row['name'],
-            'email'     => $row['email'],
+            'email'     => $row['email']??null,
+            'username'  => $row['username']??null,
             'password'  => $row['password'],
-            'role'      => $row['role'],
+            'role'      => strtolower($row['role'] ?? 'operator'),
             'opd_id'    => $row['opd_id']??null,
             'no_hp'     => $row['no_hp']??null,
+            'tim'       => $arrayTim,
         ]);
     }
 }

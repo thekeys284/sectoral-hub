@@ -24,6 +24,20 @@
                                     <div class="form-group">
                                         <label>Email</label>
                                         <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}">
+                                        @error('email') <small class="text-danger">{{ $message }}</small> @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Username</label>
+                                        <input type="text" name="username" class="form-control" value="{{ old('username', $user->username) }}">
+                                        @error('username') <small class="text-danger">{{ $message }}</small> @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>No. HP</label>
+                                        <input type="text" name="no_hp" class="form-control" value="{{ old('no_hp', $user->no_hp) }}">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -50,10 +64,12 @@
                             <div class="form-group">
                                 <label>Password Saat Ini</label>
                                 <input type="password" name="current_password" class="form-control" required>
+                                @error('current_password') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                             <div class="form-group">
                                 <label>Password Baru</label>
                                 <input type="password" name="password" class="form-control" required>
+                                @error('password') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                             <div class="form-group">
                                 <label>Konfirmasi Password Baru</label>
@@ -81,16 +97,71 @@
                     <div class="card-body pt-0">
                         <div class="text-center mt-4">
                             <h5>{{ $user->name }}</h5>
-                            <div class="h6 font-weight-300">
-                                <i class="ni ni-pin-3 mr-2"></i>Badan Pusat Statistik
-                            </div>
                             <div class="h6 mt-4">
                                 <i class="ni ni-briefcase-24 mr-2"></i>Role: {{ ucfirst($user->role) }}
                             </div>
                         </div>
                     </div>
                 </div>
+            @if($user->opd && $user->opd->name !== 'Badan Pusat Statistik Provinsi Jawa Timur')
+                <div class="card card-profile pt-0 mt-4">
+                    <div class="card-body pt-0">
+                        <div class="text-center mt-4">
+                            <h5>PIC Pembina</h5>
+                            @if($user->opd->pembina)
+                                <div class="h6 mt-4 mb-0">
+                                    <i class="ni ni-single-02 me-2"></i>{{ $user->opd->pembina->name }}
+                                </div>
+                                <div class="text-sm mt-2">
+                                    <i class="ni ni-email-83 me-2"></i>{{ $user->opd->pembina->email }}
+                                </div>
+                                <div class="text-sm mt-2">
+                                    <i class="fas fa-phone me-2"></i>{{ $user->opd->pembina->no_hp ?? '-' }}
+                                </div>
+                            @else
+                                <div class="h6 mt-4 text-muted text-sm font-weight-normal">
+                                    Belum ada PIC Pembina
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
             </div>
         </div>
     </div>
 @endsection
+
+@push('js')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#5e72e4'
+            });
+        @endif
+
+        @if (session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: '{{ session('error') }}',
+                confirmButtonColor: '#f5365c'
+            });
+        @endif
+
+        @if ($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Peringatan!',
+                text: 'Silakan periksa kembali isian Anda.',
+                confirmButtonColor: '#f5365c'
+            });
+        @endif
+    });
+</script>
+@endpush

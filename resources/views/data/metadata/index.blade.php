@@ -1,3 +1,4 @@
+<!-- admin -->
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 
 @section('content')
@@ -25,13 +26,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {{-- FIX: Gunakan variabel $item agar tidak bentrok dengan $kegiatan --}}
                                     @foreach ($metadata as $item)
                                     <tr>
                                         <td>
                                             <div class="d-flex px-2 py-1">
                                                 <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm">{{ $item->judul_kegiatan }}</h6>
+                                                    <h6 class="mb-0 text-sm text-wrap">{{ $item->judul_kegiatan }}</h6>
                                                     <p class="text-xs text-secondary mb-0">{{ $item->opd->name ?? 'Tidak Ada OPD' }}</p>
                                                 </div>
                                             </div>
@@ -52,7 +52,7 @@
                                             ];
 
                                             // Ambil data berdasarkan status, jika tidak ada, beri default
-                                            $statusKey = $item->status ?? 'unknown';
+                                            $statusKey = strtolower($item->status ?? 'unknown');
                                             $data = $cara[$statusKey] ?? [
                                                 'label' => ucfirst($statusKey), 
                                                 'class' => 'bg-gradient-secondary'

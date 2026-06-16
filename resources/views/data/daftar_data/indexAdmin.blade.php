@@ -5,6 +5,11 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 <style>
     .select2-container--bootstrap-5 .select2-selection { border-radius: 0.5rem; padding: 0.5rem; height: auto; }
+    /* Memaksa text wrap pada tabel menimpa bawaan template */
+    .table td.text-wrap {
+        white-space: normal !important;
+        word-break: break-word;
+    }
 </style>
 @endpush
 
@@ -57,15 +62,15 @@
                                 <tbody>
                                     @foreach ($daftardata as $item)
                                     <tr>
-                                        <td>
+                                        <td class="text-wrap" style="min-width: 250px;">
                                             <div class="d-flex px-2 py-1">
                                                 <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm">{{ $item->nama_data }}</h6>
+                                                    <h6 class="mb-0 text-sm text-wrap">{{ $item->nama_data }}</h6>
                                                     <p class="text-xs text-secondary mb-0">Dinas: {{ $item->opd->name ?? 'N/A' }}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="align-middle"><span class="text-xs font-weight-bold">{{ $item->satuan }}</span></td>
+                                        <td class="align-middle" style="min-width: 150px;"><span class="text-xs font-weight-bold text-wrap">{{ $item->satuan }}</span></td>
                                         <td class="align-middle text-center"><span class="text-xs">{{ ucfirst($item->periode) }}</span></td>
                                         <td class="align-middle text-center">
                                             <span class="badge badge-sm 

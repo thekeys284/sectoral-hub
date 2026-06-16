@@ -15,11 +15,13 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
         'password',
         'role',
         'opd_id',
         'profile_photo_path',
-        'no_hp'
+        'no_hp',
+        'tim',
     ];
     protected $hidden = [
         'password',
@@ -28,6 +30,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'tim' => 'array',
     ];
     public function isAdmin()
     {

@@ -8,6 +8,7 @@ use App\Models\Metadata;
 use App\Models\Opd;
 use Maatwebsite\Excel\Facades\Excel;    
 use App\Imports\MetadataImport;
+use App\Models\User;
 
 
 class MetadataController extends Controller
@@ -69,7 +70,15 @@ class MetadataController extends Controller
 
    public function table()
     {
-        $metadata = Metadata::latest()->get(); 
+        $query = Metadata::with('opd');
+        
+        // Role Produsen
+        if (auth()->user()->role == 'produsen') {
+            $query->where('opd_id', auth()->user()->opd_id);
+        }
+        
+        // Eksekusi query (Role Walidata/Admin tidak masuk IF di atas, sehingga mendapatkan semua data)
+        $metadata = $query->get(); 
         
         return view('data.metadata.list_metadata', [
             'metadata' => $metadata 

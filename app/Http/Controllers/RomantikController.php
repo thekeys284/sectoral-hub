@@ -86,7 +86,15 @@ class RomantikController extends Controller
 
     public function table()
     {
-        $romantik = Romantik::latest()->get(); 
+        $query = Romantik::with('opd');
+        
+        // Role Produsen
+        if (auth()->user()->role == 'produsen') {
+            $query->where('opd_id', auth()->user()->opd_id);
+        }
+        
+        // Eksekusi query (Role Walidata/Admin tidak masuk IF di atas, sehingga mendapatkan semua data)
+        $romantik = $query->get(); 
         
         return view('data.romantik.list_romantik', [
             'romantik' => $romantik 

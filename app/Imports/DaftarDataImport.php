@@ -33,6 +33,7 @@ class DaftarDataImport implements ToModel, WithHeadingRow
             'kode_sdsn'        => $row['kode_sdsn'] ?? null,
             'aliran_data'      => $row['aliran_data'] ?? null,
             'nama_kebutuhan_data' => $row['nama_aliran_data'] ?? null,
+            'status'           => $row['status'] ?? null,
         ]);
     }
 }
