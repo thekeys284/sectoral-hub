@@ -110,8 +110,11 @@ class DaftardataController extends Controller
     {
         $query = DaftarData::with(['opd', 'kegiatan']);
         
+        $userRoles = is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role;
+        $activeRole = session('active_role', $userRoles[0] ?? '');
+
         // Jika role produsen, hanya tampilkan data miliknya sendiri berdasarkan opd_id
-        if (auth()->user()->role == 'produsen') {
+        if ($activeRole == 'produsen') {
             $query->where('opd_id', auth()->user()->opd_id);
         }
         

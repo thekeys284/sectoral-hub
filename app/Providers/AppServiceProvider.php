@@ -14,6 +14,9 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('layouts.navbars.auth.sidenav', function ($view) {
             
+            $userRoles = auth()->check() ? (is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role) : [];
+            $activeRole = session('active_role', $userRoles[0] ?? '');
+            
             $menuItems = [
                 [
                     'header' => 'Dashboard',
@@ -65,7 +68,7 @@ class AppServiceProvider extends ServiceProvider
                         [
                             'title' => 'Metadata',
                             'icon'  => 'ni ni-book-bookmark text-dark',
-                            'route' => match(auth()->user()->role) {
+                            'route' => match($activeRole) {
                                 'admin'    => 'data.metadata.index',
                                 'pembina'  => 'metadata.table',
                                 'walidata' => 'metadata.table',
@@ -77,7 +80,7 @@ class AppServiceProvider extends ServiceProvider
                         [
                             'title' => 'Romantik',
                             'icon'  => 'ni ni-check-bold text-dark',
-                            'route' => match(auth()->user()->role) {
+                            'route' => match($activeRole) {
                                 'admin'    => 'data.romantik.index',
                                 'pembina'  => 'romantik.table',
                                 'walidata' => 'romantik.table',
@@ -101,7 +104,7 @@ class AppServiceProvider extends ServiceProvider
                         [
                             'title' => 'Daftar Data',
                             'icon'  => 'ni ni-check-bold text-dark',
-                            'route' => match(auth()->user()->role) {
+                            'route' => match($activeRole) {
                                 'admin'    => 'data.daftardata.index',
                                 'pembina'  => 'daftardata.table',
                                 'walidata' => 'daftardata.table',
@@ -128,7 +131,7 @@ class AppServiceProvider extends ServiceProvider
                             'route' => 'master.users.index',
                             'active' => request()->routeIs('master.users.*')
                         ],
-                        auth()->user()->role === 'admin' ? [
+                        $activeRole === 'admin' ? [
                             'title'  => 'Event BPS',
                             'icon'   => 'ni ni-calendar-grid-58 text-danger',
                             'route'  => 'data.event.index',
@@ -138,7 +141,8 @@ class AppServiceProvider extends ServiceProvider
                 ]
             ];
 
-            $view->with('navigationMenu', $menuItems);
+            $view->with('navigationMenu', $menuItems)
+                 ->with('activeRole', $activeRole);
         });
     }
 }

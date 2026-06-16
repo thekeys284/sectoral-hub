@@ -58,21 +58,23 @@
                         </li>
                         
                         @php
-                            $available_roles = ['admin', 'walidata', 'pembina', 'produsen', 'operator'];
+                            // Ambil daftar role milik user yang login dan role yang sedang aktif
+                            $userRoles = auth()->check() ? (is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role) : [];
+                            $activeRole = session('active_role', $userRoles[0] ?? '');
                         @endphp
 
-                        @foreach($available_roles as $role)
+                        @foreach($userRoles as $role)
                             <li class="mb-1">
                                 <form action="{{ route('role.switch') }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="target_role" value="{{ $role }}">
                                     
-                                    <button type="submit" class="dropdown-item border-radius-md d-flex align-items-center justify-content-between py-2 {{ auth()->user()->role === $role ? 'bg-gray-100 font-weight-bold text-primary' : '' }}">
+                                    <button type="submit" class="dropdown-item border-radius-md d-flex align-items-center justify-content-between py-2 {{ $activeRole === $role ? 'bg-gray-100 font-weight-bold text-primary' : '' }}">
                                         <div class="d-flex align-items-center">
-                                            <i class="ni ni-badge text-sm me-2 {{ auth()->user()->role === $role ? 'text-primary' : 'text-secondary' }}"></i>
+                                            <i class="ni ni-badge text-sm me-2 {{ $activeRole === $role ? 'text-primary' : 'text-secondary' }}"></i>
                                             <span>{{ strtoupper($role) }}</span>
                                         </div>
-                                        @if(auth()->user()->role === $role)
+                                        @if($activeRole === $role)
                                             <i class="fas fa-check text-xs text-primary"></i>
                                         @endif
                                     </button>

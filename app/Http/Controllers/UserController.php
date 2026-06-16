@@ -16,8 +16,12 @@ class UserController extends Controller
 {
     public function index(){
         $query = User::with('opd');
+
+        $userRoles = is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role;
+        $activeRole = session('active_role', $userRoles[0] ?? '');
+
         // Role Walidata
-        if (auth()->user()->role == 'walidata') {
+        if ($activeRole == 'walidata') {
             $query->whereHas('opd', function ($q) {
                 $q->where('opd_id', '!=', 1);
             });
@@ -38,13 +42,16 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => 'required|string', 
+            'role' => 'required', 
             'opd_id' => 'nullable|string|',
             'no_hp' => 'nullable|string',  
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048' 
         ]);
 
         $data = $request->all();
+
+        // Simpan multiple roles dalam bentuk JSON array
+        $data['role'] = is_array($request->role) ? json_encode($request->role) : json_encode([$request->role]);
 
         if ($request->hasFile('image')){
             $data['profile_photo_path'] = $request->file('image')->store('profile-photos', 'public');
@@ -65,13 +72,16 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $user->id,
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
-            'role' => 'required|string', 
+            'role' => 'required', 
             'opd_id' => 'nullable|string|',
             'no_hp' => 'nullable|string',  
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048' 
         ]);
 
         $data = $request->except(['password', 'image']);
+
+        // Simpan multiple roles dalam bentuk JSON array
+        $data['role'] = is_array($request->role) ? json_encode($request->role) : json_encode([$request->role]);
 
         if ($request->hasFile('image')) {
             if ($user->profile_photo_path) {

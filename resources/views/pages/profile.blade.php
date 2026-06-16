@@ -42,9 +42,9 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Role</label>
-                                        <input type="text" class="form-control" value="{{ strtoupper($user->role) }}" disabled>
-                                        <small class="text-muted">*Role hanya bisa diubah oleh Admin/Walidata</small>
+                                        <label>Role Dimiliki</label>
+                                        <input type="text" class="form-control" value="{{ strtoupper(implode(', ', $roles)) }}" disabled>
+                                        <small class="text-muted">*Role Aktif Saat Ini: <strong>{{ strtoupper($activeRole) }}</strong></small>
                                     </div>
                                 </div>
                             </div>
@@ -83,6 +83,29 @@
 
             {{-- Card Ringkasan Profil di Samping --}}
             <div class="col-md-4">
+                @if(count($roles) > 1)
+                {{-- Form Switch Role (Jika memiliki lebih dari 1 role) --}}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="mb-3">Ganti Mode Role Aktif</h6>
+                        <form action="{{ route('role.switch') }}" method="POST">
+                            @csrf
+                            <div class="d-flex align-items-center">
+                                <select name="target_role" class="form-control me-3">
+                                    @foreach($roles as $r)
+                                        <option value="{{ $r }}" {{ $activeRole === $r ? 'selected' : '' }}>
+                                            {{ strtoupper($r) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm mb-0">Switch</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                @endif
+
                 <div class="card card-profile">
                     <img src="{{ asset('img/bg-profile.jpg') }}" alt="Image placeholder" class="card-img-top">
                     <div class="row justify-content-center">
@@ -98,12 +121,12 @@
                         <div class="text-center mt-4">
                             <h5>{{ $user->name }}</h5>
                             <div class="h6 mt-4">
-                                <i class="ni ni-briefcase-24 mr-2"></i>Role: {{ ucfirst($user->role) }}
+                                <i class="ni ni-briefcase-24 mr-2"></i>Role Aktif: {{ ucfirst($activeRole) }}
                             </div>
                         </div>
                     </div>
                 </div>
-            @if($user->role === 'pembina')
+            @if($activeRole === 'pembina')
                 <div class="card card-profile pt-0 mt-4">
                     <div class="card-body pt-0">
                         <div class="text-center mt-4">
@@ -151,7 +174,7 @@
                         </ul>
                     </div>
                 </div>
-            @elseif($user->role === 'produsen' && $user->opd)
+            @elseif($activeRole === 'produsen' && $user->opd)
                 <div class="card card-profile pt-0 mt-4">
                     <div class="card-body pt-0">
                         <div class="text-center mt-4">

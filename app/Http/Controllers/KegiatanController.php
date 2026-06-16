@@ -18,11 +18,14 @@ class KegiatanController extends Controller
     public function index(){ 
         $query = Kegiatan::with(['opd', 'metadata', 'romantik'])->latest();
         $user = auth()->user();
+
+        $roles = is_string($user->role) ? json_decode($user->role, true) ?? [$user->role] : (array) $user->role;
+        $activeRole = session('active_role', $roles[0] ?? '');
         
-        if ($user->role === 'produsen') {
+        if ($activeRole === 'produsen') {
             $query->where('opd_id', $user->opd_id);
         }
-        elseif ($user->role === 'pembina') {
+        elseif ($activeRole === 'pembina') {
             $opdBinaanIds = \App\Models\Opd::where('pembina_id', $user->id)->pluck('id')->toArray();
             
             $query->whereIn('opd_id', $opdBinaanIds);

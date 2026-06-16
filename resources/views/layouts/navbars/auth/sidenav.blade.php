@@ -13,7 +13,7 @@
             {{-- LOOPING HEADER SEKSYEN MENU --}}
             @foreach($navigationMenu as $section)
                 {{-- Hanya tampilkan header jika role user saat ini diizinkan di array 'roles' --}}
-                @if(in_array(auth()->user()->role, $section['roles']))
+                @if(in_array($activeRole, $section['roles']))
                     
                     @if(!empty($section['header']))
                         <li class="nav-item mt-3">

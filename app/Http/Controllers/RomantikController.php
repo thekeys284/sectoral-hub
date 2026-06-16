@@ -88,8 +88,11 @@ class RomantikController extends Controller
     {
         $query = Romantik::with('opd');
         
+        $userRoles = is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role;
+        $activeRole = session('active_role', $userRoles[0] ?? '');
+
         // Role Produsen
-        if (auth()->user()->role == 'produsen') {
+        if ($activeRole == 'produsen') {
             $query->where('opd_id', auth()->user()->opd_id);
         }
         

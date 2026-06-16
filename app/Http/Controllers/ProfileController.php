@@ -15,7 +15,10 @@ class ProfileController extends Controller
         $user = Auth::user();
         $opdBinaan = [];
 
-        if ($user->role === 'pembina') {
+        $roles = is_string($user->role) ? json_decode($user->role, true) ?? [$user->role] : (array) $user->role;
+        $activeRole = session('active_role', $roles[0] ?? '');
+
+        if ($activeRole === 'pembina') {
             $opdBinaan = \App\Models\Opd::where('pembina_id', $user->id)->get();
             // Mengambil data PIC/Produsen dari masing-masing OPD binaan
             foreach ($opdBinaan as $opd) {
@@ -23,7 +26,7 @@ class ProfileController extends Controller
             }
         }
 
-        return view('pages.profile', compact('user', 'opdBinaan'));
+        return view('pages.profile', compact('user', 'opdBinaan', 'roles', 'activeRole'));
     }
 
     // Mengupdate informasi profil
@@ -61,12 +64,14 @@ class ProfileController extends Controller
     // Switch Role Mode (Development/Testing)
     public function switchRole(Request $request)
     {
+        $user = Auth::user();
+        $roles = is_string($user->role) ? json_decode($user->role, true) ?? [$user->role] : (array) $user->role;
+
         $request->validate([
-            'target_role' => 'required|in:admin,walidata,pembina,produsen,operator'
+            'target_role' => 'required|in:' . implode(',', $roles)
         ]);
 
-        $user = Auth::user();
-        $user->update(['role' => $request->target_role]);
+        session(['active_role' => $request->target_role]);
 
         return redirect()->back()->with('success', 'Berhasil berganti role menjadi ' . strtoupper($request->target_role));
     }
