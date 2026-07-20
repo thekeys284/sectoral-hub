@@ -98,7 +98,7 @@ class DashboardController extends Controller
             $data = $opd->metadata()->pluck('judul_kegiatan');
             $title = 'Metadata';
         } elseif ($type === 'romantik') {
-            $data = $opd->romantik()->pluck('nomor_rekomendasi');
+            $data = $opd->romantik()->pluck('judul_kegiatan');
             $title = 'Romantik';
         }
 

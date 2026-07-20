@@ -27,7 +27,7 @@
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Daftar Data</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Kegiatan</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">SDSN</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Metadata</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Metadata 2025</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Romantik</th>
                                     </tr>
                                 </thead>
@@ -128,7 +128,7 @@
     $(document).ready(function() {
         $('#rekap-table').DataTable({
             "pageLength": 10,
-            "language": {
+            "language": { 
                 "search": "Cari OPD:",
                 "paginate": { "previous": "<", "next": ">" }
             }

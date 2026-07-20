@@ -8,7 +8,7 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-                        <h6>Daftar Metadata Kegiatan Statistik</h6>
+                        <h6>Daftar Metadata Kegiatan Statistik Tahun 2025</h6>
                         <a href="{{ route('data.metadata.create') }}" class="btn btn-primary btn-sm">Tambah Metadata</a>
                         <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
                             <i class="ni ni-cloud-upload-95 me-1"></i> Import Excel
