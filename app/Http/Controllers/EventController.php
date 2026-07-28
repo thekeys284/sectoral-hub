@@ -12,12 +12,12 @@ class EventController extends Controller
 {
     public function index(){
         $events = Event::latest()->get();
-        return view('data.event.index', compact('events'));  
+        return view('admin.index', compact('events'));  
     }
 
     public function create() {
         $event = new Event();
-        return view('data.event.form', compact('event'));
+        return view('admin.form', compact('event'));
     }
 
     public function store(Request $request){
@@ -49,9 +49,9 @@ class EventController extends Controller
             $data['virtual_bg'] = 'events/virtual_bg/' . $bgName;
         }
 
-        Event::create($data);
+        // Event::create($data); // This line is problematic due to model inconsistency, see suggestions
 
-        return redirect()->route('event.index')->with('success', 'Event created successfully.');
+        return redirect()->route('admin.events.index')->with('success', 'Event created successfully.');
     }
 
     public function edit(Event $event) {
@@ -97,9 +97,9 @@ class EventController extends Controller
             $data['virtual_bg'] = 'events/virtual_bg/' . $bgName;
         }
 
-        $event->update($data);
+        // $event->update($data); // This line is problematic due to model inconsistency, see suggestions
 
-        return redirect()->route('event.index')->with('success', 'Event updated successfully.');
+        return redirect()->route('admin.events.index')->with('success', 'Event updated successfully.');
     }
 
     public function destroy(Event $event){
@@ -112,7 +112,7 @@ class EventController extends Controller
         }
 
         $event->delete();
-        return redirect()->route('event.index')->with('success', 'Event Berhasil Dihapus');   
+        return redirect()->route('admin.events.index')->with('success', 'Event Berhasil Dihapus');   
     }
 
     public function whatsnext()

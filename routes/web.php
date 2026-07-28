@@ -5,6 +5,12 @@ use App\Http\Controllers\{
     KegiatanController, MetadataController, RomantikController, 
     DaftardataController, EventController, DashboardController, PelaporanController, SdsnController
 };
+use App\Http\Controllers\Admin\{
+    AdminEventController, AdminQuestionController, AdminEvaluationController
+};
+use App\Http\Controllers\User\{
+    UserEventController, UserEvaluationController, UserExamController
+};
 use Illuminate\Support\Facades\Route;
 
 // 1. PUBLIC / DASHBOARD (Semua yang login bisa akses)
@@ -60,7 +66,7 @@ Route::middleware(['auth'])->group(function () {
             Route::resource('daftardata', DaftardataController::class)->except(['index', 'show']);
             Route::resource('metadata', MetadataController::class)->except(['index', 'show']);
             Route::resource('romantik', RomantikController::class)->except(['index', 'show']);
-            Route::resource('event', EventController::class);
+            // Route::resource('event', EventController::class);
             
             Route::post('daftardata/import', [DaftardataController::class, 'import'])->name('daftardata.import');
             Route::post('metadata/import', [MetadataController::class, 'import'])->name('metadata.import');
@@ -76,5 +82,43 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+// Manajemen pelatihan
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // CRUD Event
+    Route::resource('events', AdminEventController::class);
+    Route::resource('events.questions', AdminQuestionController::class);
+    Route::patch('events/{id}/evaluations/status', [AdminEvaluationController::class, 'updateStatus'])
+        ->name('events.evaluations.status');
+    Route::resource('events.evaluations', AdminEvaluationController::class);
 
+    // Custom Route untuk Rekap Penilaian Peserta Pelatihan
+    Route::get('events/{id}/rekap', [AdminEventController::class, 'rekap'])->name('events.rekap');
+});
+
+Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
+    
+    // 1. Menu "Pelatihan Saya" (Pelatihan yang Diikuti)
+    Route::get('/my-events', [UserEventController::class, 'index'])->name('events.index');
+    
+    // 2. Menu "Whats Next" (Katalog Event & Pendaftaran)
+    Route::get('/whatsnext', [UserEventController::class, 'whatsnext'])->name('whatsnext');
+
+    // 3. Detail Event & Pendaftaran
+    Route::get('/events/{id}', [UserEventController::class, 'show'])->name('events.show');
+    Route::post('/events/{id}/register', [UserEventController::class, 'register'])->name('events.register');
+
+    // 4. Presensi / Daftar Hadir
+    Route::post('/events/{id}/absensi', [UserEventController::class, 'absensi'])->name('events.absensi');
+
+    // 5. Ujian (Pretest & Posttest)
+    Route::get('/events/{id}/exam/{type}/confirm', [UserExamController::class, 'confirm'])->name('exams.confirm');
+    Route::post('/events/{id}/verify-posttest', [UserExamController::class, 'verifyPassword'])->name('exams.verify_password');
+    Route::get('/events/{id}/exam/{type}', [UserExamController::class, 'show'])->name('exams.show');
+    Route::post('/events/{id}/exam/{type}', [UserExamController::class, 'submit'])->name('exams.submit');
+
+    // 6. Kuesioner Evaluasi
+    Route::get('/events/{id}/evaluations', [UserEvaluationController::class, 'create'])->name('evaluations.create');
+    Route::post('/events/{id}/evaluations', [UserEvaluationController::class, 'store'])->name('evaluations.store');
+
+});
 require __DIR__.'/auth.php';

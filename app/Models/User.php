@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\EventRegistration;
 
 class User extends Authenticatable
 {
@@ -51,5 +52,20 @@ class User extends Authenticatable
     public function opdBinaan()
     {
         return $this->hasMany(Opd::class, 'pembina_id', 'id');
+    }
+
+    public function registrations()
+    {
+        return $this->hasMany(EventRegistration::class, 'user_id');
+    }
+
+    /**
+     * Relasi Many-to-Many ke Model Event yang diikuti oleh User
+     */
+    public function registeredEvents()
+    {
+        // Parameter: Model Tujuan, Nama Tabel Pivot, Foreign Key User, Foreign Key Event
+        return $this->belongsToMany(Event::class, 'event_registrations')
+                ->withTimestamps();
     }
 }

@@ -1,0 +1,152 @@
+@extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
+
+@section('content')
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <a href="{{ route('admin.events.index') }}" class="text-decoration-none text-muted small">
+            <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Event
+        </a>
+        <h3 class="fw-bold mt-2">Edit Event / Pelatihan: {{ $event->title }}</h3>
+    </div>
+
+    <form action="{{ route('admin.events.update', $event->id) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
+
+        <div class="row g-4">
+            <!-- Kolom Kiri: Informasi Utama -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Informasi Utama</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Judul Event / Pelatihan <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title', $event->title) }}" required>
+                            @error('title') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label font-weight-bold">Kategori <span class="text-danger">*</span></label>
+                                <select name="category" class="form-select @error('category') is-invalid @enderror" required>
+                                    <option value="pelatihan" {{ old('category', $event->category) == 'pelatihan' ? 'selected' : '' }}>Pelatihan</option>
+                                    <option value="pembinaan" {{ old('category', $event->category) == 'pembinaan' ? 'selected' : '' }}>Pembinaan</option>
+                                    <option value="sosialisasi" {{ old('category', $event->category) == 'sosialisasi' ? 'selected' : '' }}>Sosialisasi</option>
+                                    <option value="rapat" {{ old('category', $event->category) == 'rapat' ? 'selected' : '' }}>Rapat</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-weight-bold">Lokasi / Keterangan Tempat</label>
+                                <input type="text" name="lokasi_event" class="form-control" value="{{ old('lokasi_event', $event->lokasi_event) }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Deskripsi Pelatihan</label>
+                            <textarea name="deskripsi" class="form-control" rows="4">{{ old('deskripsi', $event->deskripsi) }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pengaturan Link & Media -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Tautan Streaming & Materi</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Link Zoom / Virtual Meeting</label>
+                                <input type="url" name="meeting_link" class="form-control" value="{{ old('meeting_link', $event->meeting_link) }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Link Materi / YouTube</label>
+                                <input type="url" name="link_materi" class="form-control" value="{{ old('link_materi', $event->link_materi) }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pratinjau & Ubah Gambar -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Banner & Virtual Background</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ganti Image Banner</label>
+                                <input type="file" name="image_banner" class="form-control mb-2" accept="image/*">
+                                @if($event->image_banner)
+                                    <small class="text-muted d-block">Banner saat ini: <a href="{{ asset('storage/' . $event->image_banner) }}" target="_blank">Lihat Gambar</a></small>
+                                @endif
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ganti Virtual Background</label>
+                                <input type="file" name="virtual_bg" class="form-control mb-2" accept="image/*">
+                                @if($event->virtual_bg)
+                                    <small class="text-muted d-block">BG saat ini: <a href="{{ asset('storage/' . $event->virtual_bg) }}" target="_blank">Lihat Gambar</a></small>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Parameter Ujian & Absensi -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Jadwal & Absensi</h5>
+
+                        <div class="mb-3">
+                            <label class="form-label">Waktu Mulai Event</label>
+                            <input type="datetime-local" name="start_at" class="form-control" value="{{ old('start_at', $event->start_at ? $event->start_at->format('Y-m-d\TH:i') : '') }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Waktu Selesai Event</label>
+                            <input type="datetime-local" name="end_at" class="form-control" value="{{ old('end_at', $event->end_at ? $event->end_at->format('Y-m-d\TH:i') : '') }}">
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="mb-3">
+                            <label class="form-label">Buka Absensi Mandiri</label>
+                            <input type="datetime-local" name="absensi_start" class="form-control" value="{{ old('absensi_start', $event->absensi_start ? $event->absensi_start->format('Y-m-d\TH:i') : '') }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Tutup Absensi Mandiri</label>
+                            <input type="datetime-local" name="absensi_end" class="form-control" value="{{ old('absensi_end', $event->absensi_end ? $event->absensi_end->format('Y-m-d\TH:i') : '') }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parameter Kelulusan Pelatihan -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 bg-light">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3 text-emerald"><i class="fas fa-graduation-cap me-1"></i> Syarat Kelulusan</h5>
+
+                        <div class="mb-3">
+                            <label class="form-label">Passing Grade (Nilai Minimal)</label>
+                            <input type="number" name="passing_grade" class="form-control" value="{{ old('passing_grade', $event->passing_grade) }}" min="0" max="100" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Password Ujian Posttest</label>
+                            <input type="text" name="posttest_password" class="form-control" value="{{ old('posttest_password', $event->posttest_password) }}" placeholder="Kosongkan jika tanpa PIN">
+                        </div>
+
+                        <div class="form-check form-switch mt-3">
+                            <input class="form-check-input" type="checkbox" name="is_active" id="isActive" value="1" {{ old('is_active', $event->is_active) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold" for="isActive">Publikasikan Event</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary text-white w-100 py-2 rounded-3 fw-bold">
+                    <i class="fas fa-sync-alt me-1"></i> Perbarui Perubahan
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+@endsection

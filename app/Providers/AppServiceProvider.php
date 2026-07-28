@@ -34,12 +34,7 @@ class AppServiceProvider extends ServiceProvider
                             'route' => 'pages.monitoring',
                             'active' => request()->routeIs('pages.monitoring*')
                         ],
-                        [
-                            'title' => 'Whats Next',
-                            'icon'  => 'ni ni-glasses-2 text-dark',
-                            'route' => 'pages.whatsnext',
-                            'active' => request()->routeIs('pages.whatsnext*')
-                        ]
+                        
                     ]
                 ],
                 [
@@ -59,6 +54,24 @@ class AppServiceProvider extends ServiceProvider
                             'url' => 'https://romantik.web.bps.go.id/',
                             'active' => false
                         ]
+                    ]
+                ],
+                [
+                    'header' => 'Pelatihan',
+                    'roles'  => ['admin', 'walidata', 'produsen', 'pembina'], 
+                    'items'  => [
+                        [
+                            'title'  => 'Pelatihan Saya',
+                            'icon'   => 'ni ni-trophy text-dark',
+                            'route'  => 'user.events.index', // Mengarah ke daftar pelatihan yang diikuti user
+                            'active' => request()->routeIs('user.events.*') || request()->routeIs('user.exams.*') || request()->routeIs('user.evaluations.*'),
+                        ],
+                        [
+                            'title'  => 'Whats Next',
+                            'icon'   => 'ni ni-glasses-2 text-dark',
+                            'route'  => 'user.whatsnext',    // Mengarah ke katalog event & pendaftaran
+                            'active' => request()->routeIs('user.whatsnext*'),
+                        ],
                     ]
                 ],
                 [
@@ -134,8 +147,8 @@ class AppServiceProvider extends ServiceProvider
                         $activeRole === 'admin' ? [
                             'title'  => 'Event BPS',
                             'icon'   => 'ni ni-calendar-grid-58 text-danger',
-                            'route'  => 'data.event.index',
-                            'active' => request()->routeIs('data.event.*')
+                            'route'  => 'admin.events.index',
+                            'active' => request()->routeIs('admin.events.*')
                         ] : null,
                     ])
                 ]
