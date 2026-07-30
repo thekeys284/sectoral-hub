@@ -28,14 +28,25 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    protected $attributes = [
+        'role' => '["operator"]', 
+    ];
+
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'tim' => 'array',
+        'role' => 'array',
     ];
-    public function isAdmin()
+    public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return is_array($this->role) && in_array('admin', $this->role);
+    }
+
+    public function hasRole(string $roleName): bool
+    {
+        return is_array($this->role) && in_array($roleName, $this->role);
     }
 
     public function getProfilePhotoUrlAttribute()
