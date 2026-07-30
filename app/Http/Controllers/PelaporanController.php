@@ -37,11 +37,11 @@ class PelaporanController extends Controller
         $activeRole = session('active_role', $roles[0] ?? '');
 
         if ($activeRole === 'produsen') {
-            $query->where('opd_id', $user->opd_id);
-        } elseif ($activeRole === 'pembina') {
-            $opdBinaanIds = \App\Models\Opd::where('pembina_id', $user->id)->pluck('id')->toArray();
-            $query->whereIn('opd_id', $opdBinaanIds);
-        }
+            $query->where('opd_id', $user->opd_id);}
+        // } elseif ($activeRole === 'pembina') {
+        //     $opdBinaanIds = \App\Models\Opd::where('pembina_id', $user->id)->pluck('id')->toArray();
+        //     $query->whereIn('opd_id', $opdBinaanIds);
+        // }
 
         $daftardata = $query->latest()
                             ->get() // Tetap gunakan paginate(10) agar rowspan aman

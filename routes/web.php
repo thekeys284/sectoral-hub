@@ -12,6 +12,12 @@ use App\Http\Controllers\User\{
     UserEventController, UserEvaluationController, UserExamController
 };
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+
+// Route untuk callback token Majapahit
+Route::get('/majapahit', [AuthenticatedSessionController::class, 'loginMajapahit'])
+    ->middleware('guest')
+    ->name('login.majapahit');
 
 // 1. PUBLIC / DASHBOARD (Semua yang login bisa akses)
 Route::get('/', function (){

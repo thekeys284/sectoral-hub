@@ -13,6 +13,21 @@
                                     <p class="mb-0">Enter your email and password to sign in</p>
                                 </div>
                                 <div class="card-body">
+                                    <!-- <div class="mb-3">
+                                        <a href="https://majapah.it/dashboard?callback_uri={{ urlencode(route('login.majapahit')) }}" 
+                                        class="btn btn-lg w-100 mb-0 text-white d-flex align-items-center justify-content-center gap-2"
+                                        style="background: linear-gradient(90deg, #4a3b8f 0%, #2871d8 100%); border-radius: 8px;">
+                                            <img src="{{ asset('assets/logo-majapahit.png') }}" alt="Majapahit Logo" style="width: 24px; height: 24px; background: white; border-radius: 50%; padding: 2px;">
+                                            <span>Login with <strong>Majapahit</strong></span>
+                                        </a>
+                                    </div> -->
+
+                                    <!-- <div class="position-relative my-4 text-center">
+                                        <hr class="bg-secondary">
+                                        <span class="position-absolute top-50 start-50 translate-middle px-3 bg-white text-secondary text-xs font-weight-bold">Atau</span>
+                                    </div> -->
+
+                                <div class="card-body">
                                     <form role="form" method="POST" action="{{ route('login.perform') }}">
                                         @csrf
                                         @method('post')
@@ -31,6 +46,7 @@
                                             <button type="submit" class="btn btn-lg btn-primary btn-lg w-100 mt-4 mb-0">Sign in</button>
                                         </div>
                                     </form>
+                                </div>
                                 </div>
                                 <div class="card-footer text-center pt-0 px-lg-2 px-1">
                                     <p class="mb-1 text-sm mx-auto">
