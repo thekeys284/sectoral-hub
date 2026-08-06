@@ -13,9 +13,34 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('layouts.navbars.auth.sidenav', function ($view) {
-            
-            $userRoles = auth()->check() ? (is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role) : [];
-            $activeRole = session('active_role', $userRoles[0] ?? '');
+            $userRoles = [];
+            $activeRole = '';
+
+            if (auth()->check()) {
+                $rawRole = auth()->user()->role;
+                $userRoles = [];
+
+                if (!empty($rawRole)) { // Hanya proses jika peran tidak null atau string kosong
+                    if (is_string($rawRole)) {
+                        $decodedRoles = json_decode($rawRole, true);
+                        if (is_array($decodedRoles)) {
+                            // Format: '["admin","walidata"]'
+                            $userRoles = $decodedRoles;
+                        } elseif ($decodedRoles !== null) {
+                            // Format: '"pembina"' -> berhasil di-decode tapi hasilnya scalar (bukan array)
+                            $userRoles = [$decodedRoles];
+                        } else {
+                            // Format: 'pembina' (string biasa, json_decode gagal / bukan JSON)
+                            $userRoles = [$rawRole];
+                        }
+                    } elseif (is_array($rawRole)) {
+                        $userRoles = $rawRole;
+                    }
+                }
+
+                $sessionActiveRole = session('active_role');
+                $activeRole = (empty($sessionActiveRole) || !in_array($sessionActiveRole, $userRoles)) ? ($userRoles[0] ?? '') : $sessionActiveRole;
+            }
             
             $menuItems = [
                 [
@@ -68,7 +93,7 @@ class AppServiceProvider extends ServiceProvider
                         ],
                         [
                             'title'  => 'Whats Next',
-                            'icon'   => 'ni ni-glasses-2 text-dark',
+                            'icon'   => 'ni ni-button-play text-dark',
                             'route'  => 'user.whatsnext',    // Mengarah ke katalog event & pendaftaran
                             'active' => request()->routeIs('user.whatsnext*'),
                         ],

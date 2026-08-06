@@ -30,7 +30,7 @@
                 {{ session('error') }}
             </div>
         @endif
-        @if(auth()->user()->role == 'admin')
+        @if(session('active_role') == 'admin')
             <div class="d-flex justify-content-end mb-3">
                 <a href="{{ route('admin.events.create') }}" class="btn btn-success btn-sm">Buat Event Baru</a>
             </div>
@@ -43,8 +43,7 @@
                             <h6 class="mb-0">Manajemen Event & Pelatihan</h6>
                             <p class="text-muted text-xs mb-0">Kelola kegiatan pembinaan, sosialisasi, dan pelatihan internal.</p>
                         </div>
-                        {{-- HANYA ADMIN yang bisa tambah event --}}
-                        @if(auth()->user()->role == 'admin')
+                        @if(session('active_role') == 'admin')
                             <a type="button" class="btn btn-primary btn-sm" href="{{ route('admin.events.create') }}">
                                 <i class="fas fa-plus me-2"></i> Tambah Event
                             </a>
@@ -94,7 +93,7 @@
                                         </td>
                                         <td class="align-middle text-center">
                                             <div class="d-flex justify-content-center">
-                                                @if(auth()->user()->role == 'admin')
+                                                @if(session('active_role') == 'admin')
                                                     <a href="{{ route('admin.events.rekap', $event->id) }}" class="btn btn-outline-success btn-sm me-2 mb-0" title="Rekap Nilai">
                                                         <i class="fas fa-chart-line"></i>
                                                     </a>
@@ -132,7 +131,6 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Mencegah re-inisialisasi DataTables
         if ($.fn.DataTable.isDataTable('#event-table')) {
             $('#event-table').DataTable().destroy();
         }

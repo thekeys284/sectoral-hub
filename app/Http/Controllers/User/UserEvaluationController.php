@@ -31,6 +31,13 @@ class UserEvaluationController extends Controller
             return redirect()->route('user.events.show', $event->id)
                 ->with('info', 'Anda sudah mengisi evaluasi untuk event ini.');
         }
+        
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
+        // Evaluasi hanya bisa diisi setelah event berakhir
+        if ($event->end_at && $now->lt($event->end_at)) {
+            return redirect()->route('user.events.show', $event->id)
+                ->with('error', 'Evaluasi akan dibuka setelah event berakhir.');
+        }
 
         // 3. Ambil pertanyaan evaluasi yang aktif untuk event ini (termasuk master/khusus)
         $evaluations = EventEvaluation::where(function ($query) use ($eventId) {
@@ -58,6 +65,13 @@ class UserEvaluationController extends Controller
         if ($hasFilled) {
             return redirect()->route('user.events.show', $event->id)
                 ->with('info', 'Anda sudah mengisi evaluasi untuk event ini.');
+        }
+        
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
+        // Evaluasi hanya bisa disubmit setelah event berakhir
+        if ($event->end_at && $now->lt($event->end_at)) {
+            return redirect()->route('user.events.show', $event->id)
+                ->with('error', 'Evaluasi hanya dapat diisi setelah event berakhir.');
         }
 
         $answers = $request->input('answers', []); // Format: ['evaluation_id' => 'nilai_atau_teks']

@@ -22,43 +22,38 @@ class AdminEventController extends Controller
         return view('admin.create');
     }
 
-    // public function store(Request $request){
-    //     $data = $request->validate([
-    //         'title'             => 'required|string|max:255',
-    //         'category'          => 'required|in:pembinaan,sosialisasi,pelatihan,rapat',
-    //         'start_at'          => 'nullable|date',
-    //         'end_at'            => 'nullable|date|after_or_equal:start_at',
-    //         'lokasi_event'      => 'nullable|string',
-    //         'deskripsi'         => 'nullable|string',
-    //         'meeting_link'      => 'nullable|url',
-    //         'link_materi'       => 'nullable|url',
-    //         'absensi_start'     => 'nullable|date',
-    //         'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
-    //         'passing_grade'     => 'required|integer|min:0|max:100',
-    //         'posttest_password' => 'nullable|string|max:50',
-    //         'image_banner'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-    //         'virtual_bg'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-    //     ]);
-    //     $data['created_by'] = auth()->id();
-    //     $data['is_active'] = $request->has('is_active');
-
-    //     // Upload Banner 
-    //     if ($request->hasFile('image_banner')) {
-    //         $data['image_banner'] = $request->file('image_banner')->store('events/banners', 'public');
-    //     }
-
-    //     // Upload Virtual Background
-    //     if ($request->hasFile('virtual_bg')) {
-    //         $data['virtual_bg'] = $request->file('virtual_bg')->store('events/vbg', 'public');
-    //     }
-
-    //     Event::create($data);
-
-    //     return redirect()->route('admin.events.index')
-    //         ->with('success', 'Event/Pelatihan berhasil dibuat!');
-    // }
     public function store(Request $request)
     {
+        $validatedData = $request->validate([
+            'title'             => 'required|string|max:255',
+            'category'          => 'required|in:pembinaan,sosialisasi,pelatihan,rapat',
+            'start_at'          => 'nullable|date',
+            'end_at'            => 'nullable|date|after_or_equal:start_at',
+            'lokasi_event'      => 'nullable|string',
+            'deskripsi'         => 'nullable|string',
+            'meeting_link'      => 'nullable|url',
+            'link_materi'       => 'nullable|url',
+            'absensi_start'     => 'nullable|date',
+            'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
+            'passing_grade'     => 'required|integer|min:0|max:100',
+            'posttest_password' => 'nullable|string|max:50',
+            'image_banner'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'virtual_bg'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+
+        $validatedData['created_by'] = auth()->id();
+        $validatedData['is_active'] = $request->has('is_active');
+
+        // Upload Banner
+        if ($request->hasFile('image_banner')) {
+            $validatedData['image_banner'] = $request->file('image_banner')->store('events/banners', 'public');
+        }
+
+        // Upload Virtual Background
+        if ($request->hasFile('virtual_bg')) {
+            $validatedData['virtual_bg'] = $request->file('virtual_bg')->store('events/vbg', 'public');
+        }
+
         // 1. Simpan Event Baru
         $event = Event::create($validatedData);
 

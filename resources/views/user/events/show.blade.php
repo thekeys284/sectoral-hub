@@ -1,6 +1,7 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 
 @section('content')
+    @include('layouts.navbars.auth.topnav', ['title' => 'Rekap Penilaian Peserta'])
 <div class="container-fluid py-4">
     <!-- Back Button -->
     <a href="{{ route('user.events.index') }}" class="text-decoration-none text-muted small d-inline-block mb-3">
@@ -53,17 +54,23 @@
                     </div>
 
                     <!-- Tombol Daftar / Status Terdaftar -->
-                    @if(!$isRegistered)
-                        <form action="{{ route('user.events.register', $event->id) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="btn btn-emerald text-white w-100 rounded-3 fw-bold py-2">
-                                <i class="fas fa-user-plus me-1"></i> Daftar Pelatihan Ini
-                            </button>
-                        </form>
-                    @else
+                    @php
+                        $registrationClosed = $event->start_at && $now->gt($event->start_at);
+                    @endphp
+
+                    @if($isRegistered)
                         <div class="alert alert-success border-0 bg-success-subtle text-success text-center rounded-3 mb-0 fw-bold small">
                             <i class="fas fa-check-circle me-1"></i> Anda Sudah Terdaftar
                         </div>
+                    @elseif($registrationClosed)
+                        <button type="button" class="btn btn-secondary w-100 rounded-3 fw-bold py-2" disabled>
+                            <i class="fas fa-times-circle me-1"></i> Pendaftaran Telah Ditutup
+                        </button>
+                    @else {{-- Not registered and registration is still open --}}
+                        <form action="{{ route('user.events.register', $event->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-emerald text-white w-100 rounded-3 fw-bold py-2"><i class="fas fa-user-plus me-1"></i> Daftar Pelatihan Ini</button>
+                        </form>
                     @endif
                 </div>
             </div>
@@ -178,6 +185,10 @@
                         <!-- Timeline Progress Step -->
                         <div class="list-group list-group-flush gap-3">
                             
+                            @php
+                                $eventEnded = $event->end_at && $now->gt($event->end_at);
+                            @endphp
+
                             <!-- STEP 1: PRETEST -->
                             <div class="list-group-item border rounded-3 p-3">
                                 <div class="d-flex justify-content-between align-items-center">
@@ -194,9 +205,13 @@
                                             </span>
                                             <small class="text-muted fw-bold">Nilai: {{ $registration->score_pretest }}</small>
                                         </div>
-                                    @else
+                                    @elseif(!$eventEnded)
                                         <a href="{{ route('user.exams.show', [$event->id, 'pretest']) }}" class="btn btn-sm btn-outline-emerald rounded-3 fw-bold">
                                             Mulai Pretest <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    @else {{-- Event has ended and pretest not taken --}}
+                                        <button class="btn btn-sm btn-danger rounded-3 fw-bold" disabled>
+                                            Pretest Berakhir 
                                         </a>
                                     @endif
                                 </div>
@@ -224,15 +239,19 @@
                                             @endif
                                             <small class="text-muted fw-bold">Nilai: {{ $registration->score_posttest }}</small>
                                         </div>
-                                    @else
+                                    @elseif(!$eventEnded)
                                         <button class="btn btn-sm btn-emerald text-white rounded-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#collapsePosttest">
                                             Kerjakan Posttest
+                                        </button>
+                                    @else {{-- Event has ended and posttest not taken --}}
+                                        <button class="btn btn-sm btn-danger rounded-3 fw-bold" disabled>
+                                            Posttest Berakhir
                                         </button>
                                     @endif
                                 </div>
 
                                 <!-- Form Input Password Posttest Collapse (Hanya jika belum tes) -->
-                                @if($registration->score_posttest === null)
+                                @if($registration->score_posttest === null && !$eventEnded)
                                     <div class="collapse mt-3 border-top pt-3" id="collapsePosttest">
                                         <form action="{{ route('user.exams.verify_password', $event->id) }}" method="POST">
                                             @csrf
@@ -259,8 +278,12 @@
                                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
                                             <i class="fas fa-check-circle me-1"></i> Sudah Diisi
                                         </span>
-                                    @else
+                                    @elseif($eventEnded) {{-- Event has ended and evaluation not filled --}}
                                         <a href="{{ route('user.evaluations.create', $event->id) }}" class="btn btn-sm btn-outline-info rounded-3 fw-bold">
+                                            Isi Evaluasi <i class="fas fa-edit ms-1"></i>
+                                        </a>
+                                    @else {{-- Event has not ended and evaluation not filled --}}
+                                        <button class="btn btn-sm btn-secondary rounded-3 fw-bold" disabled>
                                             Isi Evaluasi <i class="fas fa-edit ms-1"></i>
                                         </a>
                                     @endif

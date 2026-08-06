@@ -11,7 +11,7 @@
                         <h6>Informasi Profil</h6>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('profile.update') }}" method="POST">
+                        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
                             @csrf @method('PATCH')
                             <div class="row">
                                 <div class="col-md-6">
@@ -42,9 +42,35 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
+                                        <label>Dinas</label>
+                                        <input type="text" class="form-control" value="{{ $user->opd->name ?? 'Tidak Terdaftar di OPD' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>NIP</label>
+                                        <input type="text" name="nip" class="form-control" value="{{ old('nip', $user->nip) }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
                                         <label>Role Dimiliki</label>
                                         <input type="text" class="form-control" value="{{ strtoupper(implode(', ', $roles)) }}" disabled>
                                         <small class="text-muted">*Role Aktif Saat Ini: <strong>{{ strtoupper($activeRole) }}</strong></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Foto Profil</label>
+                                        <input type="file" name="image" id="profileImageInput" class="form-control" accept="image/*">
+                                        @error('image') <small class="text-danger">{{ $message }}</small> @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Pratinjau Foto</label>
+                                        <img id="profileImagePreview" src="{{ ($user->profile_photo_path && file_exists(public_path('storage/' . $user->profile_photo_path))) ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random' }}"
+                                            alt="Pratinjau Foto Profil" class="img-thumbnail" style="max-height: 150px; object-fit: cover;">
                                     </div>
                                 </div>
                             </div>
@@ -110,8 +136,10 @@
                     <div class="row justify-content-center">
                         <div class="col-4 col-lg-4 order-lg-2">
                             <div class="mt-n4 mt-lg-n6 mb-4 mb-lg-0">
-                                <a href="javascript:;">
-                                    <img src="{{ asset('img/team-1.jpg') }}" class="rounded-circle img-fluid border border-2 border-white">
+                                <a href="javascript:;" id="profileImageLink">
+                                    <img id="profileImageDisplay" src="{{ ($user->profile_photo_path && file_exists(public_path('storage/' . $user->profile_photo_path))) ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random' }}"
+                                        class="rounded-circle img-fluid border border-2 border-white"
+                                        style="object-fit: cover; width: 100px; height: 100px;">
                                 </a>
                             </div>
                         </div>
@@ -249,6 +277,22 @@
                 confirmButtonColor: '#f5365c'
             });
         @endif
+    });
+
+    // JavaScript untuk pratinjau gambar profil
+    document.getElementById('profileImageInput').addEventListener('change', function(event) {
+        const [file] = event.target.files;
+        const preview = document.getElementById('profileImagePreview');
+        const display = document.getElementById('profileImageDisplay');
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                display.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
     });
 </script>
 @endpush

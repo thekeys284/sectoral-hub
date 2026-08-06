@@ -42,19 +42,23 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'nip' => 'nullable|string|max:255|unique:users,nip', // NIP opsional dan unik
             'role' => 'required', 
-            'opd_id' => 'nullable|string|',
+            'opd_id' => 'nullable|exists:opd,id', // Perbaiki validasi opd_id
             'no_hp' => 'nullable|string',  
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048' 
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $data = $request->all();
 
         // Simpan multiple roles dalam bentuk JSON array
         $data['role'] = is_array($request->role) ? json_encode($request->role) : json_encode([$request->role]);
+        unset($data['referral_code']); // Pastikan referral_code tidak disimpan
 
         if ($request->hasFile('image')){
             $data['profile_photo_path'] = $request->file('image')->store('profile-photos', 'public');
+        } else {
+            unset($data['image']); // Pastikan 'image' tidak masuk ke create jika tidak ada file
         }
 
         User::create($data);
@@ -71,17 +75,19 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $user->id,
-            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'password' => ['nullable', 'confirmed', Rules\Password::defaults()], // Password opsional saat update
+            'nip' => 'nullable|string|max:255|unique:users,nip,' . $user->id, // NIP opsional dan unik
             'role' => 'required', 
-            'opd_id' => 'nullable|string|',
+            'opd_id' => 'nullable|exists:opd,id', // Perbaiki validasi opd_id
             'no_hp' => 'nullable|string',  
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048' 
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $data = $request->except(['password', 'image']);
 
         // Simpan multiple roles dalam bentuk JSON array
         $data['role'] = is_array($request->role) ? json_encode($request->role) : json_encode([$request->role]);
+        unset($data['referral_code']); // Pastikan referral_code tidak disimpan
 
         if ($request->hasFile('image')) {
             if ($user->profile_photo_path) {
@@ -89,6 +95,8 @@ class UserController extends Controller
             }
 
             $data['profile_photo_path'] = $request->file('image')->store('profile-photos', 'public');
+        } else {
+            unset($data['image']); // Pastikan 'image' tidak masuk ke update jika tidak ada file
         }
 
         if ($request->filled('password')) {

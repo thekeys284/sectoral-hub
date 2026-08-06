@@ -3,10 +3,10 @@
 @section('content')
 <div class="container-fluid py-4">
     <div class="mb-4">
-        <a href="{{ route('admin.events.index') }}" class="text-decoration-none text-muted small">
+        <a href="{{ route('admin.events.index') }}" class="text-decoration-none text-secondary text-sm">
             <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Event
         </a>
-        <h3 class="fw-bold mt-2">Edit Event / Pelatihan: {{ $event->title }}</h3>
+        <h3 class="font-weight-bold mt-2">Edit Event / Pelatihan: {{ $event->title }}</h3>
     </div>
 
     <form action="{{ route('admin.events.update', $event->id) }}" method="POST" enctype="multipart/form-data">
@@ -14,11 +14,10 @@
         @method('PUT')
 
         <div class="row g-4">
-            <!-- Kolom Kiri: Informasi Utama -->
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card shadow-sm mb-4">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Informasi Utama</h5>
+                        <h5 class="font-weight-bold mb-3">Informasi Utama</h5>
                         
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Judul Event / Pelatihan <span class="text-danger">*</span></label>
@@ -49,10 +48,9 @@
                     </div>
                 </div>
 
-                <!-- Pengaturan Link & Media -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card shadow-sm mb-4">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Tautan Streaming & Materi</h5>
+                        <h5 class="font-weight-bold mb-3">Tautan Streaming & Materi</h5>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Link Zoom / Virtual Meeting</label>
@@ -66,10 +64,9 @@
                     </div>
                 </div>
 
-                <!-- Pratinjau & Ubah Gambar -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card shadow-sm mb-4">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Banner & Virtual Background</h5>
+                        <h5 class="font-weight-bold mb-3">Banner & Virtual Background</h5>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Ganti Image Banner</label>
@@ -90,11 +87,10 @@
                 </div>
             </div>
 
-            <!-- Kolom Kanan: Parameter Ujian & Absensi -->
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card shadow-sm mb-4">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Jadwal & Absensi</h5>
+                        <h5 class="font-weight-bold mb-3">Jadwal & Absensi</h5>
 
                         <div class="mb-3">
                             <label class="form-label">Waktu Mulai Event</label>
@@ -120,10 +116,9 @@
                     </div>
                 </div>
 
-                <!-- Parameter Kelulusan Pelatihan -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4 bg-light">
+                <div class="card shadow-sm mb-4 bg-light">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3 text-emerald"><i class="fas fa-graduation-cap me-1"></i> Syarat Kelulusan</h5>
+                        <h5 class="font-weight-bold mb-3 text-success"><i class="fas fa-graduation-cap me-1"></i> Syarat Kelulusan</h5>
 
                         <div class="mb-3">
                             <label class="form-label">Passing Grade (Nilai Minimal)</label>
@@ -137,12 +132,12 @@
 
                         <div class="form-check form-switch mt-3">
                             <input class="form-check-input" type="checkbox" name="is_active" id="isActive" value="1" {{ old('is_active', $event->is_active) ? 'checked' : '' }}>
-                            <label class="form-check-label fw-bold" for="isActive">Publikasikan Event</label>
+                            <label class="form-check-label font-weight-bold" for="isActive">Publikasikan Event</label>
                         </div>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary text-white w-100 py-2 rounded-3 fw-bold">
+                <button type="submit" class="btn btn-sm bg-gradient-primary w-100 py-2 font-weight-bold">
                     <i class="fas fa-sync-alt me-1"></i> Perbarui Perubahan
                 </button>
             </div>

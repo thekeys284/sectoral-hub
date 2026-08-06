@@ -22,6 +22,13 @@ class UserExamController extends Controller
         }
 
         $event = Event::findOrFail($eventId);
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
+
+        // Cek apakah waktu event sudah berakhir untuk ujian
+        if ($event->end_at && $now->gt($event->end_at)) {
+            return redirect()->route('user.events.show', $event->id)
+                ->with('error', "Waktu pengerjaan {$type} telah berakhir.");
+        }
 
         // Jika Posttest dan memiliki password, pastikan password sudah diverifikasi
         if ($type === 'posttest' && $event->posttest_password) {
@@ -115,6 +122,13 @@ class UserExamController extends Controller
         $event = Event::findOrFail($eventId);
         $questions = EventQuestion::where('event_id', $event->id)->where('type', $type)->get();
 
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
+
+        // Cek apakah waktu event sudah berakhir untuk submit ujian
+        if ($event->end_at && $now->gt($event->end_at)) {
+            return redirect()->route('user.events.show', $event->id)
+                ->with('error', "Waktu pengiriman jawaban {$type} telah berakhir.");
+        }
         // 1. Ambil pendaftaran peserta
         $registration = EventRegistration::where('event_id', $event->id)
             ->where('user_id', Auth::id())

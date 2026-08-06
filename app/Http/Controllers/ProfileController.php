@@ -12,7 +12,7 @@ class ProfileController extends Controller
     // Menampilkan halaman profil
     public function edit()
     {
-        $user = Auth::user();
+        $user = Auth::user()->load('opd'); // Eager load relasi OPD
         $opdBinaan = [];
 
         $roles = is_string($user->role) ? json_decode($user->role, true) ?? [$user->role] : (array) $user->role;
@@ -20,7 +20,6 @@ class ProfileController extends Controller
 
         if ($activeRole === 'pembina') {
             $opdBinaan = \App\Models\Opd::where('pembina_id', $user->id)->get();
-            // Mengambil data PIC/Produsen dari masing-masing OPD binaan
             foreach ($opdBinaan as $opd) {
                 $opd->pic = \App\Models\User::where('opd_id', $opd->id)->where('role', 'produsen')->get();
             }
@@ -33,19 +32,36 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
-
-        $request->validate([
+        
+        $validatedData = $request->validate([
             'name'  => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'username' => ['nullable', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
             'no_hp' => ['nullable', 'string', 'max:20'],
+            // 'dinas' tidak divalidasi karena akan diambil dari relasi OPD dan tidak diedit langsung
+            'nip'   => ['nullable', 'string', 'max:255', Rule::unique('users')->ignore($user->id)], // NIP sudah ada dan divalidasi
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'], // Tambahkan validasi untuk gambar
         ]);
 
-        $user->update($request->all());
+        $dataToUpdate = $validatedData;
+
+        // Handle file upload untuk foto profil
+        if ($request->hasFile('image')) {
+            // Hapus foto profil lama jika ada
+            if ($user->profile_photo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_photo_path);
+            }
+            // Simpan foto profil baru
+            $dataToUpdate['profile_photo_path'] = $request->file('image')->store('profile-photos', 'public');
+        } else {
+            // Pastikan 'image' tidak masuk ke update jika tidak ada file baru
+            unset($dataToUpdate['image']);
+        }
+
+        $user->update($dataToUpdate); // Update user dengan data yang sudah divalidasi dan path foto profil
 
         return redirect()->route('profile')->with('success', 'Profil berhasil diperbarui.');
     }
-
     // Mengupdate Password
     public function updatePassword(Request $request)
     {

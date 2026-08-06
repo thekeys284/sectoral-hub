@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Opd; // Import model Opd
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +21,9 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        $opds = Opd::all(); // Ambil semua data OPD
+
+        return view('auth.register', compact('opds'));
     }
 
     /**
@@ -30,16 +33,37 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+            'referral_code' => ['nullable', 'string', 'max:255'],
+            'nip' => ['nullable', 'string', 'max:255', 'unique:users,nip'],
+        ];
+
+        $isSpecialReferral = ($request->referral_code === 'PSSEPSS35');
+
+        if ($isSpecialReferral) {
+            $rules['opd_id'] = ['required', 'exists:opd,id'];
+        } else {
+            // Ensure opd_id is nullable if no special referral code is used
+            // This explicitly allows opd_id to be null if not provided, and validates if it is.
+            $rules['opd_id'] = ['nullable', 'exists:opd,id'];
+        }
+
+        $request->validate($rules);
+
+        // Determine role and opd_id based on referral code
+        $role = $isSpecialReferral ? 'produsen' : 'operator';
+        $opdId = $isSpecialReferral ? $request->opd_id : null;
 
         $user = User::create([
             'name' => $request->name,
+            'nip' => $request->nip,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => json_encode([$role]), // Store role as a JSON array
+            'opd_id' => $opdId,
         ]);
 
         event(new Registered($user));

@@ -23,6 +23,8 @@ class User extends Authenticatable
         'profile_photo_path',
         'no_hp',
         'tim',
+        'nip', // Tambahkan baris ini
+        'referral_code', // Tambahkan baris ini
     ];
     protected $hidden = [
         'password',

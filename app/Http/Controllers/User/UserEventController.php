@@ -42,24 +42,49 @@ class UserEventController extends Controller
             $hasFilledEvaluation = \App\Models\EventEvaluationAnswer::where('registration_id', $registration->id)->exists();
         }
 
-        return view('user.events.show', compact('event', 'registration', 'isRegistered', 'hasFilledEvaluation'));
+        $now = \Carbon\Carbon::now('Asia/Jakarta'); // Dapatkan waktu saat ini dengan timezone yang benar
+
+        return view('user.events.show', compact('event', 'registration', 'isRegistered', 'hasFilledEvaluation', 'now'));
     }
 
     /**
      * Mendaftar ke event
      */
-    // di model User.php
-    public function registeredEvents()
+    public function register(Request $request, $eventId)
     {
-        return $this->belongsToMany(Event::class, 'event_registrations', 'user_id', 'event_id')
-                    ->withTimestamps();
-    }
+        $event = Event::findOrFail($eventId);
 
-    public function registrations()
-    {
-        return $this->hasMany(EventRegistration::class);
-    }
+        // Cek apakah user sudah terdaftar di event ini
+        $existingRegistration = EventRegistration::where('user_id', Auth::id())
+                                                ->where('event_id', $event->id)
+                                                ->first();
 
+        if ($existingRegistration) {
+            return back()->with('error', 'Anda sudah terdaftar di event ini.');
+        }
+
+        // Cek apakah pendaftaran masih dibuka.
+        // Patokan: pendaftaran ditutup setelah waktu SELESAI pelatihan (end_at) terlewati.
+        // (disamakan dengan logika status TERBUKA/SUDAH DITUTUP di view user.events.whatsnext,
+        // supaya tidak ada kondisi tombol "Daftar" masih tampil tapi ditolak backend)
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
+        if ($event->end_at && $now->greaterThanOrEqualTo($event->end_at)) {
+            return back()->with('error', 'Pendaftaran untuk event ini telah ditutup.');
+        }
+
+        // Buat pendaftaran baru
+        EventRegistration::create([
+            'user_id' => Auth::id(),
+            'event_id' => $event->id,
+            'status_kehadiran' => false, // Default status kehadiran
+            'score_pretest' => null,     // Default score pretest
+            'score_posttest' => null,    // Default score posttest
+        ]);
+
+        return back()->with('success', 'Anda berhasil mendaftar ke event ' . $event->title . '!');
+    }
+    // Relationship methods like `registeredEvents()` and `registrations()` should be defined in the `User` model, not in the controller.
+    // They have been removed from here to avoid confusion and incorrect usage.
     public function whatsnext()
     {
         $nextEvents = Event::where('is_active', true)

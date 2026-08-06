@@ -30,6 +30,7 @@
                             @forelse($nextEvents as $index => $event)
                             @php
                                 $isRegistered = isset($registeredEventIds) ? in_array($event->id, $registeredEventIds) : false;
+                                $isClosed = $event->end_at ? \Carbon\Carbon::parse($event->end_at)->isPast() : false;
                             @endphp
                             <div class="carousel-item h-100 {{ $index == 0 ? 'active' : '' }}" 
                                     style="background-image: url('{{ $event->image_banner ? asset('storage/' . $event->image_banner) : asset('img/carousel-1.jpg') }}'); background-size: cover; background-position: center;">                                
@@ -52,6 +53,10 @@
                                         @if($isRegistered)
                                             <span class="badge bg-success border border-white px-3 py-2 rounded-3 ms-2">
                                                 <i class="fas fa-check-circle me-1"></i> Sudah Terdaftar
+                                            </span>
+                                        @elseif($isClosed)
+                                            <span class="badge bg-secondary border border-white px-3 py-2 rounded-3 ms-2">
+                                                <i class="fas fa-lock me-1"></i> Pendaftaran Sudah Ditutup
                                             </span>
                                         @else
                                             <form action="{{ route('user.events.register', $event->id) }}" method="POST" class="d-inline">
@@ -100,6 +105,7 @@
             @forelse($nextEvents as $event)
                 @php
                     $isRegistered = isset($registeredEventIds) ? in_array($event->id, $registeredEventIds) : false;
+                    $isClosed = $event->end_at ? \Carbon\Carbon::parse($event->end_at)->isPast() : false;
                 @endphp
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden card-hover">
@@ -116,12 +122,18 @@
                                 <span class="badge bg-soft-info text-info text-capitalize px-3 py-1 rounded-pill">
                                     {{ $event->category }}
                                 </span>
+
+                                {{-- STATUS PENDAFTARAN: Terdaftar / Sudah Ditutup / Terbuka --}}
                                 @if($isRegistered)
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 text-uppercase">
                                         <i class="fas fa-check me-1"></i>Terdaftar
                                     </span>
+                                @elseif($isClosed)
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 text-uppercase">
+                                        <i class="fas fa-lock me-1"></i>Sudah Ditutup
+                                    </span>
                                 @else
-                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 text-uppercase">
                                         Terbuka
                                     </span>
                                 @endif
@@ -147,17 +159,21 @@
                                         Detail
                                     </a>
 
-                                    @if(!$isRegistered)
+                                    @if($isRegistered)
+                                        <a href="{{ route('user.events.index') }}" class="btn btn-success btn-sm rounded-3 flex-fill fw-bold mb-0">
+                                            <i class="fas fa-play me-1"></i> Masuk
+                                        </a>
+                                    @elseif($isClosed)
+                                        <button type="button" class="btn btn-secondary btn-sm rounded-3 flex-fill fw-bold mb-0" disabled>
+                                            <i class="fas fa-lock me-1"></i> Pendaftaran Sudah Ditutup
+                                        </button>
+                                    @else
                                         <form action="{{ route('user.events.register', $event->id) }}" method="POST" class="flex-fill">
                                             @csrf
                                             <button type="submit" class="btn btn-emerald text-white btn-sm w-100 rounded-3 fw-bold mb-0" onclick="return confirm('Apakah Anda yakin ingin mendaftar ke kegiatan ini?')">
                                                 <i class="fas fa-user-plus me-1"></i> Daftar
                                             </button>
                                         </form>
-                                    @else
-                                        <a href="{{ route('user.events.index') }}" class="btn btn-success btn-sm rounded-3 flex-fill fw-bold mb-0">
-                                            <i class="fas fa-play me-1"></i> Masuk
-                                        </a>
                                     @endif
                                 </div>
                             </div>
