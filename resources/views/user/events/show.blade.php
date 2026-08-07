@@ -282,10 +282,10 @@
                                         <a href="{{ route('user.evaluations.create', $event->id) }}" class="btn btn-sm btn-outline-info rounded-3 fw-bold">
                                             Isi Evaluasi <i class="fas fa-edit ms-1"></i>
                                         </a>
-                                    @else {{-- Event has not ended and evaluation not filled --}}
-                                        <button class="btn btn-sm btn-secondary rounded-3 fw-bold" disabled>
-                                            Isi Evaluasi <i class="fas fa-edit ms-1"></i>
-                                        </a>
+                                    <!-- @else {{-- Event has not ended and evaluation not filled --}}
+                                        <button class="btn btn-sm btn-secondary rounded-3 fw-bold" >
+                                            Isi Evaluasi <i class="fas fa-edit ms-1"></i> -->
+                                        <!-- </a> -->
                                     @endif
                                 </div>
                             </div>
