@@ -274,22 +274,27 @@
                                         <small class="text-muted">Masukan Anda sangat berharga untuk peningkatan mutu pelatihan.</small>
                                     </div>
 
+                                    @php
+                                        $hasCompletedPosttest = $registration && $registration->score_posttest !== null;
+                                    @endphp
+
                                     @if($hasFilledEvaluation)
                                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
                                             <i class="fas fa-check-circle me-1"></i> Sudah Diisi
                                         </span>
-                                    @elseif($eventEnded) {{-- Event has ended and evaluation not filled --}}
+                                    @elseif($hasCompletedPosttest)
+                                        {{-- Posttest sudah dikerjakan -> tombol aktif --}}
                                         <a href="{{ route('user.evaluations.create', $event->id) }}" class="btn btn-sm btn-outline-info rounded-3 fw-bold">
                                             Isi Evaluasi <i class="fas fa-edit ms-1"></i>
                                         </a>
-                                    <!-- @else {{-- Event has not ended and evaluation not filled --}}
-                                        <button class="btn btn-sm btn-secondary rounded-3 fw-bold" >
-                                            Isi Evaluasi <i class="fas fa-edit ms-1"></i> -->
-                                        <!-- </a> -->
+                                    @else
+                                        {{-- Posttest belum dikerjakan -> tombol nonaktif --}}
+                                        <button type="button" class="btn btn-sm btn-secondary rounded-3 fw-bold" disabled title="Selesaikan Posttest terlebih dahulu">
+                                            Isi Evaluasi <i class="fas fa-edit ms-1"></i>
+                                        </button>
                                     @endif
                                 </div>
                             </div>
-
                         </div>
                     @endif
                 </div>
