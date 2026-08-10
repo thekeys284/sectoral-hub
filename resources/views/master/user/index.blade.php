@@ -66,16 +66,29 @@
                                             </div>
                                         </td>
                                         <td class="align-middle text-center text-sm">
-                                            {{-- Badge warna warni sesuai Role --}}
-                                            @if($user->role == 'admin')
-                                                <span class="badge badge-sm bg-gradient-danger">Admin</span>
-                                            @elseif($user->role == 'pembina')
-                                                <span class="badge badge-sm bg-gradient-info">Pembina</span>
-                                            @elseif($user->role == 'walidata')
-                                                <span class="badge badge-sm bg-gradient-success">Walidata</span>
-                                            @else
-                                                <span class="badge badge-sm bg-gradient-secondary">Produsen</span>
-                                            @endif
+                                            {{--
+                                                $user->role sudah otomatis di-cast jadi ARRAY oleh Model (bukan string lagi),
+                                                jadi dulu perbandingan "$user->role == 'admin'" SELALU false (array vs string
+                                                tidak akan pernah sama) -> semua user selalu jatuh ke badge "Produsen" walau
+                                                rolenya admin. Sekarang di-loop supaya semua role yang dimiliki user tampil,
+                                                dan mendukung user dengan role lebih dari satu (misal admin + pembina).
+                                            --}}
+                                            @php
+                                                $userRoles = is_array($user->role) ? $user->role : (array) $user->role;
+                                                $badgeColor = [
+                                                    'admin'    => 'bg-gradient-danger',
+                                                    'pembina'  => 'bg-gradient-info',
+                                                    'walidata' => 'bg-gradient-success',
+                                                    'produsen' => 'bg-gradient-secondary',
+                                                ];
+                                            @endphp
+                                            @forelse($userRoles as $role)
+                                                <span class="badge badge-sm {{ $badgeColor[$role] ?? 'bg-gradient-dark' }} me-1 mb-1 text-capitalize">
+                                                    {{ $role }}
+                                                </span>
+                                            @empty
+                                                <span class="badge badge-sm bg-gradient-secondary">-</span>
+                                            @endforelse
                                         </td>
                                         <td class="align-middle">
                                             <div class="d-flex align-items-center justify-content-center">

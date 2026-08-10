@@ -27,6 +27,12 @@
                     @csrf
                     @if($user->id) @method('PUT') @endif
 
+                    @php
+                        // $user->role sudah otomatis array (di-cast di Model). old('role') dari validasi
+                        // gagal juga akan berupa array karena field name-nya role[]. Fallback ke array kosong.
+                        $selectedRoles = old('role', is_array($user->role) ? $user->role : ($user->role ? [$user->role] : []));
+                    @endphp
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -42,27 +48,30 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Role</label>
-                                <select name="role" class="form-control" required>
-                                    <option value="">-- Pilih Role --</option>
+                                <label>Role <small class="text-muted">(bisa pilih lebih dari satu)</small></label>
+                                {{-- name="role[]" + multiple -> mengirim array ke controller, bisa admin & pembina sekaligus --}}
+                                <select name="role[]" class="form-control select2-searchable" multiple required>
                                     {{-- Jika yang login adalah ADMIN, tampilkan semua opsi --}}
-                                    @if(auth()->user()->role === 'admin')
-                                        <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
-                                        <option value="pembina" {{ old('role', $user->role) == 'pembina' ? 'selected' : '' }}>Pembina</option>
-                                        <option value="walidata" {{ old('role', $user->role) == 'walidata' ? 'selected' : '' }}>Walidata</option>
-                                        <option value="produsen" {{ old('role', $user->role) == 'produsen' ? 'selected' : '' }}>Produsen</option>
-                                    
+                                    @if(auth()->user()->hasRole('admin'))
+                                        <option value="admin" {{ in_array('admin', $selectedRoles) ? 'selected' : '' }}>Admin</option>
+                                        <option value="pembina" {{ in_array('pembina', $selectedRoles) ? 'selected' : '' }}>Pembina</option>
+                                        <option value="walidata" {{ in_array('walidata', $selectedRoles) ? 'selected' : '' }}>Walidata</option>
+                                        <option value="produsen" {{ in_array('produsen', $selectedRoles) ? 'selected' : '' }}>Produsen</option>
+
                                     {{-- Jika yang login adalah WALIDATA, tampilkan hanya opsi tertentu --}}
-                                    @elseif(auth()->user()->role === 'walidata')
-                                        <option value="walidata" {{ old('role', $user->role) == 'walidata' ? 'selected' : '' }}>Walidata</option>
-                                        <option value="produsen" {{ old('role', $user->role) == 'produsen' ? 'selected' : '' }}>Produsen</option>
-                                    
-                                    {{-- Jika role lain (opsional) --}}
+                                    @elseif(auth()->user()->hasRole('walidata'))
+                                        <option value="walidata" {{ in_array('walidata', $selectedRoles) ? 'selected' : '' }}>Walidata</option>
+                                        <option value="produsen" {{ in_array('produsen', $selectedRoles) ? 'selected' : '' }}>Produsen</option>
+
+                                    {{-- Role lain (opsional): minimal tampilkan role yang sudah dipunya user --}}
                                     @else
-                                        <option value="{{ $user->role }}" selected>{{ ucfirst($user->role) }}</option>
+                                        @foreach($selectedRoles as $r)
+                                            <option value="{{ $r }}" selected>{{ ucfirst($r) }}</option>
+                                        @endforeach
                                     @endif
-                                    
                                 </select>
+                                @error('role')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                                @error('role.*')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -93,23 +102,20 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>No HP</label>
-                                {{-- Tambahkan old() agar data lama muncul saat edit --}}
                                 <input type="text" name="no_hp" class="form-control" value="{{ old('no_hp', $user->no_hp) }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Foto Profil</label>
-                                {{-- Sesuaikan nama 'image' jika di Controller kamu pakai $request->file('image') --}}
                                 <input type="file" name="image" id="imageInput" class="form-control" accept="image/*">
-                                
+
                                 <div class="mt-3">
-                                    {{-- Gunakan accessor getProfilePhotoUrlAttribute jika sudah dibuat di Model --}}
                                     <img id="imagePreview" 
                                         src="{{ $user->profile_photo_path ? asset('storage/'.$user->profile_photo_path) : asset('img/placeholder-user.png') }}" 
                                         alt="Preview" 
                                         class="img-thumbnail" 
-                                        style="max-height: 150px; display: {{ $user->profile_photo_path ? 'block' : 'block' }};">
+                                        style="max-height: 150px; display: block;">
                                 </div>
                             </div>
                         </div>
@@ -146,7 +152,8 @@
         $('.select2-searchable').select2({
             theme: 'bootstrap-5',
             width: '100%',
-            placeholder: 'Silakan pilih...'
+            placeholder: 'Silakan pilih...',
+            allowClear: true
         });
     });
 </script>

@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Storage;
 use Illuminate\Validation\Rules;
 use App\Models\User;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Opd;
 use App\Imports\UserImport;
-
 
 class UserController extends Controller
 {
@@ -32,7 +30,7 @@ class UserController extends Controller
     }
 
     public function create() {
-        $user = new User(); 
+        $user = new User();
         $opds = Opd::all();
         return view('master.user.form', compact('user', 'opds'));
     }
@@ -43,22 +41,22 @@ class UserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'nip' => 'nullable|string|max:255|unique:users,nip', // NIP opsional dan unik
-            'role' => 'required', 
-            'opd_id' => 'nullable|exists:opd,id', // Perbaiki validasi opd_id
-            'no_hp' => 'nullable|string',  
+            'role' => 'required|array|min:1',                    // role sekarang WAJIB array (multi-select)
+            'role.*' => 'in:admin,pembina,walidata,produsen',    // tiap item harus salah satu dari daftar ini
+            'opd_id' => 'nullable|exists:opd,id',
+            'no_hp' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->all();
+        $data = $request->except(['image', 'referral_code']);
 
-        // Simpan multiple roles dalam bentuk JSON array
-        $data['role'] = is_array($request->role) ? json_encode($request->role) : json_encode([$request->role]);
-        unset($data['referral_code']); // Pastikan referral_code tidak disimpan
+        // JANGAN json_encode manual di sini -> kolom 'role' sudah di-cast 'array' di Model User,
+        // Eloquent otomatis json_encode saat disimpan. Kalau di-encode manual di sini, hasilnya
+        // ke-encode DUA KALI (double-encoded) dan nilai di database jadi rusak/berkutip aneh.
+        $data['role'] = $request->role; // cukup array biasa, misal ['admin','pembina']
 
         if ($request->hasFile('image')){
             $data['profile_photo_path'] = $request->file('image')->store('profile-photos', 'public');
-        } else {
-            unset($data['image']); // Pastikan 'image' tidak masuk ke create jika tidak ada file
         }
 
         User::create($data);
@@ -75,28 +73,25 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $user->id,
-            'password' => ['nullable', 'confirmed', Rules\Password::defaults()], // Password opsional saat update
-            'nip' => 'nullable|string|max:255|unique:users,nip,' . $user->id, // NIP opsional dan unik
-            'role' => 'required', 
-            'opd_id' => 'nullable|exists:opd,id', // Perbaiki validasi opd_id
-            'no_hp' => 'nullable|string',  
+            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'nip' => 'nullable|string|max:255|unique:users,nip,' . $user->id,
+            'role' => 'required|array|min:1',
+            'role.*' => 'in:admin,pembina,walidata,produsen',
+            'opd_id' => 'nullable|exists:opd,id',
+            'no_hp' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->except(['password', 'image']);
+        $data = $request->except(['password', 'image', 'referral_code']);
 
-        // Simpan multiple roles dalam bentuk JSON array
-        $data['role'] = is_array($request->role) ? json_encode($request->role) : json_encode([$request->role]);
-        unset($data['referral_code']); // Pastikan referral_code tidak disimpan
+        // Sama seperti store(): jangan json_encode manual, biarkan Model yang menangani via cast.
+        $data['role'] = $request->role;
 
         if ($request->hasFile('image')) {
             if ($user->profile_photo_path) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_photo_path);
             }
-
             $data['profile_photo_path'] = $request->file('image')->store('profile-photos', 'public');
-        } else {
-            unset($data['image']); // Pastikan 'image' tidak masuk ke update jika tidak ada file
         }
 
         if ($request->filled('password')) {
@@ -106,7 +101,6 @@ class UserController extends Controller
         $user->update($data);
 
         return redirect()->route('master.users.index')->with('success', 'User updated successfully.');
-
     }
 
     public function destroy(User $user){
@@ -115,9 +109,9 @@ class UserController extends Controller
         }
         $user->delete();
         return redirect()->route('master.users.index')->with('success', 'User deleted successfully.');
-    }  
-    
-    public function import(Request $request) 
+    }
+
+    public function import(Request $request)
     {
         $request->validate([
             'file_excel' => 'required|mimes:xlsx,xls,csv|max:2048'
