@@ -31,15 +31,19 @@ class UserEvaluationController extends Controller
             return redirect()->route('user.events.show', $event->id)
                 ->with('info', 'Anda sudah mengisi evaluasi untuk event ini.');
         }
-        
-        $now = \Carbon\Carbon::now('Asia/Jakarta');
-        // Evaluasi hanya bisa diisi setelah event berakhir
-        if ($event->end_at && $now->lt($event->end_at)) {
+
+        // 3. VALIDASI BARU: Pastikan Pretest dan Posttest SUDAH dikerjakan
+        if ($registration->score_pretest === null) {
             return redirect()->route('user.events.show', $event->id)
-                ->with('error', 'Evaluasi akan dibuka setelah event berakhir.');
+                ->with('error', 'Silakan selesaikan Ujian Pretest terlebih dahulu sebelum mengisi evaluasi.');
         }
 
-        // 3. Ambil pertanyaan evaluasi yang aktif untuk event ini (termasuk master/khusus)
+        if ($registration->score_posttest === null) {
+            return redirect()->route('user.events.show', $event->id)
+                ->with('error', 'Silakan selesaikan Ujian Posttest terlebih dahulu sebelum mengisi evaluasi.');
+        }
+
+        // 4. Ambil pertanyaan evaluasi yang aktif untuk event ini (termasuk master/khusus)
         $evaluations = EventEvaluation::where(function ($query) use ($eventId) {
             $query->where('event_id', $eventId)
                   ->orWhere('is_master', true);
@@ -66,12 +70,11 @@ class UserEvaluationController extends Controller
             return redirect()->route('user.events.show', $event->id)
                 ->with('info', 'Anda sudah mengisi evaluasi untuk event ini.');
         }
-        
-        $now = \Carbon\Carbon::now('Asia/Jakarta');
-        // Evaluasi hanya bisa disubmit setelah event berakhir
-        if ($event->end_at && $now->lt($event->end_at)) {
+
+        // VALIDASI BARU: Cek kembali Pretest dan Posttest sebelum menyimpan
+        if ($registration->score_pretest === null || $registration->score_posttest === null) {
             return redirect()->route('user.events.show', $event->id)
-                ->with('error', 'Evaluasi hanya dapat diisi setelah event berakhir.');
+                ->with('error', 'Evaluasi hanya dapat diisi setelah menyelesaikan Pretest dan Posttest.');
         }
 
         $answers = $request->input('answers', []); // Format: ['evaluation_id' => 'nilai_atau_teks']
