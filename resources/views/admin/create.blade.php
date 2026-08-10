@@ -66,6 +66,26 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="font-weight-bold mb-3">Banner & Virtual Background</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Image Banner</label>
+                                <input type="file" name="image_banner" class="form-control @error('image_banner') is-invalid @enderror" accept="image/*">
+                                <small class="text-muted d-block mt-1">Format: JPG/PNG/WEBP, maks 2MB.</small>
+                                @error('image_banner')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Virtual Background</label>
+                                <input type="file" name="virtual_bg" class="form-control @error('virtual_bg') is-invalid @enderror" accept="image/*">
+                                <small class="text-muted d-block mt-1">Format: JPG/PNG/WEBP, maks 2MB.</small>
+                                @error('virtual_bg')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="col-lg-4">

@@ -1,7 +1,7 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 
 @section('content')
-    @include('layouts.navbars.auth.topnav', ['title' => 'Rekap Penilaian Peserta'])
+    @include('layouts.navbars.auth.topnav', ['title' => 'Detail Pelatihan'])
 <div class="container-fluid py-4">
     <!-- Back Button -->
     <a href="{{ route('user.events.index') }}" class="text-decoration-none text-muted small d-inline-block mb-3">
@@ -66,7 +66,7 @@
                         <button type="button" class="btn btn-secondary w-100 rounded-3 fw-bold py-2" disabled>
                             <i class="fas fa-times-circle me-1"></i> Pendaftaran Telah Ditutup
                         </button>
-                    @else {{-- Not registered and registration is still open --}}
+                    @else
                         <form action="{{ route('user.events.register', $event->id) }}" method="POST">
                             @csrf
                             <button type="submit" class="btn btn-emerald text-white w-100 rounded-3 fw-bold py-2"><i class="fas fa-user-plus me-1"></i> Daftar Pelatihan Ini</button>
@@ -75,11 +75,13 @@
                 </div>
             </div>
 
-            <!-- Tautan Penting (Zoom & Materi) - Hanya tampil jika sudah terdaftar -->
+            <!-- Tautan Penting (Zoom, Materi, & Sertifikat Eksternal) -->
             @if($isRegistered)
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body p-4">
                         <h6 class="fw-bold mb-3"><i class="fas fa-link text-emerald me-1"></i> Akses Pelatihan</h6>
+                        
+                        {{-- LINK ZOOM --}}
                         <div class="mb-3">
                             <small class="text-muted d-block fw-semibold mb-1">Link Room / Zoom Meeting:</small>
                             @if($event->meeting_link)
@@ -90,7 +92,9 @@
                                 <span class="text-muted small">Belum tersedia</span>
                             @endif
                         </div>
-                        <div>
+
+                        {{-- LINK MATERI --}}
+                        <div class="mb-3">
                             <small class="text-muted d-block fw-semibold mb-1">Materi Pelatihan:</small>
                             @if($event->link_materi)
                                 <a href="{{ $event->link_materi }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-3 w-100 text-truncate">
@@ -100,15 +104,57 @@
                                 <span class="text-muted small">Belum tersedia</span>
                             @endif
                         </div>
+
+                        {{-- LINK SERTIFIKAT EKSTERNAL --}}
+                        <div>
+                            <small class="text-muted d-block fw-semibold mb-1">E-Sertifikat Pelatihan:</small>
+                            @php
+                                $isPassed = $registration && $registration->score_posttest !== null && $registration->score_posttest >= $event->passing_grade;
+                            @endphp
+
+                            @if($event->certificate_link && $isPassed)
+                                <a href="{{ $event->certificate_link }}" target="_blank" class="btn btn-sm btn-success rounded-3 w-100 text-truncate fw-bold">
+                                    <i class="fas fa-award me-1"></i> Unduh E-Sertifikat
+                                </a>
+                            @elseif($event->certificate_link && !$isPassed)
+                                <button class="btn btn-sm btn-secondary rounded-3 w-100 text-truncate" disabled title="Selesaikan Posttest dengan nilai memenuhi passing grade">
+                                    <i class="fas fa-lock me-1"></i> Sertifikat Terkunci (Belum Lulus)
+                                </button>
+                            @else
+                                <span class="text-muted small">Belum tersedia</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
+
+                {{-- CARD VIRTUAL BACKGROUND --}}
+                @if($event->virtual_bg)
+                    <div class="card border-0 shadow-sm rounded-4 mt-4">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-image text-emerald me-1"></i> Virtual Background</h6>
+                            <div class="text-center mb-3">
+                                <a href="{{ asset('storage/' . $event->virtual_bg) }}" target="_blank" title="Klik untuk lihat ukuran penuh">
+                                    <img src="{{ asset('storage/' . $event->virtual_bg) }}" 
+                                         alt="Virtual Background" 
+                                         class="img-fluid rounded-3 border shadow-sm w-100" 
+                                         style="max-height: 180px; object-fit: cover;">
+                                </a>
+                            </div>
+                            <a href="{{ asset('storage/' . $event->virtual_bg) }}" 
+                               download="Virtual_Background_{{ Str::slug($event->title) }}" 
+                               class="btn btn-sm btn-outline-emerald rounded-3 w-100 fw-bold">
+                                <i class="fas fa-download me-1"></i> Unduh Virtual Background
+                            </a>
+                        </div>
+                    </div>
+                @endif
             @endif
         </div>
 
         <!-- Kolom Kanan: Alur Kegiatan & Progress Peserta -->
         <div class="col-lg-7">
             
-            {{-- CARD STATUS PRESENSI (Hanya Tampil Jika Sudah Terdaftar) --}}
+            {{-- CARD STATUS PRESENSI --}}
             @if($isRegistered && $registration)
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -138,12 +184,10 @@
                                 </button>
                             @else
                                 @php
-                                    // Pastikan Timezone set ke Asia/Jakarta
                                     $now = \Carbon\Carbon::now('Asia/Jakarta');
                                     $start = $event->absensi_start ? \Carbon\Carbon::parse($event->absensi_start, 'Asia/Jakarta') : null;
                                     $end = $event->absensi_end ? \Carbon\Carbon::parse($event->absensi_end, 'Asia/Jakarta') : null;
 
-                                    // Logika aman: jika start/end kosong, dianggap tidak ada batasan
                                     $isAfterStart = $start ? $now->gte($start) : true;
                                     $isBeforeEnd  = $end ? $now->lte($end) : true;
                                     $isOpen       = $isAfterStart && $isBeforeEnd;
@@ -209,10 +253,10 @@
                                         <a href="{{ route('user.exams.show', [$event->id, 'pretest']) }}" class="btn btn-sm btn-outline-emerald rounded-3 fw-bold">
                                             Mulai Pretest <i class="fas fa-arrow-right ms-1"></i>
                                         </a>
-                                    @else {{-- Event has ended and pretest not taken --}}
+                                    @else
                                         <button class="btn btn-sm btn-danger rounded-3 fw-bold" disabled>
                                             Pretest Berakhir 
-                                        </a>
+                                        </button>
                                     @endif
                                 </div>
                             </div>
@@ -243,14 +287,13 @@
                                         <button class="btn btn-sm btn-emerald text-white rounded-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#collapsePosttest">
                                             Kerjakan Posttest
                                         </button>
-                                    @else {{-- Event has ended and posttest not taken --}}
+                                    @else
                                         <button class="btn btn-sm btn-danger rounded-3 fw-bold" disabled>
                                             Posttest Berakhir
                                         </button>
                                     @endif
                                 </div>
 
-                                <!-- Form Input Password Posttest Collapse (Hanya jika belum tes) -->
                                 @if($registration->score_posttest === null && !$eventEnded)
                                     <div class="collapse mt-3 border-top pt-3" id="collapsePosttest">
                                         <form action="{{ route('user.exams.verify_password', $event->id) }}" method="POST">
@@ -275,22 +318,23 @@
                                     </div>
 
                                     @php
-                                        $hasCompletedPosttest = $registration && $registration->score_posttest !== null;
+                                        // Syarat isi evaluasi: Pretest dan Posttest HARUS sudah dikerjakan
+                                        $hasTakenPretest  = $registration && $registration->score_pretest !== null;
+                                        $hasTakenPosttest = $registration && $registration->score_posttest !== null;
+                                        $canFillEvaluation = $hasTakenPretest && $hasTakenPosttest;
                                     @endphp
 
                                     @if($hasFilledEvaluation)
                                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
                                             <i class="fas fa-check-circle me-1"></i> Sudah Diisi
                                         </span>
-                                    @elseif($hasCompletedPosttest)
-                                        {{-- Posttest sudah dikerjakan -> tombol aktif --}}
+                                    @elseif($canFillEvaluation)
                                         <a href="{{ route('user.evaluations.create', $event->id) }}" class="btn btn-sm btn-outline-info rounded-3 fw-bold">
                                             Isi Evaluasi <i class="fas fa-edit ms-1"></i>
                                         </a>
                                     @else
-                                        {{-- Posttest belum dikerjakan -> tombol nonaktif --}}
-                                        <button type="button" class="btn btn-sm btn-secondary rounded-3 fw-bold" disabled title="Selesaikan Posttest terlebih dahulu">
-                                            Isi Evaluasi <i class="fas fa-edit ms-1"></i>
+                                        <button type="button" class="btn btn-sm btn-secondary rounded-3 fw-bold" disabled title="Selesaikan Pretest dan Posttest terlebih dahulu">
+                                            <i class="fas fa-lock me-1"></i> Isi Evaluasi
                                         </button>
                                     @endif
                                 </div>

@@ -50,15 +50,23 @@
 
                 <div class="card shadow-sm mb-4">
                     <div class="card-body p-4">
-                        <h5 class="font-weight-bold mb-3">Tautan Streaming & Materi</h5>
+                        <h5 class="font-weight-bold mb-3">Tautan Streaming, Materi & Sertifikat</h5>
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Link Zoom / Virtual Meeting</label>
-                                <input type="url" name="meeting_link" class="form-control" value="{{ old('meeting_link', $event->meeting_link) }}">
+                            <div class="col-md-4">
+                                <label class="form-label font-weight-bold">Link Zoom / Virtual Meeting</label>
+                                <input type="url" name="meeting_link" class="form-control @error('meeting_link') is-invalid @enderror" value="{{ old('meeting_link', $event->meeting_link) }}" placeholder="https://zoom.us/j/...">
+                                @error('meeting_link') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Link Materi / YouTube</label>
-                                <input type="url" name="link_materi" class="form-control" value="{{ old('link_materi', $event->link_materi) }}">
+                            <div class="col-md-4">
+                                <label class="form-label font-weight-bold">Link Materi / YouTube</label>
+                                <input type="url" name="link_materi" class="form-control @error('link_materi') is-invalid @enderror" value="{{ old('link_materi', $event->link_materi) }}" placeholder="https://youtube.com/...">
+                                @error('link_materi') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label font-weight-bold">Link Sertifikat Pelatihan</label>
+                                <input type="url" name="certificate_link" class="form-control @error('certificate_link') is-invalid @enderror" value="{{ old('certificate_link', $event->certificate_link) }}" placeholder="https://drive.google.com/...">
+                                <small class="text-muted d-block mt-1">Tautan eksternal (Google Drive / Drive Link).</small>
+                                @error('certificate_link') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
                     </div>

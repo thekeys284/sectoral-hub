@@ -76,10 +76,22 @@
                         @endif
                     </div>
 
-                    <div class="mb-0">
+                    <div class="mb-2">
                         <small class="text-muted d-block font-weight-bold">Link Materi / Stream:</small>
                         @if($event->link_materi)
                             <a href="{{ $event->link_materi }}" target="_blank" class="text-truncate d-block small">{{ $event->link_materi }}</a>
+                        @else
+                            <span class="text-secondary text-sm">-</span>
+                        @endif
+                    </div>
+
+                    <!-- LINK SERTIFIKAT PELATIHAN -->
+                    <div class="mb-0">
+                        <small class="text-muted d-block font-weight-bold">Link Sertifikat / Drive:</small>
+                        @if($event->certificate_link)
+                            <a href="{{ $event->certificate_link }}" target="_blank" class="text-truncate d-block small text-success font-weight-bold">
+                                <i class="fas fa-external-link-alt me-1"></i> Buka Link Sertifikat
+                            </a>
                         @else
                             <span class="text-secondary text-sm">-</span>
                         @endif
@@ -419,12 +431,12 @@
                 @csrf
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label font-weight-bold font-weight-bold">Butir Pertanyaan <span class="text-danger">*</span></label>
+                        <label class="form-label font-weight-bold">Butir Pertanyaan <span class="text-danger">*</span></label>
                         <textarea name="question_text" class="form-control" rows="3" required placeholder="Contoh: Bagaimana pendapat Anda mengenai penguasaan materi oleh narasumber?"></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label font-weight-bold font-weight-bold">Bentuk Jawaban Peserta <span class="text-danger">*</span></label>
+                        <label class="form-label font-weight-bold">Bentuk Jawaban Peserta <span class="text-danger">*</span></label>
                         <select name="type" class="form-select" required>
                             <option value="scale">Skala Rating (1 - 5: Sangat Tidak Puas s/d Sangat Puas)</option>
                             <option value="text">Teks Bebas (Saran / Masukan Uraian)</option>

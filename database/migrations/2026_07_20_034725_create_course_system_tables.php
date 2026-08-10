@@ -24,6 +24,7 @@ return new class extends Migration
             // link ke luar
             $table->string('meeting_link', 2048)->nullable();
             $table->string('link_materi', 2048)->nullable();
+            $table->string('certificate_link', 2048)->nullable();
             $table->string('image_banner')->nullable();
             $table->string('virtual_bg')->nullable();
 
