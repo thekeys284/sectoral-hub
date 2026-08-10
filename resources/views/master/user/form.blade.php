@@ -13,7 +13,6 @@
 </style>
 @endpush
 
-
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => $user->id ? 'Edit User' : 'Tambah User'])
     <div class="container-fluid py-4">
@@ -28,9 +27,36 @@
                     @if($user->id) @method('PUT') @endif
 
                     @php
-                        // $user->role sudah otomatis array (di-cast di Model). old('role') dari validasi
-                        // gagal juga akan berupa array karena field name-nya role[]. Fallback ke array kosong.
-                        $selectedRoles = old('role', is_array($user->role) ? $user->role : ($user->role ? [$user->role] : []));
+                        // Konversi $user->role ke array (handling string JSON, array, maupun string tunggal)
+                        $rawRole = $user->role;
+                        if (is_string($rawRole)) {
+                            $decoded = json_decode($rawRole, true);
+                            $userRoles = is_array($decoded) ? $decoded : [$rawRole];
+                        } else {
+                            $userRoles = is_array($rawRole) ? $rawRole : [];
+                        }
+
+                        // Ambil old input dari validasi gagal, jika tidak ada pakai role milik user
+                        $selectedRoles = old('role', $userRoles);
+
+                        // Daftar master role sistem
+                        $availableRoles = [
+                            'admin'    => 'Admin',
+                            'pembina'  => 'Pembina',
+                            'walidata' => 'Walidata',
+                            'produsen' => 'Produsen',
+                            'operator' => 'Operator'
+                        ];
+
+                        // Filter ketersediaan role berdasarkan role user yang sedang login
+                        if (!auth()->user()->hasRole('admin')) {
+                            // Walidata / Role lain hanya diizinkan memilih role tertentu
+                            $availableRoles = [
+                                'walidata' => 'Walidata',
+                                'produsen' => 'Produsen',
+                                'viewer'   => 'Viewer'
+                            ];
+                        }
                     @endphp
 
                     <div class="row">
@@ -49,26 +75,19 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Role <small class="text-muted">(bisa pilih lebih dari satu)</small></label>
-                                {{-- name="role[]" + multiple -> mengirim array ke controller, bisa admin & pembina sekaligus --}}
-                                <select name="role[]" class="form-control select2-searchable" multiple required>
-                                    {{-- Jika yang login adalah ADMIN, tampilkan semua opsi --}}
-                                    @if(auth()->user()->hasRole('admin'))
-                                        <option value="admin" {{ in_array('admin', $selectedRoles) ? 'selected' : '' }}>Admin</option>
-                                        <option value="pembina" {{ in_array('pembina', $selectedRoles) ? 'selected' : '' }}>Pembina</option>
-                                        <option value="walidata" {{ in_array('walidata', $selectedRoles) ? 'selected' : '' }}>Walidata</option>
-                                        <option value="produsen" {{ in_array('produsen', $selectedRoles) ? 'selected' : '' }}>Produsen</option>
+                                <select name="role[]" class="form-control select2-searchable" multiple="multiple" required>
+                                    @foreach($availableRoles as $roleKey => $roleLabel)
+                                        <option value="{{ $roleKey }}" {{ in_array($roleKey, $selectedRoles) ? 'selected' : '' }}>
+                                            {{ $roleLabel }}
+                                        </option>
+                                    @endforeach
 
-                                    {{-- Jika yang login adalah WALIDATA, tampilkan hanya opsi tertentu --}}
-                                    @elseif(auth()->user()->hasRole('walidata'))
-                                        <option value="walidata" {{ in_array('walidata', $selectedRoles) ? 'selected' : '' }}>Walidata</option>
-                                        <option value="produsen" {{ in_array('produsen', $selectedRoles) ? 'selected' : '' }}>Produsen</option>
-
-                                    {{-- Role lain (opsional): minimal tampilkan role yang sudah dipunya user --}}
-                                    @else
-                                        @foreach($selectedRoles as $r)
-                                            <option value="{{ $r }}" selected>{{ ucfirst($r) }}</option>
-                                        @endforeach
-                                    @endif
+                                    {{-- Safe Guard: Tampilkan role eksisting user jika tidak ada di dalam $availableRoles --}}
+                                    @foreach($selectedRoles as $roleKey)
+                                        @if(!array_key_exists($roleKey, $availableRoles) && !empty($roleKey))
+                                            <option value="{{ $roleKey }}" selected>{{ ucfirst($roleKey) }}</option>
+                                        @endif
+                                    @endforeach
                                 </select>
                                 @error('role')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                                 @error('role.*')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
@@ -152,7 +171,7 @@
         $('.select2-searchable').select2({
             theme: 'bootstrap-5',
             width: '100%',
-            placeholder: 'Silakan pilih...',
+            placeholder: 'Pilih satu atau beberapa role...',
             allowClear: true
         });
     });
