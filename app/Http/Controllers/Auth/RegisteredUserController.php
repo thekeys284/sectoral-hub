@@ -46,23 +46,45 @@ class RegisteredUserController extends Controller
         if ($isSpecialReferral) {
             $rules['opd_id'] = ['required', 'exists:opd,id'];
         } else {
-            // Ensure opd_id is nullable if no special referral code is used
-            // This explicitly allows opd_id to be null if not provided, and validates if it is.
+            // Tanpa kode referral khusus, opd_id opsional (user jadi 'operator', tidak terikat OPD)
             $rules['opd_id'] = ['nullable', 'exists:opd,id'];
         }
 
         $request->validate($rules);
 
-        // Determine role and opd_id based on referral code
-        $role = $isSpecialReferral ? 'produsen' : 'operator';
         $opdId = $isSpecialReferral ? $request->opd_id : null;
+
+        // ------------------------------------------------------------------
+        // Penentuan role:
+        // - Tanpa kode referral               -> operator
+        // - Pakai kode referral + OPD = BPS    -> pembina
+        // - Pakai kode referral + OPD = Diskominfo -> walidata
+        // - Pakai kode referral + OPD lainnya  -> produsen
+        // ------------------------------------------------------------------
+        if ($isSpecialReferral) {
+            $opd = Opd::find($opdId);
+            $opdName = strtolower($opd->name ?? '');
+
+            if (str_contains($opdName, 'badan pusat statistik')) {
+                $role = 'pembina';
+            } elseif (str_contains($opdName, 'diskominfo')) {
+                $role = 'walidata';
+            } else {
+                $role = 'produsen';
+            }
+        } else {
+            $role = 'operator';
+        }
 
         $user = User::create([
             'name' => $request->name,
             'nip' => $request->nip,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => json_encode([$role]), // Store role as a JSON array
+            // JANGAN json_encode manual di sini -> kolom 'role' sudah di-cast 'array' di Model User,
+            // Eloquent otomatis json_encode saat disimpan. Kalau di-encode manual, hasilnya
+            // ke-encode DUA KALI dan data role di database jadi rusak (sama seperti bug di UserController).
+            'role' => [$role],
             'opd_id' => $opdId,
         ]);
 
@@ -70,8 +92,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // return redirect(route('dashboard', absolute: false));
-        return redirect()->route('dashboard'); 
-
+        return redirect()->route('dashboard');
     }
 }
