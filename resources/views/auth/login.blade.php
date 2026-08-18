@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('css')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+@endpush
+
 @section('content')
     <main class="main-content  mt-0">
         <section>
@@ -32,6 +36,7 @@
                                         @csrf
                                         @method('post')
                                         <div class="flex flex-col mb-3">
+                                            @error('email') <p class="text-danger text-xs pt-1"> {{$message}} </p>@enderror
                                             <input type="text" name="email" class="form-control form-control-lg" placeholder="Email atau Username" aria-label="Email">
                                         </div>
                                         <div class="flex flex-col mb-3">
@@ -79,3 +84,21 @@
         </section>
     </main>
 @endsection
+
+@push('js')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cek jika ada error validasi untuk field 'email' (ini yang dikirim dari LoginRequest jika kredensial tidak cocok)
+        @if ($errors->has('email'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Gagal!',
+                text: '{{ $errors->first('email') }}',
+                confirmButtonText: 'Coba Lagi',
+                confirmButtonColor: '#f5365c'
+            });
+        @endif
+    });
+</script>
+@endpush

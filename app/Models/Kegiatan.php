@@ -27,4 +27,16 @@ class Kegiatan extends Model
     public function romantik() : BelongsTo{
         return $this->belongsTo(Romantik::class, 'romantik_id');
     }
+
+    public function metadataSubmissions()
+    {
+        return $this->hasMany(MetadataSubmission::class, 'kegiatan_id');
+    }
+
+    public function latestSubmission($tipe)
+    {
+        return $this->hasOne(MetadataSubmission::class, 'kegiatan_id')
+                    ->where('tipe', $tipe)
+                    ->latestOfMany();
+    }
 }

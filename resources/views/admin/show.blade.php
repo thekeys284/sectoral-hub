@@ -1,40 +1,19 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 
 @section('content')
-<div class="container-fluid py-4">
-    <!-- Header & Tombol Kembali -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <a href="{{ route('admin.events.index') }}" class="text-decoration-none text-secondary text-sm">
-                <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Event
-            </a>
-            <h3 class="font-weight-bold mt-1 mb-0">{{ $event->title }}</h3>
-            <span class="badge badge-sm bg-gradient-info text-capitalize px-3 py-1 mt-2">
-                {{ $event->category }}
-            </span>
-            @if($event->is_active)
-                <span class="badge badge-sm bg-gradient-success px-2 py-1 ms-1">Aktif</span>
-            @else
-                <span class="badge badge-sm bg-gradient-secondary px-2 py-1 ms-1">Draft</span>
-            @endif
-        </div>
-        <div>
-            <a href="{{ route('admin.events.rekap', $event->id) }}" class="btn btn-sm bg-gradient-success me-2">
-                <i class="fas fa-chart-line me-1"></i> Lihat Rekap Nilai
-            </a>
-            <a href="{{ route('admin.events.edit', $event->id) }}" class="btn btn-outline-warning">
-                <i class="fas fa-edit me-1"></i> Edit Event
-            </a>
+@include('layouts.navbars.auth.topnav', ['title' => 'Detail Informasi Event'])
+<div class="container-fluid py-2">
+    <div class="row g-0">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-4">
+                <a href="{{ route('admin.events.index') }}" class="text-decoration-none text-secondary text-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Event
+                </a>
+                <h4 class="font-weight-bold mt-1 mb-0">Detail Informasi Event</h4>
+                <p class="text-secondary text-sm mb-0"></p>
+            </div>
         </div>
     </div>
-
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-            <i class="fas fa-check-circle me-1"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     <div class="row g-4">
         <!-- Kolom Kiri: Informasi Event -->
         <div class="col-lg-4">
@@ -77,10 +56,20 @@
                     </div>
 
                     <div class="mb-2">
-                        <small class="text-muted d-block font-weight-bold">Link Materi / Stream:</small>
+                        <small class="text-muted d-block font-weight-bold">Link Youtube / Stream:</small>
                         @if($event->link_materi)
                             <a href="{{ $event->link_materi }}" target="_blank" class="text-truncate d-block small">{{ $event->link_materi }}</a>
                         @else
+
+                            <span class="text-secondary text-sm">-</span>
+                        @endif
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted d-block font-weight-bold">Link Dokumentasi :</small>
+                        @if($event->doc_link)
+                            <a href="{{ $event->doc_link }}" target="_blank" class="text-truncate d-block small">{{ $event->doc_link }}</a>
+                        @else
+                        
                             <span class="text-secondary text-sm">-</span>
                         @endif
                     </div>

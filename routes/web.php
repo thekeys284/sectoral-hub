@@ -12,7 +12,8 @@ use App\Http\Controllers\User\{
     UserEventController, UserEvaluationController, UserExamController
 };
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\{
+    ForgotPasswordController, ResetPasswordController, AuthenticatedSessionController};
 
 // Route untuk callback token Majapahit
 Route::get('/majapahit', [AuthenticatedSessionController::class, 'loginMajapahit'])
@@ -30,7 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::post('/role/switch', [ProfileController::class, 'switchRole'])->name('role.switch');
     Route::get('/metadata-list', [MetadataController::class, 'table'])->name('metadata.table');  
     Route::get('/romantik-list', [RomantikController::class, 'table'])->name('romantik.table');   
@@ -82,9 +83,17 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // 4. PELAPORAN
+// Route::middleware(['auth'])->group(function () {
+//     Route::prefix('pelaporan')->name('pelaporan.')->group(function () {
+//         Route::resource('metadata', PelaporanController::class);
+//     });
+// });
 Route::middleware(['auth'])->group(function () {
     Route::prefix('pelaporan')->name('pelaporan.')->group(function () {
         Route::resource('metadata', PelaporanController::class);
+        // Tambahan route aksi kustom:
+        Route::post('metadata/{kegiatanId}/submit', [PelaporanController::class, 'submitLink'])->name('metadata.submit');
+        Route::post('metadata/{submissionId}/review', [PelaporanController::class, 'reviewSubmission'])->name('metadata.review');
     });
 });
 
@@ -126,5 +135,25 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     Route::get('/events/{id}/evaluations', [UserEvaluationController::class, 'create'])->name('evaluations.create');
     Route::post('/events/{id}/evaluations', [UserEvaluationController::class, 'store'])->name('evaluations.store');
 
+});
+
+// Route::middleware(['guest'])->group(function () {
+//     // Forgot Password
+//     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+//     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+
+//     // Reset Password
+//     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+//     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+// });
+
+Route::middleware('guest')->group(function () {
+    // Forgot Password
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+
+    // Reset Password
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.reset.perform');
 });
 require __DIR__.'/auth.php';

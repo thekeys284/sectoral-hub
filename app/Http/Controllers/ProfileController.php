@@ -68,6 +68,10 @@ class ProfileController extends Controller
         $request->validate([
             'current_password' => ['required', 'current_password'],
             'password'         => ['required', 'confirmed', 'min:8'],
+        ], [
+            'current_password.current_password' => 'Password saat ini (lama) yang Anda masukkan salah.',
+            'password.confirmed'                => 'Konfirmasi password baru tidak cocok.',
+            'password.min'                      => 'Password baru minimal 8 karakter.',
         ]);
 
         Auth::user()->update([

@@ -59,7 +59,7 @@
                     @endphp
 
                     @if($isRegistered)
-                        <div class="alert alert-success border-0 bg-success-subtle text-success text-center rounded-3 mb-0 fw-bold small">
+                        <div class="alert alert-success border-0 bg-success-subtle text-center rounded-3 mb-0 fw-bold small">
                             <i class="fas fa-check-circle me-1"></i> Anda Sudah Terdaftar
                         </div>
                     @elseif($registrationClosed)
@@ -99,6 +99,18 @@
                             @if($event->link_materi)
                                 <a href="{{ $event->link_materi }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-3 w-100 text-truncate">
                                     <i class="fas fa-file-download me-1"></i> Unduh / Lihat Materi
+                                </a>
+                            @else
+                                <span class="text-muted small">Belum tersedia</span>
+                            @endif
+                        </div>
+
+                        {{-- LINK DOKUMENTASI --}}
+                        <div class="mb-3">
+                            <small class="text-muted d-block fw-semibold mb-1">Link Dokumentasi:</small>
+                            @if($event->doc_link)
+                                <a href="{{ $event->doc_link }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-3 w-100 text-truncate">
+                                    <i class="fas fa-camera me-1"></i> Unduh / Lihat Dokumentasi
                                 </a>
                             @else
                                 <span class="text-muted small">Belum tersedia</span>

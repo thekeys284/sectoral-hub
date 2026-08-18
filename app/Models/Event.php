@@ -12,7 +12,7 @@ class Event extends Model
     use HasFactory;
     protected $table = 'events';
     protected $fillable = ['title','start_at','end_at','lokasi_event','deskripsi','category',
-                            'meeting_link','link_materi','certificate_link','image_banner','virtual_bg',
+                            'meeting_link','youtube_link','link_materi','doc_link','certificate_link','image_banner','virtual_bg',
                             'absensi_start','absensi_end','passing_grade','posttest_password',
                             'is_active','created_by'];
 

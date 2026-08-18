@@ -32,7 +32,9 @@ class AdminEventController extends Controller
             'lokasi_event'      => 'nullable|string',
             'deskripsi'         => 'nullable|string',
             'meeting_link'      => 'nullable|url',
+            'youtube_link'      => 'nullable|url',
             'link_materi'       => 'nullable|url',
+            'doc_link'          => 'nullable|url',
             'absensi_start'     => 'nullable|date',
             'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
             'passing_grade'     => 'required|integer|min:0|max:100',
@@ -113,50 +115,6 @@ class AdminEventController extends Controller
         $event = Event::findOrFail($id);
         return view('admin.edit', compact('event'));
     }
-    // public function update(Request $request, $id)
-    // { 
-    //     $event = Event::findOrFail($id);
-
-    //     $data = $request->validate([
-    //         'title'             => 'required|string|max:255',
-    //         'category'          => 'required|in:pembinaan,sosialisasi,pelatihan,rapat',
-    //         'start_at'          => 'nullable|date',
-    //         'end_at'            => 'nullable|date|after_or_equal:start_at',
-    //         'lokasi_event'      => 'nullable|string',
-    //         'deskripsi'         => 'nullable|string',
-    //         'meeting_link'      => 'nullable|url',
-    //         'link_materi'       => 'nullable|url',
-    //         'absensi_start'     => 'nullable|date',
-    //         'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
-    //         'passing_grade'     => 'required|integer|min:0|max:100',
-    //         'posttest_password' => 'nullable|string|max:50',
-    //         'image_banner'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-    //         'virtual_bg'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-    //     ]);
-
-    //     $data['is_active'] = $request->has('is_active');
-
-    //     // Replace Banner jika ada upload baru
-    //     if ($request->hasFile('image_banner')) {
-    //         if ($event->image_banner) {
-    //             Storage::disk('public')->delete($event->image_banner);
-    //         }
-    //         $data['image_banner'] = $request->file('image_banner')->store('events/banners', 'public');
-    //     }
-
-    //     // Replace Virtual Background jika ada upload baru
-    //     if ($request->hasFile('virtual_bg')) {
-    //         if ($event->virtual_bg) {
-    //             Storage::disk('public')->delete($event->virtual_bg);
-    //         }
-    //         $data['virtual_bg'] = $request->file('virtual_bg')->store('events/vbg', 'public');
-    //     }
-
-    //     $event->update($data);
-
-    //     return redirect()->route('admin.events.index')
-    //         ->with('success', 'Data event berhasil diperbarui!');
-    // }
     public function update(Request $request, $id)
     { 
         $event = Event::findOrFail($id);
@@ -169,8 +127,9 @@ class AdminEventController extends Controller
             'lokasi_event'      => 'nullable|string',
             'deskripsi'         => 'nullable|string',
             'meeting_link'      => 'nullable|url',
+            'youtube_link'      => 'nullable|url',
             'link_materi'       => 'nullable|url',
-            'certificate_link'  => 'nullable|url', // <-- TAMBAHKAN BARIS INI
+            'doc_link'          => 'nullable|url',
             'absensi_start'     => 'nullable|date',
             'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
             'passing_grade'     => 'required|integer|min:0|max:100',
@@ -225,8 +184,8 @@ class AdminEventController extends Controller
     {
         $event = Event::findOrFail($id);
 
-        // Gunakan nama relasi 'evaluationAnswer' sesuai yang ada di Model EventRegistration
-        $registrations = EventRegistration::with(['user', 'evaluationAnswer'])
+        // Tambahkan 'user.opd' agar relasi OPD ikut ter-load (untuk Satuan Kerja & Alamat di export)
+        $registrations = EventRegistration::with(['user.opd', 'evaluationAnswer'])
             ->where('event_id', $id)
             ->get();
 
@@ -239,6 +198,8 @@ class AdminEventController extends Controller
                 'name'            => $reg->user->name ?? 'N/A',
                 'username'        => $reg->user->username ?? '-',
                 'email'           => $reg->user->email ?? '-',
+                'nip'             => $reg->user->nip ?? '-',
+                'opd'             => $reg->user->opd ?? null,
                 'status_absen'    => $reg->status_kehadiran,
                 'score_pretest'   => $reg->score_pretest ?? 0,
                 'score_posttest'  => $reg->score_posttest ?? 0,

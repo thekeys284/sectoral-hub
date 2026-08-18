@@ -1,84 +1,106 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Kegiatan;
-use App\Models\Opd;
-use App\Models\Metadata;
-use App\Models\Romantik;
+
 use App\Models\DaftarData;
-use Illuminate\Support\Facades\Auth;
-
-
+use App\Models\Kegiatan;
+use App\Models\MetadataSubmission;
+use App\Models\Opd;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PelaporanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // $daftardata = Daftardata::with(['opd', 'kegiatan'])->latest()->get();
-        // return view('pelaporan.metadata.index', compact('daftardata'));
-        // $opdId = Auth::user()->opd_id;
-        // $daftardata = Daftardata::with(['opd', 'kegiatan'])
-        //             ->where('opd_id', $opdId)
-        //             ->whereNotNull('kegiatan_id')
-        //             ->latest()
-        //             ->get()
-        //             ->groupBy('kegiatan_id');
-
-        // return view('pelaporan.metadata.index', compact('daftardata'));
         $user = Auth::user();
-    
-        // Gunakan query builder dengan 'when' untuk kondisi dinamis
-        $query = DaftarData::with(['opd', 'kegiatan'])
-                    ->whereNotNull('kegiatan_id')
-                    ->has('kegiatan'); // Memastikan data Kegiatan-nya benar-benar ada, bukan sekedar id-nya tidak null
 
-        $roles = is_string($user->role) ? json_decode($user->role, true) ?? [$user->role] : (array) $user->role;
+        // Parsing role
+        $rawRole = $user->role;
+        $roles = is_array($rawRole) ? $rawRole : (json_decode($rawRole, true) ?? [$rawRole]);
         $activeRole = session('active_role', $roles[0] ?? '');
 
-        if ($activeRole === 'produsen') {
-            $query->where('opd_id', $user->opd_id);}
-        // } elseif ($activeRole === 'pembina') {
-        //     $opdBinaanIds = \App\Models\Opd::where('pembina_id', $user->id)->pluck('id')->toArray();
-        //     $query->whereIn('opd_id', $opdBinaanIds);
-        // }
+        $isAdminOrPembina = in_array($activeRole, ['admin', 'pembina', 'superadmin']) 
+                            || in_array('admin', $roles) 
+                            || in_array('pembina', $roles);
 
-        $daftardata = $query->latest()
-                            ->get() // Tetap gunakan paginate(10) agar rowspan aman
-                            ->groupBy('kegiatan_id');
+        $opdList = collect();
+        $selectedOpdId = null;
 
-        return view('pelaporan.metadata.index', compact('daftardata'));
+        if (!$isAdminOrPembina) {
+            // PRODUSEN: Langsung load data dinas miliknya
+            $selectedOpdId = $user->opd_id;
+            
+            $daftardata = DaftarData::with([
+                'opd',
+                'kegiatan.metadataSubmissions.reviewer'
+            ])
+            ->where('opd_id', $selectedOpdId)
+            ->whereNotNull('kegiatan_id')
+            ->has('kegiatan')
+            ->latest()
+            ->get()
+            ->groupBy('kegiatan_id');
+
+        } else {
+            // ADMIN / PEMBINA: Ambil list dinas untuk dropdown
+            $opdList = Opd::orderBy('name', 'asc')->get();
+            $selectedOpdId = $request->get('opd_id');
+
+            // HANYA query database jika ada dinas yang dipilih di dropdown
+            if ($selectedOpdId) {
+                $daftardata = DaftarData::with([
+                    'opd',
+                    'kegiatan.metadataSubmissions.reviewer'
+                ])
+                ->where('opd_id', $selectedOpdId)
+                ->whereNotNull('kegiatan_id')
+                ->has('kegiatan')
+                ->latest()
+                ->get()
+                ->groupBy('kegiatan_id');
+            } else {
+                // Jika belum pilih dinas -> Kosongkan koleksi agar server ringan
+                $daftardata = collect();
+            }
+        }
+
+        return view('pelaporan.metadata.index', compact('daftardata', 'opdList', 'isAdminOrPembina', 'selectedOpdId'));
     }
 
-    public function update(Request $request, $id)
+    public function submitLink(Request $request, $kegiatanId)
     {
-        $kegiatan = Kegiatan::findOrFail($id);
-        
-        // Gunakan update dengan array agar ringkas
-        $kegiatan->update($request->only([
-            'link_metadata_kegiatan', 
-            'link_metadata_variabel', 
-            'link_metadata_indikator'
-        ]));
-
-        return back()->with('success', 'Link berhasil diperbarui!');
-    }
-
-    public function store(Request $request)
-    {
-        // 1. Validasi input
-        $validated = $request->validate([
-            'nama_data'    => 'required|string|max:255',
-            'satuan'       => 'required|string',
-            'kegiatan_id'  => 'required|exists:kegiatan,id',
-            'opd_id'       => 'required|exists:opd,id',
-            // ... field lainnya
+        $request->validate([
+            'tipe'     => 'required|in:kegiatan,variabel,indikator',
+            'link_url' => 'required|url',
         ]);
 
-        // 2. Simpan ke database
-        DaftarData::create($validated);
+        MetadataSubmission::create([
+            'kegiatan_id' => $kegiatanId,
+            'tipe'        => $request->tipe,
+            'link_url'    => $request->link_url,
+            'status'      => 'pending',
+        ]);
 
-        // 3. Redirect
-        return redirect()->route('pelaporan.metadata.index')->with('success', 'Data baru berhasil ditambahkan!');
+        return redirect()->back()->with('success', 'Link metadata ' . ucfirst($request->tipe) . ' berhasil dikirim ke Pembina Data.');
+    }
+
+    public function reviewSubmission(Request $request, $submissionId)
+    {
+        $request->validate([
+            'status'        => 'required|in:disetujui,butuh_perbaikan',
+            'catatan_pembina' => 'nullable|string',
+        ]);
+
+        $submission = MetadataSubmission::findOrFail($submissionId);
+
+        $submission->update([
+            'status'        => $request->status,
+            'catatan_pembina' => $request->catatan_pembina,
+            'reviewed_by'   => Auth::id(),
+            'reviewed_at'   => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Hasil telaah & catatan review berhasil disimpan.');
     }
 }

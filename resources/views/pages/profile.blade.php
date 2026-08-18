@@ -85,7 +85,7 @@
                         <h6>Keamanan (Ganti Password)</h6>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('profile.password') }}" method="POST">
+                        <form action="{{ route('profile.password.update') }}" method="POST">
                             @csrf @method('PUT')
                             <div class="form-group">
                                 <label>Password Saat Ini</label>

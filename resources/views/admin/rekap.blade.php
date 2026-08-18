@@ -73,6 +73,11 @@
                                 </thead>
                                 <tbody>
                                     @forelse($rekapData as $index => $item)
+                                    @php
+                                        $opdName = optional($item['opd'] ?? null)->name ?? '-';
+                                        $opdAlamat = optional($item['opd'] ?? null)->alamat ?? '-';
+                                        $tipePeserta = ($opdName === 'BPS Provinsi Jawa Timur') ? 'Internal' : 'Eksternal';
+                                    @endphp
                                         <tr>
                                             <td class="text-xs">{{ $index + 1 }}</td>
 
@@ -83,8 +88,8 @@
                                             <td>
                                                 <div class="d-flex px-2 py-1">
                                                     <div class="d-flex flex-column justify-content-center">
-                                                        <h6 class="mb-0 text-xs">{{ $item['name'] }}</h6>
-                                                        <p class="text-xs text-secondary mb-0">{{ $item['username'] }}</p>
+                                                        <h6 class="mb-0 text-xs">{{ $item['name'] }} ({{ $item['nip'] }})</h6>
+                                                        <p class="text-xs text-secondary mb-0 text-wrap">{{ $opdName }}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -176,9 +181,10 @@
             pageLength: 25,
             language: {
                 search: "Cari Peserta:",
+                searchPlaceholder: "Ketik nama / NIP...",
                 paginate: { previous: "<", next: ">" }
             },
-            dom: 'lBrtip', // 'B' mengaktifkan fungsionalitas Buttons
+            dom: '<"d-flex justify-content-between align-items-center mb-3" lf>Brtip',
 
             // Kolom index (urutan sesuai <th> di atas, dimulai dari 0):
             // 0:No 1:NIP(hidden) 2:Nama bersih(hidden) 3:Nama Peserta 4:Kehadiran

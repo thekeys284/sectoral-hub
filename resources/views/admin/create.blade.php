@@ -1,15 +1,19 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 
 @section('content')
-    @include('layouts.navbars.auth.topnav', ['title' => 'Tambah Event Baru'])
-<div class="container-fluid py-4">
-    <div class="mb-4">
-        <a href="{{ route('admin.events.index') }}" class="text-decoration-none text-secondary text-sm">
-            <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Event
-        </a>
-        <h3 class="font-weight-bold mt-2">Buat Event / Pelatihan Baru</h3>
+@include('layouts.navbars.auth.topnav', ['title' => 'Tambah Event Baru'])
+<div class="container-fluid py-2">
+    <div class="row g-0">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-4">
+                <a href="{{ route('admin.events.index') }}" class="text-decoration-none text-secondary text-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Event
+                </a>
+                <h3 class="font-weight-bold mt-1 mb-0">Tambah Event Baru</h3>
+                <p class="text-secondary text-sm mb-0"></p>
+            </div>
+        </div>
     </div>
-
     <form action="{{ route('admin.events.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="row g-4">
@@ -53,14 +57,19 @@
                     <div class="card-body p-4">
                         <h5 class="font-weight-bold mb-3">Tautan Streaming & Materi</h5>
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label">Link Zoom / Virtual Meeting</label>
                                 <input type="url" name="meeting_link" class="form-control @error('meeting_link') is-invalid @enderror" value="{{ old('meeting_link') }}" placeholder="https://zoom.us/j/...">
                                 @error('meeting_link')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Link Materi / YouTube</label>
-                                <input type="url" name="link_materi" class="form-control @error('link_materi') is-invalid @enderror" value="{{ old('link_materi') }}" placeholder="https://youtube.com/...">
+                            <div class="col-md-4">
+                                <label class="form-label">Link YouTube</label>
+                                <input type="url" name="youtube_link" class="form-control @error('youtube_link') is-invalid @enderror" value="{{ old('youtube_link') }}" placeholder="https://youtube.com/...">
+                                @error('youtube_link')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Link Materi</label>
+                                <input type="url" name="link_materi" class="form-control @error('link_materi') is-invalid @enderror" value="{{ old('link_materi') }}" placeholder="https://drive.google.com">
                                 @error('link_materi')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                         </div>
