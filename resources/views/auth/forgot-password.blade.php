@@ -34,7 +34,7 @@
                                             <input type="email" 
                                                    name="email" 
                                                    class="form-control form-control-lg @error('email') is-invalid @enderror" 
-                                                   placeholder="nama@instansi.go.id" 
+                                                   placeholder="email@gmail.com" 
                                                    value="{{ old('email') }}" 
                                                    required 
                                                    autofocus>

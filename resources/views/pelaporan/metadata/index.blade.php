@@ -103,7 +103,7 @@
                                         </td>
 
                                         {{-- Kolom 3 Tipe Metadata --}}
-                                        @foreach(['kegiatan', 'variabel', 'indikator'] as $tipe)
+                                        @foreach(['kegiatan', 'variable', 'indikator'] as $tipe)
                                             @php
                                                 $allSubmissions = $keg ? $keg->metadataSubmissions->where('tipe', $tipe)->sortBy('created_at') : collect();
                                                 $latest = $allSubmissions->last();
@@ -160,6 +160,7 @@
                                                         <button type="button" class="btn btn-xs bg-gradient-warning text-dark w-100 mb-1" data-bs-toggle="modal" data-bs-target="#modalSubmit_{{ $tipe }}_{{ $keg->id }}">
                                                             <i class="fas fa-redo me-1"></i> Kirim Link Revisi
                                                         </button>
+                                                        <br>
                                                     @endif
 
                                                     {{-- Tombol Telaah / Review (Untuk Admin & Pembina) --}}
@@ -197,7 +198,7 @@
     @foreach ($daftardata as $kegiatanId => $dataGroup)
         @php $keg = $dataGroup->first()->kegiatan; @endphp
         @if($keg)
-            @foreach(['kegiatan', 'variabel', 'indikator'] as $tipe)
+            @foreach(['kegiatan', 'variable', 'indikator'] as $tipe)
                 @php
                     $allSubmissions = $keg->metadataSubmissions->where('tipe', $tipe)->sortBy('created_at');
                     $latest = $allSubmissions->last();
