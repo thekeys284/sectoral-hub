@@ -71,7 +71,7 @@ class PelaporanController extends Controller
     public function submitLink(Request $request, $kegiatanId)
     {
         $request->validate([
-            'tipe'     => 'required|in:kegiatan,variabel,indikator',
+            'tipe'     => 'required|in:kegiatan,variable,indikator',
             'link_url' => 'required|url',
         ]);
 

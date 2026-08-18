@@ -276,7 +276,7 @@
                                         <label class="form-label text-xs font-weight-bold">Status Hasil Telaah <span class="text-danger">*</span></label>
                                         <select name="status" class="form-select text-sm" required>
                                             <option value="disetujui" {{ $latest->status === 'disetujui' ? 'selected' : '' }}>
-                                                ✅ Disetujui (Sesuai Kaidah & Standar Data)
+                                                ✅ Disetujui
                                             </option>
                                             <option value="butuh_perbaikan" {{ $latest->status === 'butuh_perbaikan' ? 'selected' : '' }}>
                                                 ⚠️ Perlu Perbaikan (Ada Catatan Revisi)
