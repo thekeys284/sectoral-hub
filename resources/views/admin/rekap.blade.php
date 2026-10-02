@@ -9,7 +9,7 @@
                     <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Event
                 </a>
                 <h3 class="font-weight-bold mt-1 mb-0">Rekap Penilaian Peserta</h3>
-                <p class="text-secondary text-sm mb-0">{{ $event->title }}</p>
+                <p class="text-secondary text-sm mb-0 text-wrap">{{ $event->title }}</p>
             </div>
         </div>
 
@@ -26,19 +26,20 @@
         <div class="row">
             <div class="col-12">
                 <div class="card shadow-sm">
-                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center gap-3">
+                        <div class="pe-2 flex-grow-1" style="min-width: 0;">
                             <h6 class="mb-0">Tabel Rekap Penilaian Peserta</h6>
-                            <p class="text-sm mb-0">{{ $event->title }}</p>
+                            <p class="text-sm mb-0 text-break text-wrap">{{ $event->title }}</p>
                         </div>
-                        <div>
-                            <button id="btn-export-peserta" class="btn btn-outline-secondary btn-sm">
+
+                        <div class="d-flex align-items-center gap-2 flex-shrink-0 text-nowrap">
+                            <button id="btn-export-peserta" class="btn btn-outline-secondary btn-sm mb-0">
                                 <i class="fas fa-users me-1"></i> Download Daftar Peserta
                             </button>
-                            <button id="btn-export-lms" class="btn btn-sm bg-gradient-info">
+                            <button id="btn-export-lms" class="btn btn-sm bg-gradient-info mb-0">
                                 <i class="fas fa-graduation-cap me-2"></i> Download Nilai LMS
                             </button>
-                            <button id="btn-export-excel" class="btn btn-sm bg-gradient-success">
+                            <button id="btn-export-excel" class="btn btn-sm bg-gradient-success mb-0">
                                 <i class="fas fa-file-excel me-2"></i> Export Excel
                             </button>
                         </div>
