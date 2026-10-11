@@ -3,7 +3,7 @@
 use App\Http\Controllers\{
     ProfileController, UserController, OpdController, 
     KegiatanController, MetadataController, RomantikController, 
-    DaftardataController, EventController, DashboardController, PelaporanController, SdsnController
+    DaftardataController, DashboardController, PelaporanController, SdsnController
 };
 use App\Http\Controllers\Admin\{
     AdminEventController, AdminQuestionController, AdminEvaluationController
@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/metadata-list', [MetadataController::class, 'table'])->name('metadata.table');  
     Route::get('/romantik-list', [RomantikController::class, 'table'])->name('romantik.table');   
     Route::get('/daftardata-list', [DaftardataController::class, 'table'])->name('daftardata.table');         
-    Route::get('/whatsnext', [EventController::class, 'whatsnext'])->name('pages.whatsnext'); 
+    // Route::get('/whatsnext', [EventController::class, 'whatsnext'])->name('pages.whatsnext'); 
     Route::get('/rekapitulasi', [DashboardController::class, 'rekapitulasi'])->name('pages.rekapitulasi'); 
     Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('pages.monitoring'); 
     Route::get('/monitoring/detail/{opd_id}/{type}', [DashboardController::class, 'detailMonitoring'])->name('monitoring.detail');

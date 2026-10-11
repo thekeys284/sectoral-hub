@@ -78,10 +78,42 @@
                                 <input type="url" name="doc_link" class="form-control @error('doc_link') is-invalid @enderror" value="{{ old('doc_link', $event->doc_link) }}" placeholder="https://drive.google.com/...">
                                 @error('doc_link') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label font-weight-bold">Link Sertifikat Pelatihan</label>
-                                <input type="url" name="certificate_link" class="form-control @error('certificate_link') is-invalid @enderror" value="{{ old('certificate_link', $event->certificate_link) }}" placeholder="https://drive.google.com/...">
-                                @error('certificate_link') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            <div class="col-12 mt-3 pt-3 border-top">
+                                <label class="form-label font-weight-bold d-block">Metode Sertifikat Pelatihan</label>
+                                
+                                <div class="form-check form-check-inline me-4">
+                                    <input class="form-check-input" type="radio" name="certificate_type" id="cert_type_all" value="all" 
+                                           {{ old('certificate_type', $event->certificate_type ?? 'all') === 'all' ? 'checked' : '' }}
+                                           onchange="toggleCertificateInput()">
+                                    <label class="form-check-label font-weight-bold" for="cert_type_all">
+                                        <i class="fas fa-link text-primary me-1"></i> Satu Link untuk Semua Peserta
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="certificate_type" id="cert_type_unique" value="unique" 
+                                           {{ old('certificate_type', $event->certificate_type ?? 'all') === 'unique' ? 'checked' : '' }}
+                                           onchange="toggleCertificateInput()">
+                                    <label class="form-check-label font-weight-bold" for="cert_type_unique">
+                                        <i class="fas fa-id-card text-success me-1"></i> Unik per Peserta (Generate / Personal)
+                                    </label>
+                                </div>
+
+                                <!-- Input URL jika Satu Link -->
+                                <div id="cert_link_wrapper" class="mt-2" style="{{ old('certificate_type', $event->certificate_type ?? 'all') === 'unique' ? 'display: none;' : '' }}">
+                                    <label class="form-label small text-muted font-weight-bold">Link Sertifikat (Google Drive / Cloud Folder):</label>
+                                    <input type="url" name="certificate_link" class="form-control @error('certificate_link') is-invalid @enderror" 
+                                           value="{{ old('certificate_link', $event->certificate_link) }}" 
+                                           placeholder="https://drive.google.com/drive/folders/...">
+                                    <small class="text-muted d-block mt-1">Setiap peserta yang lulus akan mengakses link yang sama ini.</small>
+                                    @error('certificate_link') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Keterangan jika Unik per Peserta -->
+                                <div id="cert_unique_info" class="mt-2 alert alert-light border small py-2 mb-0" style="{{ old('certificate_type', $event->certificate_type ?? 'all') === 'all' ? 'display: none;' : '' }}">
+                                    <i class="fas fa-info-circle text-info me-1"></i>
+                                    <strong>Mode Unik Aktif:</strong> Setiap peserta yang lulus akan memiliki tautan/file sertifikat individu masing-masing (disediakan via generator sertifikat atau diatur per peserta).
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -167,4 +199,20 @@
         </div>
     </form>
 </div>
+
+<script>
+function toggleCertificateInput() {
+    const isAll = document.getElementById('cert_type_all').checked;
+    const linkWrapper = document.getElementById('cert_link_wrapper');
+    const uniqueInfo = document.getElementById('cert_unique_info');
+
+    if (isAll) {
+        linkWrapper.style.display = 'block';
+        uniqueInfo.style.display = 'none';
+    } else {
+        linkWrapper.style.display = 'none';
+        uniqueInfo.style.display = 'block';
+    }
+}
+</script>
 @endsection

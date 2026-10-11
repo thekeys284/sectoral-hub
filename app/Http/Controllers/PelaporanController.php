@@ -20,11 +20,15 @@ class PelaporanController extends Controller
         $roles = is_array($rawRole) ? $rawRole : (json_decode($rawRole, true) ?? [$rawRole]);
         $activeRole = session('active_role', $roles[0] ?? '');
 
-        $isAdminOrPembina = in_array($activeRole, ['admin', 'pembina', 'superadmin']) 
+        $isAdminOrPembina = in_array($activeRole, ['admin', 'pembina', 'superadmin', 'walidata']) 
                             || in_array('admin', $roles) 
                             || in_array('pembina', $roles);
 
+        $isPembina = ($activeRole === 'pembina') 
+                     || (!in_array('admin', $roles) && in_array('pembina', $roles));
+
         $opdList = collect();
+        $opdBinaan = collect();
         $selectedOpdId = null;
 
         if (!$isAdminOrPembina) {
@@ -45,10 +49,35 @@ class PelaporanController extends Controller
         } else {
             // ADMIN / PEMBINA: Ambil list dinas untuk dropdown
             $opdList = Opd::orderBy('name', 'asc')->get();
-            $selectedOpdId = $request->get('opd_id');
+            $opdBinaan = Opd::where('pembina_id', $user->id)->orderBy('name', 'asc')->get();
+            $opdBinaanIds = $opdBinaan->pluck('id')->toArray();
 
-            // HANYA query database jika ada dinas yang dipilih di dropdown
-            if ($selectedOpdId) {
+            // Tentukan OPD yang dipilih
+            if ($request->has('opd_id')) {
+                // User memilih langsung dari dropdown (bisa OPD lain, OPD binaan, atau all_binaan)
+                $selectedOpdId = $request->get('opd_id');
+            } elseif ($isPembina && $opdBinaan->isNotEmpty()) {
+                // Default untuk role pembina saat pertama buka menu:
+                // Jika punya 1 OPD binaan -> langsung pilih ID OPD tersebut
+                // Jika punya lebih dari 1 OPD binaan -> pilih 'all_binaan'
+                $selectedOpdId = ($opdBinaan->count() > 1) ? 'all_binaan' : (string)$opdBinaan->first()->id;
+            } else {
+                $selectedOpdId = null;
+            }
+
+            // Jalankan query database
+            if ($selectedOpdId === 'all_binaan' && !empty($opdBinaanIds)) {
+                $daftardata = DaftarData::with([
+                    'opd',
+                    'kegiatan.metadataSubmissions.reviewer'
+                ])
+                ->whereIn('opd_id', $opdBinaanIds)
+                ->whereNotNull('kegiatan_id')
+                ->has('kegiatan')
+                ->latest()
+                ->get()
+                ->groupBy('kegiatan_id');
+            } elseif (!empty($selectedOpdId)) {
                 $daftardata = DaftarData::with([
                     'opd',
                     'kegiatan.metadataSubmissions.reviewer'
@@ -65,7 +94,14 @@ class PelaporanController extends Controller
             }
         }
 
-        return view('pelaporan.metadata.index', compact('daftardata', 'opdList', 'isAdminOrPembina', 'selectedOpdId'));
+        return view('pelaporan.metadata.index', compact(
+            'daftardata', 
+            'opdList', 
+            'isAdminOrPembina', 
+            'selectedOpdId', 
+            'opdBinaan', 
+            'isPembina'
+        ));
     }
 
     public function submitLink(Request $request, $kegiatanId)

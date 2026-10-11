@@ -33,6 +33,15 @@
                 <div>
                     <h6 class="font-weight-bolder text-dark mb-0">Pelaporan & Telaah Metadata Statistik Sektoral</h6>
                     <p class="text-xs text-secondary mb-0">Kelola tautan dan instrumen telaah untuk Metadata Kegiatan (MS-Keg), Variabel (MS-Var), dan Indikator (MS-Ind).</p>
+                    @if(isset($isPembina) && $isPembina && $selectedOpdId)
+                        @if($selectedOpdId === 'all_binaan')
+                            <span class="badge badge-sm bg-gradient-success mt-1"><i class="fas fa-check-circle me-1"></i> Menampilkan Seluruh OPD Binaan ({{ $opdBinaan->count() }} Dinas)</span>
+                        @elseif($opdBinaan->contains('id', (int)$selectedOpdId))
+                            <span class="badge badge-sm bg-gradient-success mt-1"><i class="fas fa-check-circle me-1"></i> Menampilkan OPD Binaan Anda</span>
+                        @else
+                            <span class="badge badge-sm bg-gradient-secondary mt-1"><i class="fas fa-filter me-1"></i> Menampilkan OPD Lainnya</span>
+                        @endif
+                    @endif
                 </div>
 
                 {{-- FILTER DROPDOWN KHUSUS ADMIN & PEMBINA --}}
@@ -41,18 +50,42 @@
                         <form action="{{ route('pelaporan.metadata.index') }}" method="GET" class="d-flex align-items-center gap-2">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-white border-end-0"><i class="fas fa-building text-secondary"></i></span>
-                                <select name="opd_id" class="form-select form-select-sm border-start-0 text-xs font-weight-bold" style="min-width: 280px;" onchange="this.form.submit()">
+                                <select name="opd_id" class="form-select form-select-sm border-start-0 text-xs font-weight-bold" style="min-width: 320px;" onchange="this.form.submit()">
                                     <option value="">-- Pilih Dinas / Perangkat Daerah --</option>
-                                    @foreach($opdList as $opd)
-                                        <option value="{{ $opd->id }}" {{ $selectedOpdId == $opd->id ? 'selected' : '' }}>
-                                            {{ $opd->name }}
-                                        </option>
-                                    @endforeach
+
+                                    @if(isset($opdBinaan) && $opdBinaan->isNotEmpty())
+                                        <optgroup label="⭐ OPD Binaan Anda">
+                                            @if($opdBinaan->count() > 1)
+                                                <option value="all_binaan" {{ $selectedOpdId === 'all_binaan' ? 'selected' : '' }}>
+                                                    -- Semua OPD Binaan Anda ({{ $opdBinaan->count() }} Dinas) --
+                                                </option>
+                                            @endif
+                                            @foreach($opdBinaan as $binaan)
+                                                <option value="{{ $binaan->id }}" {{ (string)$selectedOpdId === (string)$binaan->id ? 'selected' : '' }}>
+                                                    {{ $binaan->name }}
+                                                </option>
+                                            @endforeach
+                                        </optgroup>
+
+                                        <optgroup label="🏢 Seluruh Dinas / OPD Lainnya">
+                                            @foreach($opdList as $opd)
+                                                <option value="{{ $opd->id }}" {{ (string)$selectedOpdId === (string)$opd->id ? 'selected' : '' }}>
+                                                    {{ $opd->name }}
+                                                </option>
+                                            @endforeach
+                                        </optgroup>
+                                    @else
+                                        @foreach($opdList as $opd)
+                                            <option value="{{ $opd->id }}" {{ (string)$selectedOpdId === (string)$opd->id ? 'selected' : '' }}>
+                                                {{ $opd->name }}
+                                            </option>
+                                        @endforeach
+                                    @endif
                                 </select>
                             </div>
                             @if($selectedOpdId)
-                                <a href="{{ route('pelaporan.metadata.index') }}" class="btn btn-outline-secondary btn-sm mb-0 px-2 py-1" title="Reset Tampilan">
-                                    <i class="fas fa-times"></i>
+                                <a href="{{ route('pelaporan.metadata.index') }}" class="btn btn-outline-secondary btn-sm mb-0 px-2 py-1" title="{{ isset($isPembina) && $isPembina ? 'Kembali ke OPD Binaan' : 'Reset Tampilan' }}">
+                                    <i class="fas fa-undo-alt"></i>
                                 </a>
                             @endif
                         </form>

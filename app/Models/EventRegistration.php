@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class EventRegistration extends Model
 {
@@ -90,5 +91,26 @@ class EventRegistration extends Model
     {
         $passingGrade = $this->event->passing_grade ?? 70;
         return $this->nilai_akhir >= $passingGrade;
+    }
+
+    /**
+     * Accessor untuk mendapatkan link / file sertifikat peserta
+     */
+    public function getCertificateUrlAttribute(): ?string
+    {
+        // 1. Jika event diatur 'Satu link untuk semua peserta'
+        if ($this->event && $this->event->certificate_type === 'all') {
+            return $this->event->certificate_link ?: $this->sertifikat_path;
+        }
+
+        // 2. Jika unik per peserta (atau sertifikat individual)
+        if ($this->sertifikat_path) {
+            if (Str::startsWith($this->sertifikat_path, ['http://', 'https://'])) {
+                return $this->sertifikat_path;
+            }
+            return asset('storage/' . $this->sertifikat_path);
+        }
+
+        return null;
     }
 }

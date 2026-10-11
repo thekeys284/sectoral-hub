@@ -74,12 +74,14 @@
                         @endif
                     </div>
 
-                    <!-- LINK SERTIFIKAT PELATIHAN -->
+                    <!-- PENGATURAN SERTIFIKAT PELATIHAN -->
                     <div class="mb-0">
-                        <small class="text-muted d-block font-weight-bold">Link Sertifikat / Drive:</small>
-                        @if($event->certificate_link)
-                            <a href="{{ $event->certificate_link }}" target="_blank" class="text-truncate d-block small text-success font-weight-bold">
-                                <i class="fas fa-external-link-alt me-1"></i> Buka Link Sertifikat
+                        <small class="text-muted d-block font-weight-bold">Sertifikat Pelatihan:</small>
+                        @if(($event->certificate_type ?? 'all') === 'unique')
+                            <span class="badge badge-sm bg-gradient-info mt-1"><i class="fas fa-id-card me-1"></i> Unik per Peserta</span>
+                        @elseif($event->certificate_link)
+                            <a href="{{ $event->certificate_link }}" target="_blank" class="text-truncate d-block small text-success font-weight-bold mt-1">
+                                <i class="fas fa-external-link-alt me-1"></i> Buka Link Bersama (Drive/Cloud)
                             </a>
                         @else
                             <span class="text-secondary text-sm">-</span>

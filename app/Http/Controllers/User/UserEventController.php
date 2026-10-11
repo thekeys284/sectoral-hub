@@ -73,12 +73,18 @@ class UserEventController extends Controller
         }
 
         // Buat pendaftaran baru
+        $sertifikatPath = null;
+        if (($event->certificate_type ?? 'all') === 'all' && $event->certificate_link) {
+            $sertifikatPath = $event->certificate_link;
+        }
+
         EventRegistration::create([
-            'user_id' => Auth::id(),
-            'event_id' => $event->id,
+            'user_id'          => Auth::id(),
+            'event_id'         => $event->id,
             'status_kehadiran' => false, // Default status kehadiran
-            'score_pretest' => null,     // Default score pretest
-            'score_posttest' => null,    // Default score posttest
+            'score_pretest'    => null,  // Default score pretest
+            'score_posttest'   => null,  // Default score posttest
+            'sertifikat_path'  => $sertifikatPath,
         ]);
 
         return back()->with('success', 'Anda berhasil mendaftar ke event ' . $event->title . '!');

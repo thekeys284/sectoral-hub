@@ -35,6 +35,8 @@ class AdminEventController extends Controller
             'youtube_link'      => 'nullable|url',
             'link_materi'       => 'nullable|url',
             'doc_link'          => 'nullable|url',
+            'certificate_type'  => 'nullable|in:all,unique',
+            'certificate_link'  => 'nullable|url',
             'absensi_start'     => 'nullable|date',
             'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
             'passing_grade'     => 'required|integer|min:0|max:100',
@@ -45,6 +47,10 @@ class AdminEventController extends Controller
 
         $validatedData['created_by'] = auth()->id();
         $validatedData['is_active'] = $request->has('is_active');
+        $validatedData['certificate_type'] = $request->input('certificate_type', 'all');
+        if ($validatedData['certificate_type'] === 'unique') {
+            $validatedData['certificate_link'] = null;
+        }
 
         // Upload Banner
         if ($request->hasFile('image_banner')) {
@@ -130,6 +136,8 @@ class AdminEventController extends Controller
             'youtube_link'      => 'nullable|url',
             'link_materi'       => 'nullable|url',
             'doc_link'          => 'nullable|url',
+            'certificate_type'  => 'required|in:all,unique',
+            'certificate_link'  => 'nullable|url',
             'absensi_start'     => 'nullable|date',
             'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
             'passing_grade'     => 'required|integer|min:0|max:100',
@@ -139,6 +147,11 @@ class AdminEventController extends Controller
         ]);
 
         $data['is_active'] = $request->has('is_active');
+
+        // Jika dipilih tipe 'unique', kosongkan certificate_link umum
+        if ($data['certificate_type'] === 'unique') {
+            $data['certificate_link'] = null;
+        }
 
         // Replace Banner jika ada upload baru
         if ($request->hasFile('image_banner')) {
@@ -157,6 +170,12 @@ class AdminEventController extends Controller
         }
 
         $event->update($data);
+
+        // Jika mode "Satu Link untuk Semua" dan link diisi, sinkronkan otomatis sertifikat_path seluruh peserta
+        if ($data['certificate_type'] === 'all' && !empty($data['certificate_link'])) {
+            EventRegistration::where('event_id', $event->id)
+                ->update(['sertifikat_path' => $data['certificate_link']]);
+        }
 
         return redirect()->route('admin.events.index')
             ->with('success', 'Data event berhasil diperbarui!');
@@ -206,6 +225,8 @@ class AdminEventController extends Controller
                 'sudah_evaluasi'  => $sudahEvaluasi,
                 'nilai_akhir'     => $reg->nilai_akhir,
                 'is_lulus'        => $reg->isLulus(),
+                'certificate_url' => $reg->certificate_url,
+                'sertifikat_path' => $reg->sertifikat_path,
             ];
         });
 

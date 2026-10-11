@@ -57,20 +57,62 @@
                     <div class="card-body p-4">
                         <h5 class="font-weight-bold mb-3">Tautan Streaming & Materi</h5>
                         <div class="row g-3">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label">Link Zoom / Virtual Meeting</label>
                                 <input type="url" name="meeting_link" class="form-control @error('meeting_link') is-invalid @enderror" value="{{ old('meeting_link') }}" placeholder="https://zoom.us/j/...">
                                 @error('meeting_link')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label">Link YouTube</label>
                                 <input type="url" name="youtube_link" class="form-control @error('youtube_link') is-invalid @enderror" value="{{ old('youtube_link') }}" placeholder="https://youtube.com/...">
                                 @error('youtube_link')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label">Link Materi</label>
                                 <input type="url" name="link_materi" class="form-control @error('link_materi') is-invalid @enderror" value="{{ old('link_materi') }}" placeholder="https://drive.google.com">
                                 @error('link_materi')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Link Dokumentasi</label>
+                                <input type="url" name="doc_link" class="form-control @error('doc_link') is-invalid @enderror" value="{{ old('doc_link') }}" placeholder="https://drive.google.com">
+                                @error('doc_link')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-12 mt-3 pt-3 border-top">
+                                <label class="form-label font-weight-bold d-block">Metode Sertifikat Pelatihan</label>
+                                
+                                <div class="form-check form-check-inline me-4">
+                                    <input class="form-check-input" type="radio" name="certificate_type" id="cert_type_all_create" value="all" 
+                                           {{ old('certificate_type', 'all') === 'all' ? 'checked' : '' }}
+                                           onchange="toggleCertificateInputCreate()">
+                                    <label class="form-check-label font-weight-bold" for="cert_type_all_create">
+                                        <i class="fas fa-link text-primary me-1"></i> Satu Link untuk Semua Peserta
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="certificate_type" id="cert_type_unique_create" value="unique" 
+                                           {{ old('certificate_type') === 'unique' ? 'checked' : '' }}
+                                           onchange="toggleCertificateInputCreate()">
+                                    <label class="form-check-label font-weight-bold" for="cert_type_unique_create">
+                                        <i class="fas fa-id-card text-success me-1"></i> Unik per Peserta (Generate / Personal)
+                                    </label>
+                                </div>
+
+                                <!-- Input URL jika Satu Link -->
+                                <div id="cert_link_wrapper_create" class="mt-2" style="{{ old('certificate_type') === 'unique' ? 'display: none;' : '' }}">
+                                    <label class="form-label small text-muted font-weight-bold">Link Sertifikat (Google Drive / Cloud Folder):</label>
+                                    <input type="url" name="certificate_link" class="form-control @error('certificate_link') is-invalid @enderror" 
+                                           value="{{ old('certificate_link') }}" 
+                                           placeholder="https://drive.google.com/drive/folders/...">
+                                    <small class="text-muted d-block mt-1">Setiap peserta yang lulus akan mengakses link yang sama ini.</small>
+                                    @error('certificate_link') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Keterangan jika Unik per Peserta -->
+                                <div id="cert_unique_info_create" class="mt-2 alert alert-light border small py-2 mb-0" style="{{ old('certificate_type', 'all') === 'all' ? 'display: none;' : '' }}">
+                                    <i class="fas fa-info-circle text-info me-1"></i>
+                                    <strong>Mode Unik Aktif:</strong> Setiap peserta yang lulus akan memiliki tautan/file sertifikat individu masing-masing (disediakan via generator sertifikat atau diatur per peserta).
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -161,4 +203,20 @@
         </div>
     </form>
 </div>
+
+<script>
+function toggleCertificateInputCreate() {
+    const isAll = document.getElementById('cert_type_all_create').checked;
+    const linkWrapper = document.getElementById('cert_link_wrapper_create');
+    const uniqueInfo = document.getElementById('cert_unique_info_create');
+
+    if (isAll) {
+        linkWrapper.style.display = 'block';
+        uniqueInfo.style.display = 'none';
+    } else {
+        linkWrapper.style.display = 'none';
+        uniqueInfo.style.display = 'block';
+    }
+}
+</script>
 @endsection

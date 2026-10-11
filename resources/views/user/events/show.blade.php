@@ -117,23 +117,28 @@
                             @endif
                         </div>
 
-                        {{-- LINK SERTIFIKAT EKSTERNAL --}}
+                        {{-- E-SERTIFIKAT PELATIHAN --}}
                         <div>
                             <small class="text-muted d-block fw-semibold mb-1">E-Sertifikat Pelatihan:</small>
                             @php
-                                $isPassed = $registration && $registration->score_posttest !== null && $registration->score_posttest >= $event->passing_grade;
+                                $certUrl = $registration ? $registration->certificate_url : null;
+                                $isPassed = $registration && (($registration->score_posttest !== null && $registration->score_posttest >= $event->passing_grade) || $registration->isLulus());
                             @endphp
 
-                            @if($event->certificate_link && $isPassed)
-                                <a href="{{ $event->certificate_link }}" target="_blank" class="btn btn-sm btn-success rounded-3 w-100 text-truncate fw-bold">
-                                    <i class="fas fa-award me-1"></i> Unduh E-Sertifikat
-                                </a>
-                            @elseif($event->certificate_link && !$isPassed)
-                                <button class="btn btn-sm btn-secondary rounded-3 w-100 text-truncate" disabled title="Selesaikan Posttest dengan nilai memenuhi passing grade">
+                            @if($isPassed)
+                                @if($certUrl)
+                                    <a href="{{ $certUrl }}" target="_blank" class="btn btn-sm btn-success rounded-3 w-100 text-truncate fw-bold shadow-sm">
+                                        <i class="fas fa-award me-1"></i> Unduh E-Sertifikat
+                                    </a>
+                                @else
+                                    <button class="btn btn-sm btn-outline-warning rounded-3 w-100 text-truncate" disabled title="Sertifikat sedang dalam proses penerbitan oleh panitia">
+                                        <i class="fas fa-clock me-1"></i> Sertifikat Sedang Diproses
+                                    </button>
+                                @endif
+                            @else
+                                <button class="btn btn-sm btn-secondary rounded-3 w-100 text-truncate" disabled title="Selesaikan Posttest dengan nilai memenuhi passing grade untuk klaim sertifikat">
                                     <i class="fas fa-lock me-1"></i> Sertifikat Terkunci (Belum Lulus)
                                 </button>
-                            @else
-                                <span class="text-muted small">Belum tersedia</span>
                             @endif
                         </div>
                     </div>
