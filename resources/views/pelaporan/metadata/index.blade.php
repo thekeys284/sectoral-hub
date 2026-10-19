@@ -142,7 +142,7 @@
                                                 $latest = $allSubmissions->last();
                                                 $submissionCount = $allSubmissions->count();
                                             @endphp
-                                            <td rowspan="{{ $dataGroup->count() }}" class="align-top text-center" style="min-width: 185px;">
+                                            <td rowspan="{{ $dataGroup->count() }}" class="align-top text-center text-wrap" style="min-width: 185px;">
                                                 @if(!$latest)
                                                     {{-- Belum ada link --}}
                                                     <button type="button" class="btn btn-outline-danger btn-xs w-100 mb-0" data-bs-toggle="modal" data-bs-target="#modalSubmit_{{ $tipe }}_{{ $keg?->id }}">
