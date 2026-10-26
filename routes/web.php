@@ -17,10 +17,15 @@ use App\Http\Controllers\Auth\{
 
 // Route fallback untuk file storage/app/public (agar gambar Banner, VB, & Foto Profil tetap tampil meski symlink public/storage belum ada di Windows/Docker)
 Route::get('/storage/{path}', function (string $path) {
-    if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-        abort(404);
+    $storageFile = storage_path('app/public/' . $path);
+    if (is_file($storageFile)) {
+        return response()->file($storageFile);
     }
-    return \Illuminate\Support\Facades\Storage::disk('public')->response($path);
+    $publicFile = public_path('storage/' . $path);
+    if (is_file($publicFile)) {
+        return response()->file($publicFile);
+    }
+    abort(404);
 })->where('path', '.*')->name('storage.public');
 
 // Route untuk callback token Majapahit

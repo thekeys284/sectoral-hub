@@ -7,10 +7,52 @@ use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\EventEvaluation;
 use App\Models\EventRegistration;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AdminEventController extends Controller
 {
+    private function uploadEventFile(\Illuminate\Http\UploadedFile $file, string $subFolder): string
+    {
+        $ext = $file->getClientOriginalExtension() ?: 'jpg';
+        $fileName = Str::random(40) . '.' . $ext;
+        $relativePath = trim($subFolder, '/') . '/' . $fileName;
+
+        $storageDir = storage_path('app/public/' . trim($subFolder, '/'));
+        if (!is_dir($storageDir)) {
+            @mkdir($storageDir, 0777, true);
+        }
+
+        try {
+            $file->move($storageDir, $fileName);
+            @chmod($storageDir . DIRECTORY_SEPARATOR . $fileName, 0664);
+            return $relativePath;
+        } catch (\Throwable $e) {
+            $publicDir = public_path('storage/' . trim($subFolder, '/'));
+            if (!is_dir($publicDir)) {
+                @mkdir($publicDir, 0777, true);
+            }
+            $file->move($publicDir, $fileName);
+            @chmod($publicDir . DIRECTORY_SEPARATOR . $fileName, 0664);
+            return $relativePath;
+        }
+    }
+
+    private function deleteEventFile(?string $relativePath): void
+    {
+        if (!$relativePath) {
+            return;
+        }
+        $storageFile = storage_path('app/public/' . $relativePath);
+        if (is_file($storageFile)) {
+            @unlink($storageFile);
+        }
+        $publicFile = public_path('storage/' . $relativePath);
+        if (is_file($publicFile)) {
+            @unlink($publicFile);
+        }
+    }
     public function index(){
         $events = Event::withCount('registrations')
                     ->orderBy('created_at', 'desc')
@@ -49,13 +91,24 @@ class AdminEventController extends Controller
 
         $validatedData['created_by'] = auth()->id();
         $validatedData['is_active'] = $request->has('is_active');
-        $validatedData['has_pretest'] = $request->has('has_pretest');
-        $validatedData['has_posttest'] = $request->has('has_posttest');
-        $validatedData['has_evaluasi'] = $request->has('has_evaluasi');
-        $validatedData['absensi_type'] = $request->input('absensi_type', 'web');
-        if ($validatedData['absensi_type'] === 'web') {
-            $validatedData['absensi_link'] = null;
+
+        if (Schema::hasColumn('events', 'has_pretest')) {
+            $validatedData['has_pretest'] = $request->has('has_pretest');
+            $validatedData['has_posttest'] = $request->has('has_posttest');
+            $validatedData['has_evaluasi'] = $request->has('has_evaluasi');
+        } else {
+            unset($validatedData['has_pretest'], $validatedData['has_posttest'], $validatedData['has_evaluasi']);
         }
+
+        if (Schema::hasColumn('events', 'absensi_type')) {
+            $validatedData['absensi_type'] = $request->input('absensi_type', 'web');
+            if ($validatedData['absensi_type'] === 'web') {
+                $validatedData['absensi_link'] = null;
+            }
+        } else {
+            unset($validatedData['absensi_type'], $validatedData['absensi_link']);
+        }
+
         $validatedData['certificate_type'] = $request->input('certificate_type', 'all');
         if ($validatedData['certificate_type'] === 'unique') {
             $validatedData['certificate_link'] = null;
@@ -63,12 +116,12 @@ class AdminEventController extends Controller
 
         // Upload Banner
         if ($request->hasFile('image_banner')) {
-            $validatedData['image_banner'] = $request->file('image_banner')->store('events/banners', 'public');
+            $validatedData['image_banner'] = $this->uploadEventFile($request->file('image_banner'), 'events/banners');
         }
 
         // Upload Virtual Background
         if ($request->hasFile('virtual_bg')) {
-            $validatedData['virtual_bg'] = $request->file('virtual_bg')->store('events/vbg', 'public');
+            $validatedData['virtual_bg'] = $this->uploadEventFile($request->file('virtual_bg'), 'events/vbg');
         }
 
         // 1. Simpan Event Baru
@@ -158,12 +211,22 @@ class AdminEventController extends Controller
         ]);
 
         $data['is_active'] = $request->has('is_active');
-        $data['has_pretest'] = $request->has('has_pretest');
-        $data['has_posttest'] = $request->has('has_posttest');
-        $data['has_evaluasi'] = $request->has('has_evaluasi');
-        $data['absensi_type'] = $request->input('absensi_type', 'web');
-        if ($data['absensi_type'] === 'web') {
-            $data['absensi_link'] = null;
+
+        if (Schema::hasColumn('events', 'has_pretest')) {
+            $data['has_pretest'] = $request->has('has_pretest');
+            $data['has_posttest'] = $request->has('has_posttest');
+            $data['has_evaluasi'] = $request->has('has_evaluasi');
+        } else {
+            unset($data['has_pretest'], $data['has_posttest'], $data['has_evaluasi']);
+        }
+
+        if (Schema::hasColumn('events', 'absensi_type')) {
+            $data['absensi_type'] = $request->input('absensi_type', 'web');
+            if ($data['absensi_type'] === 'web') {
+                $data['absensi_link'] = null;
+            }
+        } else {
+            unset($data['absensi_type'], $data['absensi_link']);
         }
 
         // Jika dipilih tipe 'unique', kosongkan certificate_link umum
@@ -173,18 +236,14 @@ class AdminEventController extends Controller
 
         // Replace Banner jika ada upload baru
         if ($request->hasFile('image_banner')) {
-            if ($event->image_banner) {
-                Storage::disk('public')->delete($event->image_banner);
-            }
-            $data['image_banner'] = $request->file('image_banner')->store('events/banners', 'public');
+            $this->deleteEventFile($event->image_banner);
+            $data['image_banner'] = $this->uploadEventFile($request->file('image_banner'), 'events/banners');
         }
 
         // Replace Virtual Background jika ada upload baru
         if ($request->hasFile('virtual_bg')) {
-            if ($event->virtual_bg) {
-                Storage::disk('public')->delete($event->virtual_bg);
-            }
-            $data['virtual_bg'] = $request->file('virtual_bg')->store('events/vbg', 'public');
+            $this->deleteEventFile($event->virtual_bg);
+            $data['virtual_bg'] = $this->uploadEventFile($request->file('virtual_bg'), 'events/vbg');
         }
 
         $event->update($data);
@@ -204,12 +263,8 @@ class AdminEventController extends Controller
         $event = Event::findOrFail($id);
 
         // Hapus file gambar dari storage
-        if ($event->image_banner) {
-            Storage::disk('public')->delete($event->image_banner);
-        }
-        if ($event->virtual_bg) {
-            Storage::disk('public')->delete($event->virtual_bg);
-        }
+        $this->deleteEventFile($event->image_banner);
+        $this->deleteEventFile($event->virtual_bg);
 
         $event->delete(); 
 
