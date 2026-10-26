@@ -43,15 +43,17 @@ class PelaporanController extends Controller
             ])
             ->where('opd_id', $selectedOpdId)
             ->whereNotNull('kegiatan_id')
-            ->has('kegiatan')
+            ->whereHas('kegiatan', function ($q) use ($selectedOpdId) {
+                $q->where('opd_id', $selectedOpdId);
+            })
             ->latest()
             ->get()
             ->groupBy('kegiatan_id');
 
         } else {
-            // ADMIN / PEMBINA: Ambil list dinas untuk dropdown
-            $opdList = Opd::orderBy('name', 'asc')->get();
-            $opdBinaan = Opd::where('pembina_id', $user->id)->orderBy('name', 'asc')->get();
+            // ADMIN / PEMBINA: Ambil list dinas untuk dropdown (hanya OPD mandiri/induk)
+            $opdList = Opd::whereNull('parent_id')->orderBy('name', 'asc')->get();
+            $opdBinaan = Opd::where('pembina_id', $user->id)->whereNull('parent_id')->orderBy('name', 'asc')->get();
             $opdBinaanIds = $opdBinaan->pluck('id')->toArray();
 
             // Tentukan OPD yang dipilih
@@ -75,7 +77,9 @@ class PelaporanController extends Controller
                 ])
                 ->whereIn('opd_id', $opdBinaanIds)
                 ->whereNotNull('kegiatan_id')
-                ->has('kegiatan')
+                ->whereHas('kegiatan', function ($q) {
+                    $q->whereColumn('kegiatan.opd_id', 'daftar_data.opd_id');
+                })
                 ->latest()
                 ->get()
                 ->groupBy('kegiatan_id');
@@ -86,7 +90,9 @@ class PelaporanController extends Controller
                 ])
                 ->where('opd_id', $selectedOpdId)
                 ->whereNotNull('kegiatan_id')
-                ->has('kegiatan')
+                ->whereHas('kegiatan', function ($q) use ($selectedOpdId) {
+                    $q->where('opd_id', $selectedOpdId);
+                })
                 ->latest()
                 ->get()
                 ->groupBy('kegiatan_id');

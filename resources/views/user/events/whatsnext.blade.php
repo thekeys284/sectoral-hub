@@ -94,11 +94,17 @@
         </div>
 
         {{-- GRID KATALOG PELATIHAN --}}
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
             <div>
                 <h4 class="fw-bold text-dark mb-0"><i class="fas fa-graduation-cap text-emerald me-2"></i>Daftar Pelatihan & Kegiatan Mendatang</h4>
                 <p class="text-muted small mb-0">Pilih pelatihan yang ingin Anda ikuti dan klik pendaftaran langsung.</p>
             </div>
+            @if(auth()->check() && auth()->user()->origin_opd)
+                <div class="badge bg-white text-dark border shadow-xs px-3 py-2 rounded-3">
+                    <i class="fas fa-building text-emerald me-1"></i>
+                    Satker Pendaftaran Pelatihan: <strong class="text-emerald">{{ auth()->user()->origin_opd->name }}</strong>
+                </div>
+            @endif
         </div>
 
         <div class="row g-4 mb-4">

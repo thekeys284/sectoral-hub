@@ -376,7 +376,7 @@
                                                     <h6 class="text-dark text-sm font-weight-bold mb-0">
                                                         Pengajuan / Revisi ke-{{ $revIndex + 1 }}
                                                     </h6>
-                                                    <small class="text-xs text-secondary">{{ $submission->created_at->format('d M Y, H:i') }}</small>
+                                                    <small class="text-xs text-secondary">{{ optional($submission->created_at)->format('d M Y, H:i') ?? '-' }}</small>
                                                 </div>
 
                                                 <p class="text-xs text-secondary mt-1 mb-2">

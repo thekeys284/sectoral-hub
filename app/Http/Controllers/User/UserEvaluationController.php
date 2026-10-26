@@ -32,13 +32,18 @@ class UserEvaluationController extends Controller
                 ->with('info', 'Anda sudah mengisi evaluasi untuk event ini.');
         }
 
-        // 3. VALIDASI BARU: Pastikan Pretest dan Posttest SUDAH dikerjakan
-        if ($registration->score_pretest === null) {
+        if (!($event->has_evaluasi ?? true)) {
+            return redirect()->route('user.events.show', $event->id)
+                ->with('error', 'Kuesioner evaluasi tidak diaktifkan untuk kegiatan ini.');
+        }
+
+        // 3. VALIDASI: Pastikan Pretest dan Posttest yang diaktifkan SUDAH dikerjakan
+        if (($event->has_pretest ?? true) && $registration->score_pretest === null) {
             return redirect()->route('user.events.show', $event->id)
                 ->with('error', 'Silakan selesaikan Ujian Pretest terlebih dahulu sebelum mengisi evaluasi.');
         }
 
-        if ($registration->score_posttest === null) {
+        if (($event->has_posttest ?? true) && $registration->score_posttest === null) {
             return redirect()->route('user.events.show', $event->id)
                 ->with('error', 'Silakan selesaikan Ujian Posttest terlebih dahulu sebelum mengisi evaluasi.');
         }
@@ -71,10 +76,12 @@ class UserEvaluationController extends Controller
                 ->with('info', 'Anda sudah mengisi evaluasi untuk event ini.');
         }
 
-        // VALIDASI BARU: Cek kembali Pretest dan Posttest sebelum menyimpan
-        if ($registration->score_pretest === null || $registration->score_posttest === null) {
+        // VALIDASI: Cek kembali Pretest dan Posttest yang aktif sebelum menyimpan
+        $needPretest = ($event->has_pretest ?? true) && $registration->score_pretest === null;
+        $needPosttest = ($event->has_posttest ?? true) && $registration->score_posttest === null;
+        if ($needPretest || $needPosttest) {
             return redirect()->route('user.events.show', $event->id)
-                ->with('error', 'Evaluasi hanya dapat diisi setelah menyelesaikan Pretest dan Posttest.');
+                ->with('error', 'Evaluasi hanya dapat diisi setelah menyelesaikan ujian yang diwajibkan.');
         }
 
         $answers = $request->input('answers', []); // Format: ['evaluation_id' => 'nilai_atau_teks']

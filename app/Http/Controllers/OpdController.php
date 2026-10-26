@@ -15,7 +15,7 @@ use App\Imports\OpdImport;
 class OpdController extends Controller
 {
     public function index(){
-        $opds = Opd::with('pembina')->get();
+        $opds = Opd::with(['pembina', 'parent'])->get();
         $users = User::all();
         return view('master.opd.index', compact('opds', 'users'));
     }
@@ -25,10 +25,14 @@ class OpdController extends Controller
             'name' => 'required|string|max:255',
             'alamat' => 'required|string',
             'email' => 'required|string|lowercase|email|max:255|unique:opd',
+            'parent_id' => 'nullable|exists:opd,id',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048' 
         ]);
 
         $data = $request->all();
+        if (empty($data['parent_id'])) {
+            $data['parent_id'] = null;
+        }
 
         if ($request->hasFile('image')){
             $file = $request->file('image');
@@ -52,10 +56,14 @@ class OpdController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:opd,email,' . $opd->id,
             'alamat' => 'required|string',
+            'parent_id' => 'nullable|exists:opd,id|not_in:' . $opd->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         $data = $request->all();
+        if (empty($data['parent_id'])) {
+            $data['parent_id'] = null;
+        }
 
         if ($request->hasFile('image')) {
             // Hapus logo lama jika ada di folder public

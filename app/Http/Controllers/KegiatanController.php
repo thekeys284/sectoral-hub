@@ -37,22 +37,29 @@ class KegiatanController extends Controller
     } 
 
     public function create() {
-        $kegiatan = new Kegiatan(); 
-        $opds = Opd::all();
+        $kegiatan = new Kegiatan();
+        if (auth()->check() && auth()->user()->opd_id) {
+            $kegiatan->opd_id = auth()->user()->opd_id;
+        }
+        $opds = Opd::whereNull('parent_id')->orderBy('name', 'asc')->get();
         $metadatas = Metadata::all();
         $romantiks = Romantik::all();
         return view('master.kegiatan.form', compact('kegiatan', 'opds', 'metadatas', 'romantiks'));
     }
 
     public function store(Request $request){
+        if (!$request->filled('opd_id') && auth()->check() && auth()->user()->opd_id) {
+            $request->merge(['opd_id' => auth()->user()->opd_id]);
+        }
+
         $request->validate([
             'nama_kegiatan' => 'required|string|max:255',
-            'periode_kegiatan' => 'required|string|max:255',
+            'periode_kegiatan' => 'nullable|string|max:255',
             'tahun_kegiatan' => 'required|integer',
-            'cara_pengumpulan_data' => 'required|string',
-            'data_utama' => 'required|string',
-            'data_prioritas' => 'required|string',
-            'aksesbilitas' => 'required|string',
+            'cara_pengumpulan_data' => 'nullable|string',
+            'data_utama' => 'nullable|string',
+            'data_prioritas' => 'nullable|string',
+            'aksesbilitas' => 'nullable|string',
             'opd_id' => 'required|exists:opd,id',
             'deskripsi' => 'nullable|string',
             'metadata_id' => 'nullable|exists:metadata,id',
@@ -64,25 +71,29 @@ class KegiatanController extends Controller
 
         Kegiatan::create($request->all());
 
-        return redirect()->route('master.kegiatan.index')->with('success', 'Kegiatan created successfully.');
+        return redirect()->route('master.kegiatan.index')->with('success', 'Kegiatan berhasil ditambahkan.');
     }
 
     public function edit(Kegiatan $kegiatan) {
-        $opds = Opd::all();
+        $opds = Opd::whereNull('parent_id')->orderBy('name', 'asc')->get();
         $metadatas = Metadata::all();
         $romantiks = Romantik::all();
         return view('master.kegiatan.form', compact('kegiatan', 'opds', 'metadatas', 'romantiks'));
     }
 
     public function update(Request $request, Kegiatan $kegiatan){
+        if (!$request->filled('opd_id') && auth()->check() && auth()->user()->opd_id) {
+            $request->merge(['opd_id' => auth()->user()->opd_id]);
+        }
+
         $request->validate([
             'nama_kegiatan' => 'required|string|max:255',
-            'periode_kegiatan' => 'required|string|max:255',
+            'periode_kegiatan' => 'nullable|string|max:255',
             'tahun_kegiatan' => 'required|integer',
-            'cara_pengumpulan_data' => 'required|string',
-            'data_utama' => 'required|string',
-            'data_prioritas' => 'required|string',
-            'aksesbilitas' => 'required|string',
+            'cara_pengumpulan_data' => 'nullable|string',
+            'data_utama' => 'nullable|string',
+            'data_prioritas' => 'nullable|string',
+            'aksesbilitas' => 'nullable|string',
             'opd_id' => 'required|exists:opd,id',
             'deskripsi' => 'nullable|string',
             'metadata_id' => 'nullable|exists:metadata,id',
@@ -94,7 +105,7 @@ class KegiatanController extends Controller
 
         $kegiatan->update($request->all());
 
-        return redirect()->route('master.kegiatan.index')->with('success', 'Kegiatan updated successfully.');
+        return redirect()->route('master.kegiatan.index')->with('success', 'Kegiatan berhasil diperbarui.');
     }
 
     public function destroy(Kegiatan $kegiatan){

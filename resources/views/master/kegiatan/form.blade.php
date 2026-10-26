@@ -21,6 +21,17 @@
                 <h6>{{ $kegiatan->id ? 'Form Edit Kegiatan' : 'Form Tambah Kegiatan' }}</h6>
             </div>
             <div class="card-body">
+                @if ($errors->any())
+                    <div class="alert alert-danger text-white mb-4" role="alert">
+                        <strong>Gagal menyimpan data:</strong>
+                        <ul class="mb-0 mt-1 ps-3">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form action="{{ $kegiatan->id ? route('master.kegiatan.update', $kegiatan->id) : route('master.kegiatan.store') }}" 
                       method="POST" enctype="multipart/form-data">
                     @csrf
@@ -68,8 +79,8 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label>Dinas (OPD)</label>
-                                <select name="opd_id" class="form-control select2-searchable">
+                                <label>Dinas (OPD) <span class="text-danger">*</span></label>
+                                <select name="opd_id" class="form-control select2-searchable" required>
                                     <option value="">-- Pilih OPD --</option>
                                     @foreach($opds as $opd)
                                         <option value="{{ $opd->id }}" {{ old('opd_id', $kegiatan->opd_id) == $opd->id ? 'selected' : '' }}>
@@ -77,6 +88,7 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                @error('opd_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -140,7 +152,7 @@
                                     </option>
                                     <option value="internal" {{ old('aksesbilitas', $kegiatan->aksesbilitas) == 'internal' ? 'selected' : '' }}>Khusus Internal</option>
                                     <option value="terbatas" {{ old('aksesbilitas', $kegiatan->aksesbilitas) == 'terbatas' ? 'selected' : '' }}>Terbatas</option>
-                                    <option value="publik" {{ old('aksesblitas', $kegiatan->aksesbilitas) == 'publik' ? 'selected' : '' }}>Terbuka (Publik)</option>
+                                    <option value="publik" {{ old('aksesbilitas', $kegiatan->aksesbilitas) == 'publik' ? 'selected' : '' }}>Terbuka (Publik)</option>
                                 </select>
                             </div>
                         </div>

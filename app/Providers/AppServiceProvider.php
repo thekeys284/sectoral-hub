@@ -45,22 +45,22 @@ class AppServiceProvider extends ServiceProvider
             $menuItems = [
                 [
                     'header' => 'Dashboard',
-                    'roles'  => ['admin', 'walidata', 'produsen','pembina'],
-                    'items'  => [
+                    'roles'  => ['admin', 'walidata', 'produsen', 'pembina', 'operator'],
+                    'items'  => array_filter([
                         [
                             'title' => 'Dashboard',
                             'icon'  => 'ni ni-chart-bar-32 text-dark',
                             'route' => 'dashboard',
                             'active' => request()->routeIs('dashboard')
                         ],
-                        [
+                        $activeRole !== 'operator' ? [
                             'title' => 'Monitoring OPD',
                             'icon'  => 'ni ni-tv-2 text-dark',
                             'route' => 'pages.monitoring',
                             'active' => request()->routeIs('pages.monitoring*')
-                        ],
+                        ] : null,
                         
-                    ]
+                    ])
                 ],
                 [
                     'header' => 'Pelaporan Data',
@@ -83,7 +83,7 @@ class AppServiceProvider extends ServiceProvider
                 ],
                 [
                     'header' => 'Pelatihan',
-                    'roles'  => ['admin', 'walidata', 'produsen', 'pembina'], 
+                    'roles'  => ['admin', 'walidata', 'produsen', 'pembina', 'operator'], 
                     'items'  => [
                         [
                             'title'  => 'Pelatihan Saya',

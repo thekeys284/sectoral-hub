@@ -58,6 +58,67 @@ class User extends Authenticatable
             : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
 
+    protected ?Opd $cachedOriginOpd = null;
+    protected bool $originOpdLoaded = false;
+
+    /**
+     * Mengambil OPD asal (satker asli user di tabel users) tanpa resolusi parent_id
+     */
+    public function getOriginOpdAttribute(): ?Opd
+    {
+        $rawOpdId = $this->attributes['opd_id'] ?? null;
+        if (!$rawOpdId) {
+            return null;
+        }
+        if (!$this->originOpdLoaded) {
+            $this->cachedOriginOpd = Opd::with('parent')->find($rawOpdId);
+            $this->originOpdLoaded = true;
+        }
+        return $this->cachedOriginOpd;
+    }
+
+    /**
+     * Mengambil role yang sedang aktif pada session
+     */
+    public function getActiveRoleAttribute(): string
+    {
+        $rawRole = $this->role;
+        $userRoles = is_string($rawRole)
+            ? (json_decode($rawRole, true) ?? [$rawRole])
+            : (is_array($rawRole) ? $rawRole : []);
+        $sessionRole = session('active_role');
+        if (!empty($sessionRole) && in_array($sessionRole, $userRoles)) {
+            return $sessionRole;
+        }
+        return $userRoles[0] ?? '';
+    }
+
+    /**
+     * Resolusi otomatis opd_id:
+     * - Jika user yang login sedang berada di mode 'produsen' (Akun Instansi) dan
+     *   OPD asalnya memiliki parent_id (misal Rumah Sakit di bawah OPD Induk),
+     *   maka opd_id otomatis mengarah ke parent_id.
+     * - Jika OPD tidak punya induk (parent_id = null) atau user sedang di mode 'operator' (Akun Pribadi),
+     *   tetap mengembalikan opd_id asli.
+     */
+    public function getOpdIdAttribute($value)
+    {
+        if (!$value) {
+            return $value;
+        }
+
+        if (auth()->check() && auth()->id() === ($this->attributes['id'] ?? null)) {
+            if ($this->active_role === 'produsen') {
+                $originOpd = $this->origin_opd;
+                if ($originOpd && $originOpd->parent_id) {
+                    return $originOpd->parent_id;
+                }
+            }
+        }
+
+        return $value;
+    }
+
     public function opd(){
         return $this->belongsTo(Opd::class, 'opd_id');
     }

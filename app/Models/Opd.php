@@ -19,7 +19,16 @@ class Opd extends Model
         'email',
         'no_kantor',
         'pembina_id',
+        'parent_id',
     ];
+
+    public function parent(): BelongsTo {
+        return $this->belongsTo(Opd::class, 'parent_id');
+    }
+
+    public function children(): HasMany {
+        return $this->hasMany(Opd::class, 'parent_id');
+    }
 
     public function users():HasMany{
         return $this->hasMany(User::class, 'opd_id');

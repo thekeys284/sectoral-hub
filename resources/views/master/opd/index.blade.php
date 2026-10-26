@@ -43,6 +43,11 @@
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-sm">{{ $opd->name }}</h6>
                                                     <p class="text-xs text-secondary mb-0">Pembina: {{ $opd->pembina->name ?? 'Belum ada' }}</p>
+                                                    @if($opd->parent)
+                                                        <span class="badge badge-sm bg-gradient-info mt-1" style="width: fit-content; font-size: 0.65rem;">
+                                                            <i class="fas fa-sitemap me-1"></i>Induk: {{ $opd->parent->name }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </td>
@@ -104,6 +109,16 @@
                             <textarea name="alamat" class="form-control" rows="2" required></textarea>
                         </div>
                         <div class="form-group">
+                            <label>OPD / Instansi Induk <small class="text-muted">(Opsional - Untuk Penggabungan RS/UPT)</small></label>
+                            <select name="parent_id" class="form-control">
+                                <option value="">-- Mandiri (Tidak Punya Induk) --</option>
+                                @foreach($opds->whereNull('parent_id') as $parentOpd)
+                                    <option value="{{ $parentOpd->id }}">{{ $parentOpd->name }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted text-xxs">Jika diisi, saat pegawai berstatus <b>Produsen (Akun Instansi)</b>, data sektoralnya otomatis mengarah ke OPD Induk ini.</small>
+                        </div>
+                        <div class="form-group">
                             <label>Pembina (BPS)</label>
                             <select name="pembina_id" class="form-control">
                                 <option value="">-- Pilih Pembina --</option>
@@ -149,6 +164,18 @@
                         <div class="form-group">
                             <label>Alamat</label>
                             <textarea name="alamat" class="form-control" rows="2" required>{{ $opd->alamat }}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>OPD / Instansi Induk <small class="text-muted">(Opsional - Untuk Penggabungan RS/UPT)</small></label>
+                            <select name="parent_id" class="form-control">
+                                <option value="">-- Mandiri (Tidak Punya Induk) --</option>
+                                @foreach($opds->whereNull('parent_id')->where('id', '!=', $opd->id) as $parentOpd)
+                                    <option value="{{ $parentOpd->id }}" {{ $opd->parent_id == $parentOpd->id ? 'selected' : '' }}>
+                                        {{ $parentOpd->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted text-xxs">Jika diisi, saat pegawai berstatus <b>Produsen (Akun Instansi)</b>, data sektoralnya otomatis mengarah ke OPD Induk ini.</small>
                         </div>
                         <div class="form-group">
                             <label>Pembina BPS</label>

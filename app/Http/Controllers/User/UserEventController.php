@@ -112,12 +112,12 @@ class UserEventController extends Controller
             ->firstOrFail();
 
         // 2. Cek Jadwal Presensi
-        $now = \Carbon\Carbon::now();
-        if ($event->absensi_start && $now->lt(\Carbon\Carbon::parse($event->absensi_start))) {
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
+        if ($event->absensi_start && $now->lt(\Carbon\Carbon::parse($event->absensi_start, 'Asia/Jakarta'))) {
             return back()->with('error', 'Presensi belum dibuka.');
         }
 
-        if ($event->absensi_end && $now->gt(\Carbon\Carbon::parse($event->absensi_end))) {
+        if ($event->absensi_end && $now->gt(\Carbon\Carbon::parse($event->absensi_end, 'Asia/Jakarta'))) {
             return back()->with('error', 'Sesi presensi telah berakhir.');
         }
 
@@ -125,6 +125,11 @@ class UserEventController extends Controller
         $registration->update([
             'status_kehadiran' => true,
         ]);
+
+        // Jika menggunakan presensi link luar, arahkan ke tautan tersebut
+        if (($event->absensi_type ?? 'web') === 'link' && !empty($event->absensi_link)) {
+            return redirect()->away($event->absensi_link);
+        }
 
         return back()->with('success', 'Presensi berhasil dicatat! Terima kasih.');
     }

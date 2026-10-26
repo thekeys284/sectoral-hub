@@ -159,13 +159,42 @@
                         <hr class="my-3">
 
                         <div class="mb-3">
-                            <label class="form-label">Buka Absensi Mandiri</label>
+                            <label class="form-label font-weight-bold d-block">Metode Presensi / Absensi</label>
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="radio" name="absensi_type" id="absensi_type_web_create" value="web"
+                                       {{ old('absensi_type', 'web') === 'web' ? 'checked' : '' }}
+                                       onchange="toggleAbsensiInputCreate()">
+                                <label class="form-check-label font-weight-bold" for="absensi_type_web_create">
+                                    <i class="fas fa-check-circle text-success me-1"></i> Presensi di Web (Mandiri)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="absensi_type" id="absensi_type_link_create" value="link"
+                                       {{ old('absensi_type') === 'link' ? 'checked' : '' }}
+                                       onchange="toggleAbsensiInputCreate()">
+                                <label class="form-check-label font-weight-bold" for="absensi_type_link_create">
+                                    <i class="fas fa-external-link-alt text-primary me-1"></i> Presensi dari Link Luar
+                                </label>
+                            </div>
+
+                            <div id="absensi_link_wrapper_create" class="mt-2" style="{{ old('absensi_type', 'web') === 'link' ? '' : 'display: none;' }}">
+                                <label class="form-label small text-muted font-weight-bold">Tautan / URL Presensi Luar:</label>
+                                <input type="url" name="absensi_link" class="form-control @error('absensi_link') is-invalid @enderror"
+                                       value="{{ old('absensi_link') }}"
+                                       placeholder="https://forms.gle/...">
+                                <small class="text-muted d-block mt-1">Peserta akan diarahkan ke tautan ini saat mengisi daftar hadir.</small>
+                                @error('absensi_link')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Buka Absensi</label>
                             <input type="datetime-local" name="absensi_start" class="form-control @error('absensi_start') is-invalid @enderror" value="{{ old('absensi_start') }}">
                             @error('absensi_start')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Tutup Absensi Mandiri</label>
+                            <label class="form-label">Tutup Absensi</label>
                             <input type="datetime-local" name="absensi_end" class="form-control @error('absensi_end') is-invalid @enderror" value="{{ old('absensi_end') }}">
                             @error('absensi_end')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
@@ -174,7 +203,26 @@
 
                 <div class="card shadow-sm mb-4 bg-light">
                     <div class="card-body p-4">
-                        <h5 class="font-weight-bold mb-3 text-success"><i class="fas fa-graduation-cap me-1"></i> Syarat Kelulusan</h5>
+                        <h5 class="font-weight-bold mb-3 text-success"><i class="fas fa-graduation-cap me-1"></i> Instrumen & Syarat Kelulusan</h5>
+
+                        <div class="mb-3 p-3 bg-white rounded border">
+                            <label class="form-label font-weight-bold d-block mb-2">Instrumen yang Dikeluarkan ke Peserta:</label>
+
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="has_pretest" id="hasPretestCreate" value="1" {{ old('has_pretest', true) ? 'checked' : '' }}>
+                                <label class="form-check-label font-weight-bold" for="hasPretestCreate">Keluarkan Ujian Pretest</label>
+                            </div>
+
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="has_posttest" id="hasPosttestCreate" value="1" {{ old('has_posttest', true) ? 'checked' : '' }}>
+                                <label class="form-check-label font-weight-bold" for="hasPosttestCreate">Keluarkan Ujian Posttest</label>
+                            </div>
+
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" name="has_evaluasi" id="hasEvaluasiCreate" value="1" {{ old('has_evaluasi', true) ? 'checked' : '' }}>
+                                <label class="form-check-label font-weight-bold" for="hasEvaluasiCreate">Keluarkan Kuesioner Evaluasi</label>
+                            </div>
+                        </div>
 
                         <div class="mb-3">
                             <label class="form-label">Passing Grade (Nilai Minimal)</label>
@@ -217,6 +265,12 @@ function toggleCertificateInputCreate() {
         linkWrapper.style.display = 'none';
         uniqueInfo.style.display = 'block';
     }
+}
+
+function toggleAbsensiInputCreate() {
+    const isLink = document.getElementById('absensi_type_link_create').checked;
+    const linkWrapper = document.getElementById('absensi_link_wrapper_create');
+    linkWrapper.style.display = isLink ? 'block' : 'none';
 }
 </script>
 @endsection

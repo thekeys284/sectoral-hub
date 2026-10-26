@@ -13,7 +13,7 @@ use App\Imports\UserImport;
 class UserController extends Controller
 {
     public function index(){
-        $query = User::with('opd');
+        $query = User::with('opd.parent');
 
         $userRoles = is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role;
         $activeRole = session('active_role', $userRoles[0] ?? '');
@@ -31,7 +31,7 @@ class UserController extends Controller
 
     public function create() {
         $user = new User();
-        $opds = Opd::all();
+        $opds = Opd::with('parent')->get();
         return view('master.user.form', compact('user', 'opds'));
     }
 
@@ -42,7 +42,7 @@ class UserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'nip' => 'nullable|string|max:255|unique:users,nip', // NIP opsional dan unik
             'role' => 'required|array|min:1',                    // role sekarang WAJIB array (multi-select)
-            'role.*' => 'in:admin,pembina,walidata,produsen',    // tiap item harus salah satu dari daftar ini
+            'role.*' => 'in:admin,pembina,walidata,produsen,operator', // tiap item harus salah satu dari daftar ini
             'opd_id' => 'nullable|exists:opd,id',
             'no_hp' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -65,7 +65,7 @@ class UserController extends Controller
     }
 
     public function edit(User $user) {
-        $opds = Opd::all();
+        $opds = Opd::with('parent')->get();
         return view('master.user.form', compact('user', 'opds'));
     }
 
@@ -76,7 +76,7 @@ class UserController extends Controller
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'nip' => 'nullable|string|max:255|unique:users,nip,' . $user->id,
             'role' => 'required|array|min:1',
-            'role.*' => 'in:admin,pembina,walidata,produsen',
+            'role.*' => 'in:admin,pembina,walidata,produsen,operator',
             'opd_id' => 'nullable|exists:opd,id',
             'no_hp' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',

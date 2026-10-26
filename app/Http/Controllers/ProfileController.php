@@ -19,9 +19,15 @@ class ProfileController extends Controller
         $activeRole = session('active_role', $roles[0] ?? '');
 
         if ($activeRole === 'pembina') {
-            $opdBinaan = \App\Models\Opd::where('pembina_id', $user->id)->get();
+            $opdBinaan = \App\Models\Opd::where('pembina_id', $user->id)->whereNull('parent_id')->get();
             foreach ($opdBinaan as $opd) {
-                $opd->pic = \App\Models\User::where('opd_id', $opd->id)->where('role', 'produsen')->get();
+                $childOpdIds = \App\Models\Opd::where('parent_id', $opd->id)->pluck('id')->push($opd->id);
+                $opd->pic = \App\Models\User::whereIn('opd_id', $childOpdIds)
+                    ->where(function ($q) {
+                        $q->whereJsonContains('role', 'produsen')
+                          ->orWhere('role', 'like', '%produsen%');
+                    })
+                    ->get();
             }
         }
 
@@ -93,6 +99,10 @@ class ProfileController extends Controller
 
         session(['active_role' => $request->target_role]);
 
-        return redirect()->back()->with('success', 'Berhasil berganti role menjadi ' . strtoupper($request->target_role));
+        if ($request->target_role === 'operator') {
+            return redirect()->route('dashboard')->with('success', 'Berhasil beralih ke Mode Akun Pribadi (Operator).');
+        }
+
+        return redirect()->back()->with('success', 'Berhasil berganti mode akun menjadi ' . strtoupper($request->target_role));
     }
 }

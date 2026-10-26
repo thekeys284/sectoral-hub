@@ -45,23 +45,44 @@
                 </li>
                 
                 {{-- DI SINI TEMPATNYA: DROPDOWN SWITCH ROLE --}}
+                @php
+                    // Ambil daftar role milik user yang login dan role yang sedang aktif
+                    $userRoles = auth()->check() ? (is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role) : [];
+                    $activeRole = session('active_role', $userRoles[0] ?? '');
+                    $originOpd = auth()->check() ? auth()->user()->origin_opd : null;
+                    $instansiOpd = ($originOpd && $originOpd->parent) ? $originOpd->parent : $originOpd;
+
+                    $roleLabels = [
+                        'operator' => 'Akun Pribadi (Operator)',
+                        'produsen' => 'Akun Instansi (Produsen)',
+                        'walidata' => 'Walidata (Kominfo)',
+                        'pembina'  => 'Pembina (BPS)',
+                        'admin'    => 'Administrator',
+                    ];
+                @endphp
                 <li class="nav-item dropdown pe-2 d-flex align-items-center">
-                    <a href="javascript:;" class="nav-link text-white p-0" id="dropdownMenuButton"
+                    <a href="javascript:;" class="nav-link text-white p-0 d-flex align-items-center" id="dropdownMenuButton"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa fa-exchange cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="Switch Role"></i>
+                        <span class="badge bg-white text-dark me-1 d-none d-sm-inline-flex align-items-center px-2 py-1" style="font-size: 0.7rem;">
+                            <i class="fa fa-exchange text-primary me-1"></i>
+                            {{ $roleLabels[$activeRole] ?? strtoupper($activeRole) }}
+                        </span>
+                        <i class="fa fa-exchange cursor-pointer d-sm-none" data-bs-toggle="tooltip" data-bs-placement="top" title="Switch Akun / Role"></i>
                     </a>
                     
-                    {{-- Ganti isi list dummy dengan Form Switch Role --}}
-                    <ul class="dropdown-menu dropdown-menu-end px-2 py-3 me-sm-n4" aria-labelledby="dropdownMenuButton">
-                        <li class="dropdown-header text-uppercase text-xs font-weight-bolder opacity-6 text-dark mb-2">
-                            Pilih Role Aktif
+                    {{-- Form Switch Role / Mode Akun --}}
+                    <ul class="dropdown-menu dropdown-menu-end px-2 py-3 me-sm-n4 shadow-lg" aria-labelledby="dropdownMenuButton" style="min-width: 260px;">
+                        <li class="dropdown-header text-uppercase text-xs font-weight-bolder opacity-7 text-dark mb-1">
+                            Pilih Mode Akun / Role Aktif
                         </li>
-                        
-                        @php
-                            // Ambil daftar role milik user yang login dan role yang sedang aktif
-                            $userRoles = auth()->check() ? (is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role) : [];
-                            $activeRole = session('active_role', $userRoles[0] ?? '');
-                        @endphp
+                        @if($originOpd)
+                            <li class="px-3 pb-2 mb-2 border-bottom">
+                                <div class="text-xxs text-muted">Satker Asal: <strong class="text-dark">{{ $originOpd->name }}</strong></div>
+                                @if($originOpd->parent)
+                                    <div class="text-xxs text-info"><i class="fas fa-sitemap me-1"></i>Instansi Induk: <strong>{{ $originOpd->parent->name }}</strong></div>
+                                @endif
+                            </li>
+                        @endif
 
                         @foreach($userRoles as $role)
                             <li class="mb-1">
@@ -70,12 +91,19 @@
                                     <input type="hidden" name="target_role" value="{{ $role }}">
                                     
                                     <button type="submit" class="dropdown-item border-radius-md d-flex align-items-center justify-content-between py-2 {{ $activeRole === $role ? 'bg-gray-100 font-weight-bold text-primary' : '' }}">
-                                        <div class="d-flex align-items-center">
-                                            <i class="ni ni-badge text-sm me-2 {{ $activeRole === $role ? 'text-primary' : 'text-secondary' }}"></i>
-                                            <span>{{ strtoupper($role) }}</span>
+                                        <div class="d-flex flex-column text-start">
+                                            <div class="d-flex align-items-center">
+                                                <i class="ni ni-badge text-sm me-2 {{ $activeRole === $role ? 'text-primary' : 'text-secondary' }}"></i>
+                                                <span class="text-xs font-weight-bold">{{ $roleLabels[$role] ?? strtoupper($role) }}</span>
+                                            </div>
+                                            @if($role === 'produsen' && $instansiOpd)
+                                                <small class="text-xxs text-muted ms-4 text-wrap">{{ $instansiOpd->name }}</small>
+                                            @elseif($role === 'operator' && $originOpd)
+                                                <small class="text-xxs text-muted ms-4 text-wrap">Pelatihan ({{ $originOpd->name }})</small>
+                                            @endif
                                         </div>
                                         @if($activeRole === $role)
-                                            <i class="fas fa-check text-xs text-primary"></i>
+                                            <i class="fas fa-check text-xs text-primary ms-2"></i>
                                         @endif
                                     </button>
                                 </form>

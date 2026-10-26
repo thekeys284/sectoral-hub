@@ -178,7 +178,7 @@
                             <select name="kegiatan_id" class="form-control select2-modal">
                                 <option value="">-- Pilih Kegiatan (Opsional) --</option>
                                 @foreach($kegiatans as $keg)
-                                    <option value="{{ $keg->id }}">{{ $keg->nama_kegiatan }}</option>
+                                    <option value="{{ $keg->id }}" data-opd="{{ $keg->opd_id }}">{{ $keg->nama_kegiatan }} ({{ $keg->opd->name ?? '-' }})</option>
                                 @endforeach
                             </select>
                         </div>
@@ -258,7 +258,7 @@
                                 <select name="kegiatan_id" id="edit_kegiatan" class="form-control select2-modal">
                                     <option value="">-- Pilih Kegiatan (Opsional) --</option>
                                     @foreach($kegiatans as $keg)
-                                        <option value="{{ $keg->id }}">{{ $keg->nama_kegiatan }}</option>
+                                        <option value="{{ $keg->id }}" data-opd="{{ $keg->opd_id }}">{{ $keg->nama_kegiatan }} ({{ $keg->opd->name ?? '-' }})</option>
                                     @endforeach
                                 </select>
                             </div>

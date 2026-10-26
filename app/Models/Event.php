@@ -13,7 +13,9 @@ class Event extends Model
     protected $table = 'events';
     protected $fillable = ['title','start_at','end_at','lokasi_event','deskripsi','category',
                             'meeting_link','youtube_link','link_materi','doc_link','certificate_type','certificate_link','image_banner','virtual_bg',
-                            'absensi_start','absensi_end','passing_grade','posttest_password',
+                            'absensi_type','absensi_link','absensi_start','absensi_end',
+                            'has_pretest','has_posttest','has_evaluasi',
+                            'passing_grade','posttest_password',
                             'is_active','created_by'];
 
     protected $casts=[
@@ -22,6 +24,9 @@ class Event extends Model
         'absensi_start' => 'datetime',
         'absensi_end' => 'datetime',
         'is_active' => 'boolean',
+        'has_pretest' => 'boolean',
+        'has_posttest' => 'boolean',
+        'has_evaluasi' => 'boolean',
         'passing_grade' => 'integer'
     ];
 

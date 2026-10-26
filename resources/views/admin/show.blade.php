@@ -104,7 +104,25 @@
                         <span class="badge bg-dark text-white font-monospace">{{ $event->posttest_password ?? 'Tanpa Password' }}</span>
                     </div>
 
-                    <div class="d-flex justify-content-between mb-0">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-sm text-secondary">Metode Presensi:</span>
+                        <span class="text-sm font-weight-bold text-end">
+                            @if(($event->absensi_type ?? 'web') === 'link')
+                                <span class="badge bg-primary text-white">Link Luar</span>
+                            @else
+                                <span class="badge bg-success text-white">Presensi Web</span>
+                            @endif
+                        </span>
+                    </div>
+
+                    @if(($event->absensi_type ?? 'web') === 'link' && $event->absensi_link)
+                    <div class="mb-2">
+                        <span class="text-xs text-secondary d-block">Link Presensi Luar:</span>
+                        <a href="{{ $event->absensi_link }}" target="_blank" class="text-xs text-primary text-truncate d-block">{{ $event->absensi_link }}</a>
+                    </div>
+                    @endif
+
+                    <div class="d-flex justify-content-between mb-2">
                         <span class="text-sm text-secondary">Jadwal Absensi:</span>
                         <span class="text-sm text-dark font-weight-bold text-end">
                             @if($event->absensi_start && $event->absensi_end)
@@ -113,6 +131,16 @@
                                 Belum diatur
                             @endif
                         </span>
+                    </div>
+
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between align-items-center mb-0">
+                        <span class="text-sm text-secondary">Instrumen Aktif:</span>
+                        <div class="d-flex gap-1 flex-wrap justify-content-end">
+                            <span class="badge {{ ($event->has_pretest ?? true) ? 'bg-success' : 'bg-secondary' }} text-white">Pretest: {{ ($event->has_pretest ?? true) ? 'Ya' : 'Tidak' }}</span>
+                            <span class="badge {{ ($event->has_posttest ?? true) ? 'bg-success' : 'bg-secondary' }} text-white">Posttest: {{ ($event->has_posttest ?? true) ? 'Ya' : 'Tidak' }}</span>
+                            <span class="badge {{ ($event->has_evaluasi ?? true) ? 'bg-success' : 'bg-secondary' }} text-white">Evaluasi: {{ ($event->has_evaluasi ?? true) ? 'Ya' : 'Tidak' }}</span>
+                        </div>
                     </div>
                 </div>
             </div>

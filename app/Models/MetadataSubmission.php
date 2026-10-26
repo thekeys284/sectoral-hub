@@ -22,6 +22,10 @@ class MetadataSubmission extends Model
         'reviewed_at',
     ];
 
+    protected $casts = [
+        'reviewed_at' => 'datetime',
+    ];
+
     public function kegiatan(): BelongsTo
     {
         return $this->belongsTo(Kegiatan::class, 'kegiatan_id');

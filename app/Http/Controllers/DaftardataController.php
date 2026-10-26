@@ -31,8 +31,8 @@ class DaftardataController extends Controller
         $daftardata = $query->get();
 
         // 5. Ambil data master untuk Dropdown Filter di Blade
-        $opds = Opd::all();
-        $kegiatans = \App\Models\Kegiatan::all();
+        $opds = Opd::whereNull('parent_id')->orderBy('name', 'asc')->get();
+        $kegiatans = \App\Models\Kegiatan::with('opd')->orderBy('nama_kegiatan', 'asc')->get();
         
         return view('data.daftar_data.index', compact('daftardata', 'opds', 'kegiatans'));
     }

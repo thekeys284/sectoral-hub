@@ -42,19 +42,19 @@
                         // Daftar master role sistem
                         $availableRoles = [
                             'admin'    => 'Admin',
-                            'pembina'  => 'Pembina',
-                            'walidata' => 'Walidata',
-                            'produsen' => 'Produsen',
-                            'operator' => 'Operator'
+                            'pembina'  => 'Pembina (BPS)',
+                            'walidata' => 'Walidata (Kominfo)',
+                            'produsen' => 'Produsen (Akun Instansi / Delegasi OPD)',
+                            'operator' => 'Operator (Akun Pribadi / Peserta Pelatihan)'
                         ];
 
                         // Filter ketersediaan role berdasarkan role user yang sedang login
                         if (!auth()->user()->hasRole('admin')) {
                             // Walidata / Role lain hanya diizinkan memilih role tertentu
                             $availableRoles = [
-                                'walidata' => 'Walidata',
-                                'produsen' => 'Produsen',
-                                'viewer'   => 'Viewer'
+                                'walidata' => 'Walidata (Kominfo)',
+                                'produsen' => 'Produsen (Akun Instansi / Delegasi OPD)',
+                                'operator' => 'Operator (Akun Pribadi / Peserta Pelatihan)'
                             ];
                         }
                     @endphp
@@ -95,15 +95,19 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Dinas (OPD)</label>
+                                <label>Dinas / Satker Asal (OPD)</label>
+                                @php
+                                    $rawUserOpdId = $user->getRawOriginal('opd_id') ?? $user->opd_id;
+                                @endphp
                                 <select name="opd_id" class="form-control select2-searchable">
                                     <option value="">-- Pilih OPD --</option>
                                     @foreach($opds as $opd)
-                                        <option value="{{ $opd->id }}" {{ old('opd_id', $user->opd_id) == $opd->id ? 'selected' : '' }}>
-                                            {{ $opd->name }}
+                                        <option value="{{ $opd->id }}" {{ old('opd_id', $rawUserOpdId) == $opd->id ? 'selected' : '' }}>
+                                            {{ $opd->name }}{{ $opd->parent ? ' (Induk: ' . $opd->parent->name . ')' : '' }}
                                         </option>
                                     @endforeach
                                 </select>
+                                <small class="text-muted text-xxs">Untuk memberi delegasi Akun Instansi sekaligus Akun Pribadi, pilih role <b>Operator</b> &amp; <b>Produsen</b>.</small>
                             </div>
                         </div>
                         <div class="col-md-6">

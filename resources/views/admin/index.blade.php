@@ -10,6 +10,11 @@
 
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => 'Event'])
+    @php
+        $userRoles = is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role;
+        $activeRole = session('active_role', $userRoles[0] ?? '');
+        $isAdmin = ($activeRole === 'admin') || auth()->user()->isAdmin();
+    @endphp
     <div class="container-fluid py-4">
         @if ($errors->any())
             <div class="alert alert-danger text-white" role="alert">
@@ -30,7 +35,7 @@
                 {{ session('error') }}
             </div>
         @endif
-        @if(session('active_role') == 'admin')
+        @if($isAdmin)
             <div class="d-flex justify-content-end mb-3">
                 <a href="{{ route('admin.events.create') }}" class="btn btn-success btn-sm">Buat Event Baru</a>
             </div>
@@ -43,7 +48,7 @@
                             <h6 class="mb-0">Manajemen Event & Pelatihan</h6>
                             <p class="text-muted text-xs mb-0">Kelola kegiatan pembinaan, sosialisasi, dan pelatihan internal.</p>
                         </div>
-                        @if(session('active_role') == 'admin')
+                        @if($isAdmin)
                             <a type="button" class="btn btn-primary btn-sm" href="{{ route('admin.events.create') }}">
                                 <i class="fas fa-plus me-2"></i> Tambah Event
                             </a>
@@ -93,7 +98,7 @@
                                         </td>
                                         <td class="align-middle text-center">
                                             <div class="d-flex justify-content-center">
-                                                @if(session('active_role') == 'admin')
+                                                @if($isAdmin)
                                                     <a href="{{ route('admin.events.rekap', $event->id) }}" class="btn btn-outline-success btn-sm me-2 mb-0" title="Rekap Nilai">
                                                         <i class="fas fa-chart-line"></i>
                                                     </a>

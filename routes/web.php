@@ -15,6 +15,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\{
     ForgotPasswordController, ResetPasswordController, AuthenticatedSessionController};
 
+// Route fallback untuk file storage/app/public (agar gambar Banner, VB, & Foto Profil tetap tampil meski symlink public/storage belum ada di Windows/Docker)
+Route::get('/storage/{path}', function (string $path) {
+    if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+    return \Illuminate\Support\Facades\Storage::disk('public')->response($path);
+})->where('path', '.*')->name('storage.public');
+
 // Route untuk callback token Majapahit
 Route::get('/majapahit', [AuthenticatedSessionController::class, 'loginMajapahit'])
     ->middleware('guest')

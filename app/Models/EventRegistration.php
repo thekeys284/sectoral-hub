@@ -62,26 +62,44 @@ class EventRegistration extends Model
      */
     public function getNilaiAkhirAttribute(): float
     {
+        $event = $this->event;
+        $hasPretest  = $event ? ($event->has_pretest ?? true) : true;
+        $hasPosttest = $event ? ($event->has_posttest ?? true) : true;
+        $hasEvaluasi = $event ? ($event->has_evaluasi ?? true) : true;
+
         // 1. Kehadiran (Bobot 20%)
         $nilaiAbsen = $this->status_kehadiran ? 100 : 0;
         $bobotAbsen = $nilaiAbsen * 0.20;
+        $totalBobot = 0.20;
 
         // 2. Pretest (Bobot 25%)
-        $nilaiPretest = $this->score_pretest ?? 0;
-        $bobotPretest = $nilaiPretest * 0.25;
+        $bobotPretest = 0;
+        if ($hasPretest) {
+            $nilaiPretest = $this->score_pretest ?? 0;
+            $bobotPretest = $nilaiPretest * 0.25;
+            $totalBobot += 0.25;
+        }
 
         // 3. Posttest (Bobot 50%)
-        $nilaiPosttest = $this->score_posttest ?? 0;
-        $bobotPosttest = $nilaiPosttest * 0.50;
+        $bobotPosttest = 0;
+        if ($hasPosttest) {
+            $nilaiPosttest = $this->score_posttest ?? 0;
+            $bobotPosttest = $nilaiPosttest * 0.50;
+            $totalBobot += 0.50;
+        }
 
         // 4. Evaluasi (Bobot 5%)
-        // Pengecekan disesuaikan langsung menggunakan relasi registration_id milik instance ini
-        $sudahEvaluasi = EventEvaluationAnswer::where('registration_id', $this->id)->exists();
-        $nilaiEvaluasi = $sudahEvaluasi ? 100 : 0;
-        $bobotEvaluasi = $nilaiEvaluasi * 0.05;
+        $bobotEvaluasi = 0;
+        if ($hasEvaluasi) {
+            $sudahEvaluasi = EventEvaluationAnswer::where('registration_id', $this->id)->exists();
+            $nilaiEvaluasi = $sudahEvaluasi ? 100 : 0;
+            $bobotEvaluasi = $nilaiEvaluasi * 0.05;
+            $totalBobot += 0.05;
+        }
 
-        // Total Nilai Akhir
-        return round($bobotAbsen + $bobotEvaluasi + $bobotPosttest + $bobotPretest, 2);
+        // Total Nilai Akhir (dinormalisasi ke skala 100 jika ada komponen yang dinonaktifkan)
+        $rawTotal = $bobotAbsen + $bobotEvaluasi + $bobotPosttest + $bobotPretest;
+        return $totalBobot > 0 ? round($rawTotal / $totalBobot, 2) : 0;
     }
 
     /**

@@ -40,12 +40,30 @@
                                         <input type="text" name="no_hp" class="form-control" value="{{ old('no_hp', $user->no_hp) }}">
                                     </div>
                                 </div>
+                                @php
+                                    $originOpd = $user->origin_opd;
+                                    $parentOpd = $originOpd ? $originOpd->parent : null;
+                                @endphp
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Dinas</label>
-                                        <input type="text" class="form-control" value="{{ $user->opd->name ?? 'Tidak Terdaftar di OPD' }}" readonly>
+                                        <label>Dinas / Satker Asal</label>
+                                        <input type="text" class="form-control" value="{{ $originOpd->name ?? 'Tidak Terdaftar di OPD' }}" readonly>
+                                        @if($parentOpd)
+                                            <small class="text-info font-weight-bold d-block mt-1">
+                                                <i class="fas fa-sitemap me-1"></i>Instansi Induk (Delegasi Produsen): {{ $parentOpd->name }}
+                                            </small>
+                                        @endif
                                     </div>
                                 </div>
+                                @if($parentOpd)
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Instansi Induk (Akun Instansi)</label>
+                                        <input type="text" class="form-control bg-gray-100 font-weight-bold text-primary" value="{{ $parentOpd->name }}" readonly>
+                                        <small class="text-muted">Saat mode <strong>PRODUSEN</strong> aktif, pelaporan data sektoral mengatasnamakan instansi induk ini.</small>
+                                    </div>
+                                </div>
+                                @endif
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>NIP</label>
@@ -147,8 +165,23 @@
                     <div class="card-body pt-0">
                         <div class="text-center mt-4">
                             <h5>{{ $user->name }}</h5>
-                            <div class="h6 mt-4">
-                                <i class="ni ni-briefcase-24 mr-2"></i>Role Aktif: {{ ucfirst($activeRole) }}
+                            <div class="mt-2">
+                                <span class="badge bg-gradient-dark text-white px-3 py-2">
+                                    <i class="ni ni-building me-1"></i>Satker Asal: {{ $originOpd->name ?? 'Tidak Ada OPD' }}
+                                </span>
+                            </div>
+                            @if($parentOpd)
+                                <div class="mt-2">
+                                    <span class="badge bg-gradient-info text-white px-3 py-2">
+                                        <i class="fas fa-sitemap me-1"></i>Induk Instansi: {{ $parentOpd->name }}
+                                    </span>
+                                </div>
+                            @endif
+                            <div class="h6 mt-3">
+                                <i class="ni ni-briefcase-24 mr-2"></i>Mode Aktif: 
+                                <span class="text-primary font-weight-bold">
+                                    {{ $activeRole === 'operator' ? 'Akun Pribadi (Operator)' : ($activeRole === 'produsen' ? 'Akun Instansi (Produsen)' : ucfirst($activeRole)) }}
+                                </span>
                             </div>
                         </div>
                     </div>

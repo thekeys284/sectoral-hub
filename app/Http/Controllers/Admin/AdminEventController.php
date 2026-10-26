@@ -37,6 +37,8 @@ class AdminEventController extends Controller
             'doc_link'          => 'nullable|url',
             'certificate_type'  => 'nullable|in:all,unique',
             'certificate_link'  => 'nullable|url',
+            'absensi_type'      => 'nullable|in:web,link',
+            'absensi_link'      => 'nullable|url',
             'absensi_start'     => 'nullable|date',
             'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
             'passing_grade'     => 'required|integer|min:0|max:100',
@@ -47,6 +49,13 @@ class AdminEventController extends Controller
 
         $validatedData['created_by'] = auth()->id();
         $validatedData['is_active'] = $request->has('is_active');
+        $validatedData['has_pretest'] = $request->has('has_pretest');
+        $validatedData['has_posttest'] = $request->has('has_posttest');
+        $validatedData['has_evaluasi'] = $request->has('has_evaluasi');
+        $validatedData['absensi_type'] = $request->input('absensi_type', 'web');
+        if ($validatedData['absensi_type'] === 'web') {
+            $validatedData['absensi_link'] = null;
+        }
         $validatedData['certificate_type'] = $request->input('certificate_type', 'all');
         if ($validatedData['certificate_type'] === 'unique') {
             $validatedData['certificate_link'] = null;
@@ -138,6 +147,8 @@ class AdminEventController extends Controller
             'doc_link'          => 'nullable|url',
             'certificate_type'  => 'required|in:all,unique',
             'certificate_link'  => 'nullable|url',
+            'absensi_type'      => 'nullable|in:web,link',
+            'absensi_link'      => 'nullable|url',
             'absensi_start'     => 'nullable|date',
             'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
             'passing_grade'     => 'required|integer|min:0|max:100',
@@ -147,6 +158,13 @@ class AdminEventController extends Controller
         ]);
 
         $data['is_active'] = $request->has('is_active');
+        $data['has_pretest'] = $request->has('has_pretest');
+        $data['has_posttest'] = $request->has('has_posttest');
+        $data['has_evaluasi'] = $request->has('has_evaluasi');
+        $data['absensi_type'] = $request->input('absensi_type', 'web');
+        if ($data['absensi_type'] === 'web') {
+            $data['absensi_link'] = null;
+        }
 
         // Jika dipilih tipe 'unique', kosongkan certificate_link umum
         if ($data['certificate_type'] === 'unique') {
@@ -218,7 +236,7 @@ class AdminEventController extends Controller
                 'username'        => $reg->user->username ?? '-',
                 'email'           => $reg->user->email ?? '-',
                 'nip'             => $reg->user->nip ?? '-',
-                'opd'             => $reg->user->opd ?? null,
+                'opd'             => $reg->user ? ($reg->user->origin_opd ?? $reg->user->opd) : null,
                 'status_absen'    => $reg->status_kehadiran,
                 'score_pretest'   => $reg->score_pretest ?? 0,
                 'score_posttest'  => $reg->score_posttest ?? 0,

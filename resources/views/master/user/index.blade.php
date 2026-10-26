@@ -61,8 +61,13 @@
                                         </td>
 
                                         <td class="align-middle">
-                                            <div class="d-flex align-items-center text-wrap">
-                                                {{ $user->opd->name ?? 'Tidak Ada OPD' }}
+                                            <div class="d-flex flex-column justify-content-center text-wrap">
+                                                <span class="text-sm">{{ $user->origin_opd->name ?? $user->opd->name ?? 'Tidak Ada OPD' }}</span>
+                                                @if(optional($user->origin_opd)->parent)
+                                                    <span class="badge badge-sm bg-gradient-info mt-1" style="width: fit-content; font-size: 0.65rem;">
+                                                        <i class="fas fa-sitemap me-1"></i>Induk: {{ $user->origin_opd->parent->name }}
+                                                    </span>
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="align-middle text-center text-sm">
@@ -79,7 +84,8 @@
                                                     'admin'    => 'bg-gradient-danger',
                                                     'pembina'  => 'bg-gradient-info',
                                                     'walidata' => 'bg-gradient-success',
-                                                    'produsen' => 'bg-gradient-secondary',
+                                                    'produsen' => 'bg-gradient-primary',
+                                                    'operator' => 'bg-gradient-secondary',
                                                 ];
                                             @endphp
                                             @forelse($userRoles as $role)

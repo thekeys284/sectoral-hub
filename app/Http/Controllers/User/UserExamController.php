@@ -22,6 +22,10 @@ class UserExamController extends Controller
         }
 
         $event = Event::findOrFail($eventId);
+        if (($type === 'pretest' && !($event->has_pretest ?? true)) || ($type === 'posttest' && !($event->has_posttest ?? true))) {
+            return redirect()->route('user.events.show', $event->id)
+                ->with('error', "Ujian {$type} tidak diaktifkan untuk kegiatan ini.");
+        }
         $now = \Carbon\Carbon::now('Asia/Jakarta');
 
         // Cek apakah waktu event sudah berakhir untuk ujian

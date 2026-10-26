@@ -30,7 +30,7 @@ class DashboardController extends Controller
 
         $stats = [
             'total_kegiatan' => $total_kegiatan,
-            'total_opd'      => Opd::count(),
+            'total_opd'      => Opd::whereNull('parent_id')->count(),
             'total_metadata' => Metadata::count(),
             'total_romantik' => Romantik::count(),
         ];
@@ -48,7 +48,8 @@ class DashboardController extends Controller
     
     public function rekapitulasi()
     {   
-        $rekap_opd = Opd::where('name', '!=', 'Badan Pusat Statistik Provinsi Jawa Timur') 
+        $rekap_opd = Opd::where('name', '!=', 'Badan Pusat Statistik Provinsi Jawa Timur')
+            ->whereNull('parent_id')
             ->withCount([
                 'daftardata', 
                 'kegiatan', 
@@ -63,6 +64,7 @@ class DashboardController extends Controller
     public function monitoring()
     {
         $rekap_opd = Opd::where('name', '!=', 'Badan Pusat Statistik Provinsi Jawa Timur')
+            ->whereNull('parent_id')
             ->withCount([
                 'daftardata',
                 'kegiatan',
