@@ -43,8 +43,8 @@ class AdminEventController extends Controller
             'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
             'passing_grade'     => 'required|integer|min:0|max:100',
             'posttest_password' => 'nullable|string|max:50',
-            'image_banner'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'virtual_bg'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image_banner'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'virtual_bg'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
         ]);
 
         $validatedData['created_by'] = auth()->id();
@@ -153,8 +153,8 @@ class AdminEventController extends Controller
             'absensi_end'       => 'nullable|date|after_or_equal:absensi_start',
             'passing_grade'     => 'required|integer|min:0|max:100',
             'posttest_password' => 'nullable|string|max:50',
-            'image_banner'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'virtual_bg'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image_banner'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'virtual_bg'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
         ]);
 
         $data['is_active'] = $request->has('is_active');
