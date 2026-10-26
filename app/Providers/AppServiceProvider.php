@@ -144,8 +144,8 @@ class AppServiceProvider extends ServiceProvider
                             'icon'  => 'ni ni-check-bold text-dark',
                             'route' => match($activeRole) {
                                 'admin'    => 'data.daftardata.index',
+                                'walidata' => 'data.daftardata.index',
                                 'pembina'  => 'daftardata.table',
-                                'walidata' => 'daftardata.table',
                                 'produsen' => 'daftardata.table',
                                 default    => 'daftardata.table', 
                             },

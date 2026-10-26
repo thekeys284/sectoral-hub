@@ -164,15 +164,29 @@
                                                         @endif
                                                     </div>
 
-                                                    {{-- Tombol Buka Link & Tombol Riwayat --}}
-                                                    <div class="d-flex justify-content-center gap-1 mb-2">
-                                                        <a href="{{ $latest->link_url }}" target="_blank" class="btn btn-xs bg-gradient-info mb-0" title="Buka URL Metadata">
+                                                    {{-- Tombol Buka Link, Riwayat, Edit & Hapus (Khusus Admin) --}}
+                                                    <div class="d-flex justify-content-center flex-wrap gap-1 mb-2">
+                                                        <a href="{{ $latest->link_url }}" target="_blank" class="btn btn-xs bg-gradient-info mb-0 px-2" title="Buka URL Metadata">
                                                             <i class="fas fa-external-link-alt me-1"></i> Buka
                                                         </a>
                                                         
-                                                        <button type="button" class="btn btn-xs btn-outline-secondary mb-0" data-bs-toggle="modal" data-bs-target="#modalHistory_{{ $tipe }}_{{ $keg->id }}" title="Lihat linimasa riwayat revisi">
+                                                        <button type="button" class="btn btn-xs btn-outline-secondary mb-0 px-2" data-bs-toggle="modal" data-bs-target="#modalHistory_{{ $tipe }}_{{ $keg->id }}" title="Lihat linimasa riwayat revisi">
                                                             <i class="fas fa-history"></i> ({{ $submissionCount }})
                                                         </button>
+
+                                                        @if(isset($isAdmin) && $isAdmin)
+                                                            <button type="button" class="btn btn-xs btn-outline-warning text-dark mb-0 px-2" data-bs-toggle="modal" data-bs-target="#modalEditLink_{{ $latest->id }}" title="Edit Link Metadata">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+
+                                                            <form action="{{ route('pelaporan.metadata.submission.destroy', $latest->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus tautan metadata ini?')">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-xs btn-outline-danger mb-0 px-2" title="Hapus Link Metadata">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        @endif
                                                     </div>
 
                                                     {{-- Kotak Catatan Pembina Terbaru --}}
@@ -398,6 +412,44 @@
                                 <button type="button" class="btn btn-secondary btn-sm mb-0" data-bs-dismiss="modal">Tutup</button>
                             </div>
                         </div>
+                    </div>
+                </div>
+                @endif
+
+                {{-- 4. MODAL EDIT LINK (KHUSUS ADMIN) --}}
+                @if(isset($isAdmin) && $isAdmin && $latest)
+                <div class="modal fade" id="modalEditLink_{{ $latest->id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <form action="{{ route('pelaporan.metadata.submission.update', $latest->id) }}" method="POST" class="w-100">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-content shadow-lg border-0">
+                                <div class="modal-header bg-gradient-warning text-dark">
+                                    <h6 class="modal-title font-weight-bold text-dark mb-0">
+                                        <i class="fas fa-edit me-2"></i>Edit Link Metadata {{ ucfirst($tipe) }}
+                                    </h6>
+                                    <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body p-4">
+                                    <div class="bg-gray-100 p-3 rounded mb-3">
+                                        <span class="text-xxs text-secondary d-block font-weight-bold">KEGIATAN STATISTIK:</span>
+                                        <span class="text-xs font-weight-bold text-dark">{{ $keg->nama_kegiatan }}</span>
+                                    </div>
+
+                                    <div class="mb-0">
+                                        <label class="form-label text-xs font-weight-bold">Tautan / URL Metadata <span class="text-danger">*</span></label>
+                                        <input type="url" name="link_url" class="form-control" value="{{ $latest->link_url }}" placeholder="https://..." required>
+                                        <small class="text-xxs text-muted mt-1 d-block">Perbarui tautan metadata secara langsung.</small>
+                                    </div>
+                                </div>
+                                <div class="modal-footer bg-light">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm mb-0" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn bg-gradient-warning text-dark btn-sm mb-0">
+                                        <i class="fas fa-save me-1"></i> Simpan Perubahan
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 @endif

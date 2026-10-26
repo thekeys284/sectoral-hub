@@ -20,6 +20,8 @@ class PelaporanController extends Controller
         $roles = is_array($rawRole) ? $rawRole : (json_decode($rawRole, true) ?? [$rawRole]);
         $activeRole = session('active_role', $roles[0] ?? '');
 
+        $isAdmin = ($activeRole === 'admin');
+
         $isAdminOrPembina = in_array($activeRole, ['admin', 'pembina', 'superadmin', 'walidata']) 
                             || in_array('admin', $roles) 
                             || in_array('pembina', $roles);
@@ -97,6 +99,7 @@ class PelaporanController extends Controller
         return view('pelaporan.metadata.index', compact(
             'daftardata', 
             'opdList', 
+            'isAdmin',
             'isAdminOrPembina', 
             'selectedOpdId', 
             'opdBinaan', 
@@ -138,5 +141,27 @@ class PelaporanController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Hasil telaah & catatan review berhasil disimpan.');
+    }
+
+    public function updateLink(Request $request, $submissionId)
+    {
+        $request->validate([
+            'link_url' => 'required|url',
+        ]);
+
+        $submission = MetadataSubmission::findOrFail($submissionId);
+        $submission->update([
+            'link_url' => $request->link_url,
+        ]);
+
+        return redirect()->back()->with('success', 'Link metadata berhasil diperbarui.');
+    }
+
+    public function destroyLink($submissionId)
+    {
+        $submission = MetadataSubmission::findOrFail($submissionId);
+        $submission->delete();
+
+        return redirect()->back()->with('success', 'Link metadata berhasil dihapus.');
     }
 }

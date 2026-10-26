@@ -59,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
             Route::resource('users', UserController::class);
             Route::post('user/import', [UserController::class, 'import'])->name('users.import');
             Route::post('kegiatan/import', [KegiatanController::class, 'import'])->name('kegiatan.import');
+            Route::post('daftardata/import', [DaftardataController::class, 'import'])->name('daftardata.import');
         });
     });
 
@@ -68,14 +69,18 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('metadata', MetadataController::class)->only(['index', 'show']);
         Route::resource('romantik', RomantikController::class)->only(['index', 'show']);
 
+        // Role Admin dan Walidata (CRUD Daftar Data)
+        Route::middleware(['role:admin,walidata'])->group(function () {
+            Route::resource('daftardata', DaftardataController::class)->except(['index', 'show']);
+            Route::post('daftardata/import', [DaftardataController::class, 'import'])->name('daftardata.import');
+        });
+
         // Role Admin
         Route::middleware(['role:admin'])->group(function () {
-            Route::resource('daftardata', DaftardataController::class)->except(['index', 'show']);
             Route::resource('metadata', MetadataController::class)->except(['index', 'show']);
             Route::resource('romantik', RomantikController::class)->except(['index', 'show']);
             // Route::resource('event', EventController::class);
             
-            Route::post('daftardata/import', [DaftardataController::class, 'import'])->name('daftardata.import');
             Route::post('metadata/import', [MetadataController::class, 'import'])->name('metadata.import');
             Route::post('romantik/import', [RomantikController::class, 'import'])->name('romantik.import');
         });
@@ -94,6 +99,12 @@ Route::middleware(['auth'])->group(function () {
         // Tambahan route aksi kustom:
         Route::post('metadata/{kegiatanId}/submit', [PelaporanController::class, 'submitLink'])->name('metadata.submit');
         Route::post('metadata/{submissionId}/review', [PelaporanController::class, 'reviewSubmission'])->name('metadata.review');
+
+        // Khusus Admin: Edit & Delete Link Pelaporan Metadata
+        Route::middleware(['role:admin'])->group(function () {
+            Route::put('metadata/submission/{submissionId}', [PelaporanController::class, 'updateLink'])->name('metadata.submission.update');
+            Route::delete('metadata/submission/{submissionId}', [PelaporanController::class, 'destroyLink'])->name('metadata.submission.destroy');
+        });
     });
 });
 
