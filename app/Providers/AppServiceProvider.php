@@ -74,7 +74,25 @@ class AppServiceProvider extends ServiceProvider
                     'header' => 'Pelaporan Data',
                     'roles'  => ['produsen', 'admin', 'walidata','pembina'],
                     'items'  => [
-                        [
+                        $activeRole === 'admin' ? [
+                            'title'    => 'Metadata',
+                            'icon'     => 'ni ni-folder-17 text-dark',
+                            'active'   => request()->routeIs('pelaporan.metadata.*'),
+                            'children' => [
+                                [
+                                    'title'  => 'Pelaporan Metadata',
+                                    'icon'   => 'fas fa-file-alt',
+                                    'route'  => 'pelaporan.metadata.index',
+                                    'active' => Route::currentRouteName() == 'pelaporan.metadata.index',
+                                ],
+                                [
+                                    'title'  => 'Rekapitulasi Telaah',
+                                    'icon'   => 'fas fa-clipboard-check',
+                                    'route'  => 'pelaporan.metadata.rekapitulasi',
+                                    'active' => Route::currentRouteName() == 'pelaporan.metadata.rekapitulasi',
+                                ],
+                            ],
+                        ] : [
                             'title' => 'Metadata',
                             'icon'  => 'ni ni-folder-17 text-dark',
                             'route' => 'pelaporan.metadata.index',

@@ -108,16 +108,17 @@ Route::middleware(['auth'])->group(function () {
 // });
 Route::middleware(['auth'])->group(function () {
     Route::prefix('pelaporan')->name('pelaporan.')->group(function () {
+        // Khusus Admin: Rekapitulasi Telaah Pelaporan Metadata (harus di atas resource agar tidak dianggap parameter {metadata})
+        Route::middleware(['role:admin'])->group(function () {
+            Route::get('metadata/rekapitulasi', [PelaporanController::class, 'rekapitulasi'])->name('metadata.rekapitulasi');
+            Route::put('metadata/submission/{submissionId}', [PelaporanController::class, 'updateLink'])->name('metadata.submission.update');
+            Route::delete('metadata/submission/{submissionId}', [PelaporanController::class, 'destroyLink'])->name('metadata.submission.destroy');
+        });
+
         Route::resource('metadata', PelaporanController::class);
         // Tambahan route aksi kustom:
         Route::post('metadata/{kegiatanId}/submit', [PelaporanController::class, 'submitLink'])->name('metadata.submit');
         Route::post('metadata/{submissionId}/review', [PelaporanController::class, 'reviewSubmission'])->name('metadata.review');
-
-        // Khusus Admin: Edit & Delete Link Pelaporan Metadata
-        Route::middleware(['role:admin'])->group(function () {
-            Route::put('metadata/submission/{submissionId}', [PelaporanController::class, 'updateLink'])->name('metadata.submission.update');
-            Route::delete('metadata/submission/{submissionId}', [PelaporanController::class, 'destroyLink'])->name('metadata.submission.destroy');
-        });
     });
 });
 

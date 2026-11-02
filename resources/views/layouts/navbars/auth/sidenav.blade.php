@@ -22,21 +22,56 @@
                     @endif
 
                     {{-- LOOPING SUB-MENU DI DALAMNYA --}}
-                    @foreach($section['items'] as $item)
-                        <li class="nav-item">
-                            <a class="nav-link {{ isset($item['active']) && $item['active'] ? 'active' : '' }}" 
-                                href="{{ isset($item['is_url']) && $item['is_url'] ? $item['url'] : route($item['route']) }}"
-                                {{ isset($item['is_url']) && $item['is_url'] ? 'target="_blank" rel="noopener noreferrer"' : '' }}>
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    @if(isset($item['icon']) && (str_contains($item['icon'], '.svg') || str_contains($item['icon'], '.png')))
-                                        <img src="{{ asset($item['icon']) }}" alt="menu-icon" style="width: 16px; height: 16px;" class="opacity-10">
-                                    @elseif(isset($item['icon']))
-                                        <i class="{{ $item['icon'] }} text-sm opacity-10"></i>
-                                    @endif
+                    @foreach($section['items'] as $itemIndex => $item)
+                        @if(!empty($item['children']))
+                            @php
+                                $collapseId = 'submenu-' . \Illuminate\Support\Str::slug(($section['header'] ?? 'menu') . '-' . $item['title'] . '-' . $itemIndex);
+                                $isParentActive = !empty($item['active']);
+                            @endphp
+                            <li class="nav-item">
+                                <a data-bs-toggle="collapse" href="#{{ $collapseId }}" 
+                                   class="nav-link {{ $isParentActive ? 'active' : '' }}" 
+                                   aria-controls="{{ $collapseId }}" role="button" aria-expanded="{{ $isParentActive ? 'true' : 'false' }}">
+                                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                        @if(isset($item['icon']) && (str_contains($item['icon'], '.svg') || str_contains($item['icon'], '.png')))
+                                            <img src="{{ asset($item['icon']) }}" alt="menu-icon" style="width: 16px; height: 16px;" class="opacity-10">
+                                        @elseif(isset($item['icon']))
+                                            <i class="{{ $item['icon'] }} text-sm opacity-10"></i>
+                                        @endif
+                                    </div>
+                                    <span class="nav-link-text ms-1">{{ $item['title'] }}</span>
+                                </a>
+                                <div class="collapse {{ $isParentActive ? 'show' : '' }}" id="{{ $collapseId }}">
+                                    <ul class="nav ms-4 ps-2">
+                                        @foreach($item['children'] as $child)
+                                            <li class="nav-item">
+                                                <a class="nav-link py-1 {{ !empty($child['active']) ? 'active font-weight-bolder text-primary' : 'text-secondary' }}" 
+                                                   href="{{ isset($child['is_url']) && $child['is_url'] ? $child['url'] : route($child['route']) }}"
+                                                   {{ isset($child['is_url']) && $child['is_url'] ? 'target="_blank" rel="noopener noreferrer"' : '' }}>
+                                                    <i class="{{ $child['icon'] ?? 'fas fa-circle' }} text-xs me-2 {{ !empty($child['active']) ? 'text-primary' : 'text-secondary opacity-6' }}"></i>
+                                                    <span class="sidenav-normal text-xs">{{ $child['title'] }}</span>
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
                                 </div>
-                                <span class="nav-link-text ms-1">{{ $item['title'] }}</span>
-                            </a>
-                        </li>
+                            </li>
+                        @else
+                            <li class="nav-item">
+                                <a class="nav-link {{ isset($item['active']) && $item['active'] ? 'active' : '' }}" 
+                                    href="{{ isset($item['is_url']) && $item['is_url'] ? $item['url'] : route($item['route']) }}"
+                                    {{ isset($item['is_url']) && $item['is_url'] ? 'target="_blank" rel="noopener noreferrer"' : '' }}>
+                                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                        @if(isset($item['icon']) && (str_contains($item['icon'], '.svg') || str_contains($item['icon'], '.png')))
+                                            <img src="{{ asset($item['icon']) }}" alt="menu-icon" style="width: 16px; height: 16px;" class="opacity-10">
+                                        @elseif(isset($item['icon']))
+                                            <i class="{{ $item['icon'] }} text-sm opacity-10"></i>
+                                        @endif
+                                    </div>
+                                    <span class="nav-link-text ms-1">{{ $item['title'] }}</span>
+                                </a>
+                            </li>
+                        @endif
                     @endforeach
 
                 @endif

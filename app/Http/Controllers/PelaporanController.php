@@ -170,4 +170,223 @@ class PelaporanController extends Controller
 
         return redirect()->back()->with('success', 'Link metadata berhasil dihapus.');
     }
+
+    public function rekapitulasi(Request $request)
+    {
+        $opds = Opd::with('pembina')
+            ->whereNull('parent_id')
+            ->where('name', '!=', 'Badan Pusat Statistik Provinsi Jawa Timur')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $allDaftarData = DaftarData::with([
+            'opd.pembina',
+            'kegiatan.metadataSubmissions.reviewer',
+        ])
+            ->whereNotNull('kegiatan_id')
+            ->whereHas('kegiatan', function ($q) {
+                $q->whereColumn('kegiatan.opd_id', 'daftar_data.opd_id');
+            })
+            ->get();
+
+        $groupedByOpd = $allDaftarData->groupBy('opd_id');
+
+        $summary = [
+            'total_opd'               => $opds->count(),
+            'opd_belum_diperiksa'     => 0,
+            'total_kegiatan'          => 0,
+            'total_target_metadata'   => 0,
+            'total_belum_upload'      => 0,
+            'total_belum_ditelaah'    => 0, // pending (sudah upload tapi belum diperiksa/diberi feedback)
+            'total_butuh_perbaikan'   => 0, // sudah ditelaah -> perlu perbaikan
+            'total_disetujui'         => 0, // sudah ditelaah -> disetujui
+        ];
+
+        $rekapOpd = [];
+        $rekapKegiatan = [];
+
+        foreach ($opds as $opd) {
+            $opdData = $groupedByOpd->get($opd->id, collect());
+            $kegiatanGroups = $opdData->groupBy('kegiatan_id');
+
+            $totalKegiatan = $kegiatanGroups->count();
+            $totalTarget = $totalKegiatan * 3;
+            $belumUpload = 0;
+            $belumDitelaah = 0;
+            $butuhPerbaikan = 0;
+            $disetujui = 0;
+            $latestActivityAt = null;
+
+            foreach ($kegiatanGroups as $kegiatanId => $items) {
+                $keg = $items->first()->kegiatan;
+                if (!$keg) {
+                    continue;
+                }
+
+                $tipeDetails = [];
+                $kegHasPendingReview = false;
+
+                foreach (['kegiatan', 'variable', 'indikator'] as $tipe) {
+                    $submissions = $keg->metadataSubmissions
+                        ->where('tipe', $tipe)
+                        ->sortBy('created_at');
+                    $latest = $submissions->last();
+                    $revCount = $submissions->count();
+
+                    if (!$latest) {
+                        $belumUpload++;
+                        $tipeDetails[$tipe] = [
+                            'has_link'        => false,
+                            'ada_telaah'      => false,
+                            'status_terakhir' => 'belum_upload',
+                            'status_label'    => 'Belum Upload Link',
+                            'telaah_label'    => 'Belum Upload',
+                            'catatan'         => null,
+                            'reviewer'        => null,
+                            'reviewed_at'     => null,
+                            'submitted_at'    => null,
+                            'link_url'        => null,
+                            'rev_count'       => 0,
+                        ];
+                    } else {
+                        if ($latest->created_at && (!$latestActivityAt || $latest->created_at->gt($latestActivityAt))) {
+                            $latestActivityAt = $latest->created_at;
+                        }
+                        if ($latest->reviewed_at && (!$latestActivityAt || $latest->reviewed_at->gt($latestActivityAt))) {
+                            $latestActivityAt = $latest->reviewed_at;
+                        }
+
+                        if ($latest->status === 'pending') {
+                            $belumDitelaah++;
+                            $kegHasPendingReview = true;
+                            $tipeDetails[$tipe] = [
+                                'has_link'        => true,
+                                'ada_telaah'      => false,
+                                'status_terakhir' => 'pending',
+                                'status_label'    => 'Menunggu Pemeriksaan',
+                                'telaah_label'    => 'Belum Ditelaah / Belum Ada Feedback',
+                                'catatan'         => $latest->catatan_pembina,
+                                'reviewer'        => null,
+                                'reviewed_at'     => null,
+                                'submitted_at'    => $latest->created_at,
+                                'link_url'        => $latest->link_url,
+                                'rev_count'       => $revCount,
+                            ];
+                        } elseif ($latest->status === 'butuh_perbaikan') {
+                            $butuhPerbaikan++;
+                            $tipeDetails[$tipe] = [
+                                'has_link'        => true,
+                                'ada_telaah'      => true,
+                                'status_terakhir' => 'butuh_perbaikan',
+                                'status_label'    => 'Perlu Perbaikan',
+                                'telaah_label'    => 'Sudah Ditelaah (Ada Feedback)',
+                                'catatan'         => $latest->catatan_pembina,
+                                'reviewer'        => $latest->reviewer->name ?? 'Pembina Data',
+                                'reviewed_at'     => $latest->reviewed_at,
+                                'submitted_at'    => $latest->created_at,
+                                'link_url'        => $latest->link_url,
+                                'rev_count'       => $revCount,
+                            ];
+                        } else {
+                            $disetujui++;
+                            $tipeDetails[$tipe] = [
+                                'has_link'        => true,
+                                'ada_telaah'      => true,
+                                'status_terakhir' => 'disetujui',
+                                'status_label'    => 'Disetujui',
+                                'telaah_label'    => 'Sudah Ditelaah (Disetujui)',
+                                'catatan'         => $latest->catatan_pembina,
+                                'reviewer'        => $latest->reviewer->name ?? 'Pembina Data',
+                                'reviewed_at'     => $latest->reviewed_at,
+                                'submitted_at'    => $latest->created_at,
+                                'link_url'        => $latest->link_url,
+                                'rev_count'       => $revCount,
+                            ];
+                        }
+                    }
+                }
+
+                $rekapKegiatan[] = [
+                    'opd'                    => $opd,
+                    'pembina'                => $opd->pembina,
+                    'kegiatan'               => $keg,
+                    'jumlah_data'            => $items->count(),
+                    'tipe'                   => $tipeDetails,
+                    'has_pending_review'     => $kegHasPendingReview,
+                ];
+            }
+
+            $sudahUpload = $belumDitelaah + $butuhPerbaikan + $disetujui;
+            $sudahDitelaah = $butuhPerbaikan + $disetujui;
+
+            if ($totalKegiatan === 0) {
+                $statusKey = 'belum_ada_kegiatan';
+                $statusText = 'Belum Ada Kegiatan Terhubung';
+                $statusBadge = 'bg-gradient-secondary';
+            } elseif ($sudahUpload === 0) {
+                $statusKey = 'belum_upload';
+                $statusText = 'Dinas Belum Upload Link';
+                $statusBadge = 'bg-gradient-secondary';
+            } elseif ($belumDitelaah > 0) {
+                $statusKey = 'belum_diperiksa';
+                $statusText = "Ada {$belumDitelaah} Metadata Belum Diperiksa";
+                $statusBadge = 'bg-gradient-danger';
+                $summary['opd_belum_diperiksa']++;
+            } elseif ($butuhPerbaikan > 0) {
+                $statusKey = 'perlu_perbaikan';
+                $statusText = 'Sudah Ditelaah — Perlu Perbaikan';
+                $statusBadge = 'bg-gradient-warning text-dark';
+            } elseif ($disetujui === $totalTarget && $totalTarget > 0) {
+                $statusKey = 'disetujui_lengkap';
+                $statusText = 'Selesai (Disetujui Semua)';
+                $statusBadge = 'bg-gradient-success';
+            } else {
+                $statusKey = 'sebagian_disetujui';
+                $statusText = 'Sudah Ditelaah (Sebagian Belum Upload)';
+                $statusBadge = 'bg-gradient-info';
+            }
+
+            $summary['total_kegiatan'] += $totalKegiatan;
+            $summary['total_target_metadata'] += $totalTarget;
+            $summary['total_belum_upload'] += $belumUpload;
+            $summary['total_belum_ditelaah'] += $belumDitelaah;
+            $summary['total_butuh_perbaikan'] += $butuhPerbaikan;
+            $summary['total_disetujui'] += $disetujui;
+
+            $rekapOpd[] = [
+                'opd'                => $opd,
+                'pembina'            => $opd->pembina,
+                'total_kegiatan'     => $totalKegiatan,
+                'total_target'       => $totalTarget,
+                'sudah_upload'       => $sudahUpload,
+                'belum_upload'       => $belumUpload,
+                'belum_ditelaah'     => $belumDitelaah,
+                'sudah_ditelaah'     => $sudahDitelaah,
+                'butuh_perbaikan'    => $butuhPerbaikan,
+                'disetujui'          => $disetujui,
+                'status_key'         => $statusKey,
+                'status_text'        => $statusText,
+                'status_badge'       => $statusBadge,
+                'latest_activity_at' => $latestActivityAt,
+            ];
+        }
+
+        // Urutkan agar OPD yang memiliki metadata belum diperiksa (belum_ditelaah > 0) tampil paling atas
+        usort($rekapOpd, function ($a, $b) {
+            if ($a['belum_ditelaah'] !== $b['belum_ditelaah']) {
+                return $b['belum_ditelaah'] <=> $a['belum_ditelaah'];
+            }
+            if ($a['sudah_upload'] !== $b['sudah_upload']) {
+                return $b['sudah_upload'] <=> $a['sudah_upload'];
+            }
+            return strcmp($a['opd']->name, $b['opd']->name);
+        });
+
+        return view('pelaporan.metadata.rekapitulasi', compact(
+            'rekapOpd',
+            'rekapKegiatan',
+            'summary',
+            'opds'
+        ));
+    }
 }
