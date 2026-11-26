@@ -306,20 +306,31 @@
                                 
                                 <!-- STEP PRETEST -->
                                 @if($hasPretest)
+                                @php
+                                    $pretestAttempts = $registration->pretest_attempts;
+                                    $canReattemptPretest = !$eventEnded && $pretestAttempts > 0 && $pretestAttempts < 2;
+                                @endphp
                                 <div class="list-group-item border rounded-3 p-3">
-                                    <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                         <div>
                                             <span class="badge bg-warning-subtle text-warning mb-1">Langkah {{ $stepNumber++ }}</span>
                                             <h6 class="fw-bold mb-0">Ujian Pretest</h6>
-                                            <small class="text-muted">Mengukur pemahaman awal sebelum pelatihan dimulai.</small>
+                                            <small class="text-muted">Mengukur pemahaman awal sebelum pelatihan dimulai (Maks. 2x percobaan, diambil nilai terbaru).</small>
                                         </div>
                                         
                                         @if($registration->score_pretest !== null)
                                             <div class="text-end">
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold d-block mb-1">
-                                                    <i class="fas fa-check-circle me-1"></i> Selesai
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill fw-bold d-inline-block mb-1">
+                                                    <i class="fas fa-check-circle me-1"></i> Selesai ({{ $pretestAttempts }}/2)
                                                 </span>
-                                                <small class="text-muted fw-bold">Nilai: {{ $registration->score_pretest }}</small>
+                                                <div class="small text-dark fw-bold mb-1">Nilai Terbaru: {{ $registration->score_pretest }}</div>
+                                                @if($canReattemptPretest)
+                                                    <a href="{{ route('user.exams.show', [$event->id, 'pretest']) }}" 
+                                                       class="btn btn-xs btn-outline-warning text-dark rounded-3 fw-bold mb-0"
+                                                       onclick="return confirm('Ulangi Pretest (Percobaan ke-2)? Nilai terbaru akan menggantikan nilai sebelumnya.')">
+                                                        <i class="fas fa-redo me-1"></i> Ulangi Pretest (Sisa {{ 2 - $pretestAttempts }}x)
+                                                    </a>
+                                                @endif
                                             </div>
                                         @elseif(!$eventEnded)
                                             <a href="{{ route('user.exams.show', [$event->id, 'pretest']) }}" class="btn btn-sm btn-outline-emerald rounded-3 fw-bold">
@@ -336,26 +347,43 @@
 
                                 <!-- STEP POSTTEST -->
                                 @if($hasPosttest)
+                                @php
+                                    $posttestAttempts = $registration->posttest_attempts;
+                                    $canReattemptPosttest = !$eventEnded && $posttestAttempts > 0 && $posttestAttempts < 2;
+                                @endphp
                                 <div class="list-group-item border rounded-3 p-3">
-                                    <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                         <div>
                                             <span class="badge bg-primary-subtle text-primary mb-1">Langkah {{ $stepNumber++ }}</span>
                                             <h6 class="fw-bold mb-0">Ujian Posttest</h6>
-                                            <small class="text-muted">Evaluasi akhir kelulusan (Minimal nilai: {{ $event->passing_grade }}).</small>
+                                            <small class="text-muted">Evaluasi akhir kelulusan (Minimal nilai: {{ $event->passing_grade }} | Maks. 2x percobaan, diambil nilai terbaru).</small>
                                         </div>
 
                                         @if($registration->score_posttest !== null)
                                             <div class="text-end">
                                                 @if($registration->score_posttest >= $event->passing_grade)
-                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold d-block mb-1">
-                                                        <i class="fas fa-check-circle me-1"></i> LULUS
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill fw-bold d-inline-block mb-1">
+                                                        <i class="fas fa-check-circle me-1"></i> LULUS ({{ $posttestAttempts }}/2)
                                                     </span>
                                                 @else
-                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill fw-bold d-block mb-1">
-                                                        <i class="fas fa-times-circle me-1"></i> BELUM LULUS
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill fw-bold d-inline-block mb-1">
+                                                        <i class="fas fa-times-circle me-1"></i> BELUM LULUS ({{ $posttestAttempts }}/2)
                                                     </span>
                                                 @endif
-                                                <small class="text-muted fw-bold">Nilai: {{ $registration->score_posttest }}</small>
+                                                <div class="small text-dark fw-bold mb-1">Nilai Terbaru: {{ $registration->score_posttest }}</div>
+                                                @if($canReattemptPosttest)
+                                                    @if($event->posttest_password && !session("posttest_verified_{$event->id}"))
+                                                        <button class="btn btn-xs btn-outline-emerald rounded-3 fw-bold mb-0" data-bs-toggle="collapse" data-bs-target="#collapsePosttest">
+                                                            <i class="fas fa-redo me-1"></i> Ulangi Posttest (Sisa {{ 2 - $posttestAttempts }}x)
+                                                        </button>
+                                                    @else
+                                                        <a href="{{ route('user.exams.show', [$event->id, 'posttest']) }}" 
+                                                           class="btn btn-xs btn-outline-emerald rounded-3 fw-bold mb-0"
+                                                           onclick="return confirm('Ulangi Posttest (Percobaan ke-2)? Nilai terbaru akan menggantikan nilai sebelumnya.')">
+                                                            <i class="fas fa-redo me-1"></i> Ulangi Posttest (Sisa {{ 2 - $posttestAttempts }}x)
+                                                        </a>
+                                                    @endif
+                                                @endif
                                             </div>
                                         @elseif(!$eventEnded)
                                             @if($event->posttest_password)
@@ -374,14 +402,17 @@
                                         @endif
                                     </div>
 
-                                    @if($registration->score_posttest === null && !$eventEnded && $event->posttest_password)
+                                    @if(($registration->score_posttest === null || $canReattemptPosttest) && !$eventEnded && $event->posttest_password)
                                         <div class="collapse mt-3 border-top pt-3" id="collapsePosttest">
                                             <form action="{{ route('user.exams.verify_password', $event->id) }}" method="POST">
                                                 @csrf
                                                 <label class="form-label small fw-bold">Masukkan Password Posttest dari Panitia:</label>
                                                 <div class="input-group input-group-sm">
-                                                    <input type="password" name="password" class="form-control" required placeholder="Token / Password Posttest">
-                                                    <button class="btn btn-emerald text-white fw-bold" type="submit">Masuk Ujian</button>
+                                                    <input type="password" name="password" id="posttestPasswordInput" class="form-control" required placeholder="Token / Password Posttest">
+                                                    <button class="btn btn-outline-secondary mb-0 px-3" type="button" id="btnTogglePosttestPassword" title="Lihat/Sembunyikan Password">
+                                                        <i class="fas fa-eye" id="iconPosttestPassword"></i>
+                                                    </button>
+                                                    <button class="btn btn-emerald text-white fw-bold mb-0" type="submit">Masuk Ujian</button>
                                                 </div>
                                             </form>
                                         </div>
@@ -444,4 +475,26 @@
     .style-banner { max-height: 200px; object-fit: cover; }
     .width-25 { width: 25px; }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('btnTogglePosttestPassword');
+        const pwdInput = document.getElementById('posttestPasswordInput');
+        const pwdIcon = document.getElementById('iconPosttestPassword');
+
+        if (toggleBtn && pwdInput && pwdIcon) {
+            toggleBtn.addEventListener('click', function() {
+                if (pwdInput.type === 'password') {
+                    pwdInput.type = 'text';
+                    pwdIcon.classList.remove('fa-eye');
+                    pwdIcon.classList.add('fa-eye-slash');
+                } else {
+                    pwdInput.type = 'password';
+                    pwdIcon.classList.remove('fa-eye-slash');
+                    pwdIcon.classList.add('fa-eye');
+                }
+            });
+        }
+    });
+</script>
 @endsection

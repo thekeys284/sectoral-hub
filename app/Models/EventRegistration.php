@@ -58,6 +58,30 @@ class EventRegistration extends Model
     }
 
     /**
+     * Jumlah percobaan (attempt) Pretest yang sudah dilakukan (maksimal 2x)
+     */
+    public function getPretestAttemptsAttribute(): int
+    {
+        if ($this->score_pretest === null) {
+            return 0;
+        }
+        $ans = is_array($this->answers_pretest) ? $this->answers_pretest : [];
+        return (int) ($ans['_attempts'] ?? 1);
+    }
+
+    /**
+     * Jumlah percobaan (attempt) Posttest yang sudah dilakukan (maksimal 2x)
+     */
+    public function getPosttestAttemptsAttribute(): int
+    {
+        if ($this->score_posttest === null) {
+            return 0;
+        }
+        $ans = is_array($this->answers_posttest) ? $this->answers_posttest : [];
+        return (int) ($ans['_attempts'] ?? 1);
+    }
+
+    /**
      * Accessor untuk menghitung Nilai Akhir Komposit
      */
     public function getNilaiAkhirAttribute(): float

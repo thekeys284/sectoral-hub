@@ -28,7 +28,7 @@
                     <div class="card border-0 shadow-sm rounded-4 mb-4" id="soal-{{ $index + 1 }}">
                         <div class="card-body p-4">
                             <div class="d-flex align-items-center mb-3">
-                                <span class="badge bg-emerald text-white rounded-circle me-2 p-2" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                <span class="badge bg-emerald text-white rounded-circle me-2 p-0 flex-shrink-0" style="min-width: 34px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; line-height: 1; font-size: 0.85rem;">
                                     {{ $index + 1 }}
                                 </span>
                                 <span class="fw-bold text-dark">Pertanyaan No. {{ $index + 1 }}</span>
@@ -71,7 +71,7 @@
                         
                         <div class="d-flex flex-wrap gap-2 mb-4">
                             @foreach($questions as $index => $q)
-                                <a href="#soal-{{ $index + 1 }}" id="nav-btn-{{ $index + 1 }}" class="btn btn-outline-secondary btn-sm rounded-3 width-40">
+                                <a href="#soal-{{ $index + 1 }}" id="nav-btn-{{ $index + 1 }}" class="btn btn-outline-secondary btn-sm rounded-3 width-40 p-0 mb-0 d-inline-flex align-items-center justify-content-center">
                                     {{ $index + 1 }}
                                 </a>
                             @endforeach
@@ -118,6 +118,6 @@
     .option-card:hover { background-color: #f8fafc; border-color: #0d9488; }
     .option-card:has(input:checked) { background-color: #f0fdf4; border-color: #0d9488; font-weight: 600; }
     .width-20 { width: 20px; }
-    .width-40 { width: 40px; }
+    .width-40 { min-width: 40px; width: 40px; height: 38px; white-space: nowrap; line-height: 1; font-size: 0.85rem; }
 </style>
 @endsection

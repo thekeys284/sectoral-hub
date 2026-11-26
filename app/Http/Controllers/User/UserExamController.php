@@ -34,6 +34,17 @@ class UserExamController extends Controller
                 ->with('error', "Waktu pengerjaan {$type} telah berakhir.");
         }
 
+        // Cek batas maksimal 2x pengerjaan (attempt)
+        $registration = EventRegistration::where('event_id', $event->id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $currentAttempts = $type === 'pretest' ? $registration->pretest_attempts : $registration->posttest_attempts;
+        if ($currentAttempts >= 2) {
+            return redirect()->route('user.events.show', $event->id)
+                ->with('error', 'Anda telah mencapai batas maksimal 2 kali pengerjaan untuk ujian ' . ucfirst($type) . '.');
+        }
+
         // Jika Posttest dan memiliki password, pastikan password sudah diverifikasi
         if ($type === 'posttest' && $event->posttest_password) {
             if (!session("posttest_verified_{$event->id}")) {
@@ -133,10 +144,16 @@ class UserExamController extends Controller
             return redirect()->route('user.events.show', $event->id)
                 ->with('error', "Waktu pengiriman jawaban {$type} telah berakhir.");
         }
-        // 1. Ambil pendaftaran peserta
+        // 1. Ambil pendaftaran peserta & cek batas maksimal 2x pengerjaan
         $registration = EventRegistration::where('event_id', $event->id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
+
+        $currentAttempts = $type === 'pretest' ? $registration->pretest_attempts : $registration->posttest_attempts;
+        if ($currentAttempts >= 2) {
+            return redirect()->route('user.events.show', $event->id)
+                ->with('error', 'Anda telah mencapai batas maksimal 2 kali pengerjaan untuk ujian ' . ucfirst($type) . '.');
+        }
 
         // 2. Ambil jawaban yang diinput peserta
         $answers = $request->input('answers', []); // Format: [question_id => 'a', question_id => 'c', ...]
@@ -151,24 +168,25 @@ class UserExamController extends Controller
             }
         }
 
-        // 4. Hitung Skor
+        // 4. Hitung Skor Terbaru
         $score = $totalQuestions > 0 ? round(($correctAnswersCount / $totalQuestions) * 100) : 0;
-        $isPassed = $score >= $event->passing_grade;
+        $newAttempts = $currentAttempts + 1;
+        $answers['_attempts'] = $newAttempts;
 
-        // 5. Simpan Skor & Detail Jawaban ke Database
+        // 5. Simpan Skor Terbaru & Detail Jawaban ke Database (mengambil nilai terbaru)
         if ($type === 'pretest') {
             $registration->update([
                 'score_pretest'   => $score,
-                'answers_pretest' => $answers, // Otomatis tersimpan sebagai JSON
+                'answers_pretest' => $answers,
             ]);
         } else {
             $registration->update([
                 'score_posttest'   => $score,
-                'answers_posttest' => $answers, // Otomatis tersimpan sebagai JSON
+                'answers_posttest' => $answers,
             ]);
         }
 
         return redirect()->route('user.events.show', $event->id)
-            ->with('success', 'Ujian ' . ucfirst($type) . ' selesai dikerjakan! Nilai Anda: ' . $score);
+            ->with('success', 'Ujian ' . ucfirst($type) . " (Percobaan {$newAttempts}/2) selesai! Nilai terbaru Anda: {$score}");
     }    
 }
