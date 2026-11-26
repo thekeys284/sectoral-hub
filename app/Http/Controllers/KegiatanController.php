@@ -33,7 +33,7 @@ class KegiatanController extends Controller
 
         $kegiatan = $query->get();
         
-        return view('master.kegiatan.index', compact('kegiatan'));
+        return view('master.kegiatan.index', compact('kegiatan', 'activeRole'));
     } 
 
     public function create() {
@@ -109,6 +109,14 @@ class KegiatanController extends Controller
     }
 
     public function destroy(Kegiatan $kegiatan){
+        $user = auth()->user();
+        $roles = is_string($user->role) ? json_decode($user->role, true) ?? [$user->role] : (array) $user->role;
+        $activeRole = session('active_role', $roles[0] ?? '');
+
+        if ($activeRole === 'produsen') {
+            return redirect()->route('master.kegiatan.index')->with('error', 'Role Produsen Data tidak memiliki akses untuk menghapus Kegiatan Statistik.');
+        }
+
         $kegiatan->delete();
         return redirect()->route('master.kegiatan.index')->with('success', 'Kegiatan deleted successfully.');    
     }

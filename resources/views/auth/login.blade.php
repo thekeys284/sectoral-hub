@@ -24,7 +24,12 @@
                                             <input type="text" name="email" id="loginEmail" class="form-control form-control-lg" placeholder="Email atau Username" aria-label="Email" value="{{ old('email') }}" required autofocus>
                                         </div>
                                         <div class="flex flex-col mb-3">
-                                            <input type="password" name="password" id="loginPassword" class="form-control form-control-lg" aria-label="Password" placeholder="Password" required>
+                                            <div class="position-relative">
+                                                <input type="password" name="password" id="loginPassword" class="form-control form-control-lg pe-5" aria-label="Password" placeholder="Password" required>
+                                                <button type="button" class="btn btn-link text-secondary position-absolute top-50 end-0 translate-middle-y me-2 p-2 mb-0 toggle-password" data-target="loginPassword" tabindex="-1" title="Lihat/Sembunyikan Password">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
                                             @error('password') <p class="text-danger text-xs pt-1"> {{$message}} </p>@enderror
                                         </div>
                                         <div class="form-check form-switch">
@@ -82,6 +87,24 @@
                 }
             });
         }
+
+        // Toggle Lihat / Sembunyikan Password
+        document.querySelectorAll('.toggle-password').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const input = document.getElementById(this.getAttribute('data-target'));
+                const icon = this.querySelector('i');
+                if (!input) return;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
 
         // Cek jika ada error validasi untuk field 'email' (ini yang dikirim dari LoginRequest jika kredensial tidak cocok)
         @if ($errors->has('email'))

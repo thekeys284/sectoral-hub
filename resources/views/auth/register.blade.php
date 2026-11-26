@@ -38,11 +38,21 @@
                                     @error('email') <p class='text-danger text-xs pt-1'> {{ $message }} </p> @enderror
                                 </div>
                                 <div class="flex flex-col mb-3">
-                                    <input type="password" name="password" class="form-control" placeholder="Password" aria-label="Password">
+                                    <div class="position-relative">
+                                        <input type="password" name="password" id="registerPassword" class="form-control pe-5" placeholder="Password" aria-label="Password" required>
+                                        <button type="button" class="btn btn-link text-secondary position-absolute top-50 end-0 translate-middle-y me-2 p-2 mb-0 toggle-password" data-target="registerPassword" tabindex="-1" title="Lihat/Sembunyikan Password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
                                     @error('password') <p class='text-danger text-xs pt-1'> {{ $message }} </p> @enderror
                                 </div>
                                 <div class="flex flex-col mb-3">
-                                    <input type="password" name="password_confirmation" class="form-control" placeholder="Confirm Password" aria-label="Confirm Password">
+                                    <div class="position-relative">
+                                        <input type="password" name="password_confirmation" id="registerPasswordConfirm" class="form-control pe-5" placeholder="Confirm Password" aria-label="Confirm Password" required>
+                                        <button type="button" class="btn btn-link text-secondary position-absolute top-50 end-0 translate-middle-y me-2 p-2 mb-0 toggle-password" data-target="registerPasswordConfirm" tabindex="-1" title="Lihat/Sembunyikan Konfirmasi Password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
                                     @error('password_confirmation') <p class='text-danger text-xs pt-1'> {{ $message }} </p> @enderror
                                 </div>
                                 <div class="flex flex-col mb-3">
@@ -117,6 +127,24 @@
 
             // Panggil saat input kode referal berubah
             referralCodeInput.addEventListener('input', toggleOpdSelection);
+
+            // Toggle Lihat / Sembunyikan Password
+            document.querySelectorAll('.toggle-password').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const input = document.getElementById(this.getAttribute('data-target'));
+                    const icon = this.querySelector('i');
+                    if (!input) return;
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            });
         });
     </script>
 @push('js')

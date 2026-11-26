@@ -76,20 +76,26 @@
                                             </span>
                                         </td>
 
+                                        @php
+                                            $userRoles = auth()->check() ? (is_string(auth()->user()->role) ? json_decode(auth()->user()->role, true) ?? [auth()->user()->role] : (array) auth()->user()->role) : [];
+                                            $currentActiveRole = $activeRole ?? session('active_role', $userRoles[0] ?? '');
+                                        @endphp
                                         <td class="align-middle">
                                             <div class="d-flex align-items-center justify-content-center">
                                                 <a href="{{ route('master.kegiatan.edit', $item->id) }}" 
-                                                   class="btn btn-warning font-weight-bold text-xs me-2 mb-0">
+                                                   class="btn btn-warning font-weight-bold text-xs {{ $currentActiveRole !== 'produsen' ? 'me-2' : '' }} mb-0">
                                                     Edit
                                                 </a>
-                                                <form action="{{ route('master.kegiatan.destroy', $item->id) }}" method="POST" 
-                                                    onsubmit="return confirm('Yakin ingin menghapus kegiatan ini?')" class="mb-0">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger text-xs font-weight-bold mb-0">
-                                                        Hapus
-                                                    </button>
-                                                </form>
+                                                @if($currentActiveRole !== 'produsen')
+                                                    <form action="{{ route('master.kegiatan.destroy', $item->id) }}" method="POST" 
+                                                        onsubmit="return confirm('Yakin ingin menghapus kegiatan ini?')" class="mb-0">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger text-xs font-weight-bold mb-0">
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
