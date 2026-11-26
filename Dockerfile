@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-RUN echo "upload_max_filesize = 20M\npost_max_size = 25M\nmemory_limit = 256M" > /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "upload_max_filesize = 20M\npost_max_size = 25M\nmemory_limit = 256M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "opcache.enable=1\nopcache.enable_cli=1\nopcache.memory_consumption=256\nopcache.interned_strings_buffer=32\nopcache.max_accelerated_files=20000\nopcache.revalidate_freq=60\nopcache.validate_timestamps=1\nopcache.fast_shutdown=1\nrealpath_cache_size=4096K\nrealpath_cache_ttl=600" > /usr/local/etc/php/conf.d/opcache-perf.ini
 
 WORKDIR /var/www/html
 
