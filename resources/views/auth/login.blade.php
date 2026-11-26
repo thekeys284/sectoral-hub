@@ -17,30 +17,14 @@
                                     <p class="mb-0">Enter your email and password to sign in</p>
                                 </div>
                                 <div class="card-body">
-                                    <!-- <div class="mb-3">
-                                        <a href="https://majapah.it/dashboard?callback_uri={{ urlencode(route('login.majapahit')) }}" 
-                                        class="btn btn-lg w-100 mb-0 text-white d-flex align-items-center justify-content-center gap-2"
-                                        style="background: linear-gradient(90deg, #4a3b8f 0%, #2871d8 100%); border-radius: 8px;">
-                                            <img src="{{ asset('assets/logo-majapahit.png') }}" alt="Majapahit Logo" style="width: 24px; height: 24px; background: white; border-radius: 50%; padding: 2px;">
-                                            <span>Login with <strong>Majapahit</strong></span>
-                                        </a>
-                                    </div> -->
-
-                                    <!-- <div class="position-relative my-4 text-center">
-                                        <hr class="bg-secondary">
-                                        <span class="position-absolute top-50 start-50 translate-middle px-3 bg-white text-secondary text-xs font-weight-bold">Atau</span>
-                                    </div> -->
-
-                                <div class="card-body">
-                                    <form role="form" method="POST" action="{{ route('login.perform') }}">
+                                    <form role="form" id="loginForm" method="POST" action="{{ route('login.perform') }}">
                                         @csrf
-                                        @method('post')
                                         <div class="flex flex-col mb-3">
                                             @error('email') <p class="text-danger text-xs pt-1"> {{$message}} </p>@enderror
-                                            <input type="text" name="email" class="form-control form-control-lg" placeholder="Email atau Username" aria-label="Email">
+                                            <input type="text" name="email" id="loginEmail" class="form-control form-control-lg" placeholder="Email atau Username" aria-label="Email" value="{{ old('email') }}" required autofocus>
                                         </div>
                                         <div class="flex flex-col mb-3">
-                                            <input type="password" name="password" class="form-control form-control-lg" aria-label="Password" placeholder="password" >
+                                            <input type="password" name="password" id="loginPassword" class="form-control form-control-lg" aria-label="Password" placeholder="Password" required>
                                             @error('password') <p class="text-danger text-xs pt-1"> {{$message}} </p>@enderror
                                         </div>
                                         <div class="form-check form-switch">
@@ -48,10 +32,9 @@
                                             <label class="form-check-label" for="rememberMe">Remember me</label>
                                         </div>
                                         <div class="text-center">
-                                            <button type="submit" class="btn btn-lg btn-primary btn-lg w-100 mt-4 mb-0">Sign in</button>
+                                            <button type="submit" id="btnSignIn" class="btn btn-lg btn-primary w-100 mt-4 mb-0">Sign in</button>
                                         </div>
                                     </form>
-                                </div>
                                 </div>
                                 <div class="card-footer text-center pt-0 px-lg-2 px-1">
                                     <p class="mb-1 text-sm mx-auto">
@@ -67,16 +50,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div
-                            class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
+                        <div class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
                             <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden"
-                                style="background-image: url('{{ asset('img/thumbnail.jpeg') }}'); 
-                                    background-size: cover;">
+                                style="background-image: url('{{ asset('img/thumbnail.jpeg') }}'); background-size: cover;">
                             </div>
-                                <!-- <span class="mask bg-gradient-primary opacity-6"></span> -->
-                                <h4 class="mt-5 text-black font-weight-bolder position-relative">"Empowering Data, Strengthening OPD."</h4>
-                                <p class="text-black position-relative">Solusi All-in-One Monitoring & Pembinaan Statistik Sektoral.</p>
-                            </div>
+                            <h4 class="mt-5 text-black font-weight-bolder position-relative">"Empowering Data, Strengthening OPD."</h4>
+                            <p class="text-black position-relative">Solusi All-in-One Monitoring &amp; Pembinaan Statistik Sektoral.</p>
                         </div>
                     </div>
                 </div>
@@ -89,6 +68,21 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const btn = document.getElementById('btnSignIn');
+                    if (btn) {
+                        btn.click();
+                    } else {
+                        loginForm.submit();
+                    }
+                }
+            });
+        }
+
         // Cek jika ada error validasi untuk field 'email' (ini yang dikirim dari LoginRequest jika kredensial tidak cocok)
         @if ($errors->has('email'))
             Swal.fire({

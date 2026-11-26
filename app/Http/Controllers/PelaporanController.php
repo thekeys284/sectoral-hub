@@ -34,70 +34,87 @@ class PelaporanController extends Controller
         $selectedOpdId = null;
 
         if (!$isAdminOrPembina) {
-            // PRODUSEN: Langsung load data dinas miliknya
+            // PRODUSEN: Langsung load data dinas miliknya (tanpa correlated subquery EXISTS yang lambat)
             $selectedOpdId = $user->opd_id;
-            
-            $daftardata = DaftarData::with([
-                'opd',
-                'kegiatan.metadataSubmissions.reviewer'
-            ])
-            ->where('opd_id', $selectedOpdId)
-            ->whereNotNull('kegiatan_id')
-            ->whereHas('kegiatan', function ($q) use ($selectedOpdId) {
-                $q->where('opd_id', $selectedOpdId);
-            })
-            ->latest()
-            ->get()
-            ->groupBy('kegiatan_id');
+            $validKegiatanIds = Kegiatan::where('opd_id', $selectedOpdId)->pluck('id');
 
-        } else {
-            // ADMIN / PEMBINA: Ambil list dinas untuk dropdown (hanya OPD mandiri/induk)
-            $opdList = Opd::whereNull('parent_id')->orderBy('name', 'asc')->get();
-            $opdBinaan = Opd::where('pembina_id', $user->id)->whereNull('parent_id')->orderBy('name', 'asc')->get();
-            $opdBinaanIds = $opdBinaan->pluck('id')->toArray();
-
-            // Tentukan OPD yang dipilih
-            if ($request->has('opd_id')) {
-                // User memilih langsung dari dropdown (bisa OPD lain, OPD binaan, atau all_binaan)
-                $selectedOpdId = $request->get('opd_id');
-            } elseif ($isPembina && $opdBinaan->isNotEmpty()) {
-                // Default untuk role pembina saat pertama buka menu:
-                // Jika punya 1 OPD binaan -> langsung pilih ID OPD tersebut
-                // Jika punya lebih dari 1 OPD binaan -> pilih 'all_binaan'
-                $selectedOpdId = ($opdBinaan->count() > 1) ? 'all_binaan' : (string)$opdBinaan->first()->id;
+            if ($validKegiatanIds->isEmpty()) {
+                $daftardata = collect();
             } else {
-                $selectedOpdId = null;
+                $daftardata = DaftarData::select('id', 'nama_data', 'opd_id', 'kegiatan_id', 'created_at')
+                    ->with([
+                        'opd:id,name',
+                        'kegiatan.metadataSubmissions.reviewer:id,name'
+                    ])
+                    ->where('opd_id', $selectedOpdId)
+                    ->whereIn('kegiatan_id', $validKegiatanIds)
+                    ->latest()
+                    ->get()
+                    ->groupBy('kegiatan_id');
             }
 
-            // Jalankan query database
-            if ($selectedOpdId === 'all_binaan' && !empty($opdBinaanIds)) {
-                $daftardata = DaftarData::with([
-                    'opd',
-                    'kegiatan.metadataSubmissions.reviewer'
-                ])
-                ->whereIn('opd_id', $opdBinaanIds)
-                ->whereNotNull('kegiatan_id')
-                ->whereHas('kegiatan', function ($q) {
-                    $q->whereColumn('kegiatan.opd_id', 'daftar_data.opd_id');
-                })
-                ->latest()
-                ->get()
-                ->groupBy('kegiatan_id');
-            } elseif (!empty($selectedOpdId)) {
-                $daftardata = DaftarData::with([
-                    'opd',
-                    'kegiatan.metadataSubmissions.reviewer'
-                ])
-                ->where('opd_id', $selectedOpdId)
-                ->whereNotNull('kegiatan_id')
-                ->whereHas('kegiatan', function ($q) use ($selectedOpdId) {
-                    $q->where('opd_id', $selectedOpdId);
-                })
-                ->latest()
-                ->get()
-                ->groupBy('kegiatan_id');
+        } else {
+            // ADMIN / PEMBINA: Ambil list dinas untuk dropdown (hanya kolom id & name agar ringan)
+            $opdList = Opd::select('id', 'name', 'pembina_id')->whereNull('parent_id')->orderBy('name', 'asc')->get();
+            $opdBinaan = $opdList->where('pembina_id', $user->id)->values();
+            $opdBinaanIds = $opdBinaan->pluck('id')->toArray();
+
+            // Tentukan OPD yang dipilih sesuai role & hak akses:
+            // - Pembina: default ke 'all_binaan' (seluruh OPD binaannya)
+            // - Admin / Walidata: default ke 'all' (tampilkan seluruh OPD yang punya kegiatan agar langsung bisa di-search semua)
+            if ($request->filled('opd_id')) {
+                $selectedOpdId = $request->get('opd_id');
+            } elseif ($isPembina && $opdBinaan->isNotEmpty()) {
+                $selectedOpdId = ($opdBinaan->count() > 1) ? 'all_binaan' : (string)$opdBinaan->first()->id;
             } else {
-                // Jika belum pilih dinas -> Kosongkan koleksi agar server ringan
+                $selectedOpdId = 'all';
+            }
+
+            // Jalankan query database tanpa correlated subquery whereHas yang lambat (tampilkan SEMUA data tanpa limit 10)
+            if ($selectedOpdId === 'all') {
+                $kegiatanMap = Kegiatan::pluck('opd_id', 'id');
+                $daftardata = $kegiatanMap->isEmpty()
+                    ? collect()
+                    : DaftarData::select('id', 'nama_data', 'opd_id', 'kegiatan_id', 'created_at')
+                        ->with([
+                            'opd:id,name',
+                            'kegiatan.metadataSubmissions.reviewer:id,name'
+                        ])
+                        ->whereIn('kegiatan_id', $kegiatanMap->keys())
+                        ->latest()
+                        ->get()
+                        ->filter(fn($item) => isset($kegiatanMap[$item->kegiatan_id]) && (int) $kegiatanMap[$item->kegiatan_id] === (int) $item->opd_id)
+                        ->groupBy('kegiatan_id');
+            } elseif ($selectedOpdId === 'all_binaan' && !empty($opdBinaanIds)) {
+                $kegiatanMap = Kegiatan::whereIn('opd_id', $opdBinaanIds)->pluck('opd_id', 'id');
+                $daftardata = $kegiatanMap->isEmpty()
+                    ? collect()
+                    : DaftarData::select('id', 'nama_data', 'opd_id', 'kegiatan_id', 'created_at')
+                        ->with([
+                            'opd:id,name',
+                            'kegiatan.metadataSubmissions.reviewer:id,name'
+                        ])
+                        ->whereIn('opd_id', $opdBinaanIds)
+                        ->whereIn('kegiatan_id', $kegiatanMap->keys())
+                        ->latest()
+                        ->get()
+                        ->filter(fn($item) => isset($kegiatanMap[$item->kegiatan_id]) && (int) $kegiatanMap[$item->kegiatan_id] === (int) $item->opd_id)
+                        ->groupBy('kegiatan_id');
+            } elseif (!empty($selectedOpdId)) {
+                $validKegiatanIds = Kegiatan::where('opd_id', $selectedOpdId)->pluck('id');
+                $daftardata = $validKegiatanIds->isEmpty()
+                    ? collect()
+                    : DaftarData::select('id', 'nama_data', 'opd_id', 'kegiatan_id', 'created_at')
+                        ->with([
+                            'opd:id,name',
+                            'kegiatan.metadataSubmissions.reviewer:id,name'
+                        ])
+                        ->where('opd_id', $selectedOpdId)
+                        ->whereIn('kegiatan_id', $validKegiatanIds)
+                        ->latest()
+                        ->get()
+                        ->groupBy('kegiatan_id');
+            } else {
                 $daftardata = collect();
             }
         }
@@ -173,23 +190,33 @@ class PelaporanController extends Controller
 
     public function rekapitulasi(Request $request)
     {
-        $opds = Opd::with('pembina')
+        $opds = Opd::select('id', 'name', 'pembina_id')
+            ->with('pembina:id,name,email')
             ->whereNull('parent_id')
             ->where('name', '!=', 'Badan Pusat Statistik Provinsi Jawa Timur')
             ->orderBy('name', 'asc')
             ->get();
 
-        $allDaftarData = DaftarData::with([
-            'opd.pembina',
-            'kegiatan.metadataSubmissions.reviewer',
-        ])
+        // Hitung jumlah daftar_data per (opd_id, kegiatan_id) langsung via SQL GROUP BY (tanpa load ribuan model DaftarData)
+        $daftarDataCounts = \Illuminate\Support\Facades\DB::table('daftar_data')
             ->whereNotNull('kegiatan_id')
-            ->whereHas('kegiatan', function ($q) {
-                $q->whereColumn('kegiatan.opd_id', 'daftar_data.opd_id');
-            })
+            ->selectRaw('opd_id, kegiatan_id, COUNT(*) as total')
+            ->groupBy('opd_id', 'kegiatan_id')
             ->get();
 
-        $groupedByOpd = $allDaftarData->groupBy('opd_id');
+        $countsByOpdAndKeg = [];
+        $activeKegiatanIds = [];
+        foreach ($daftarDataCounts as $row) {
+            $countsByOpdAndKeg[$row->opd_id][$row->kegiatan_id] = (int) $row->total;
+            $activeKegiatanIds[] = $row->kegiatan_id;
+        }
+
+        $kegiatansById = empty($activeKegiatanIds)
+            ? collect()
+            : Kegiatan::with(['metadataSubmissions.reviewer:id,name'])
+                ->whereIn('id', array_unique($activeKegiatanIds))
+                ->get()
+                ->keyBy('id');
 
         $summary = [
             'total_opd'               => $opds->count(),
@@ -197,19 +224,26 @@ class PelaporanController extends Controller
             'total_kegiatan'          => 0,
             'total_target_metadata'   => 0,
             'total_belum_upload'      => 0,
-            'total_belum_ditelaah'    => 0, // pending (sudah upload tapi belum diperiksa/diberi feedback)
-            'total_butuh_perbaikan'   => 0, // sudah ditelaah -> perlu perbaikan
-            'total_disetujui'         => 0, // sudah ditelaah -> disetujui
+            'total_belum_ditelaah'    => 0,
+            'total_butuh_perbaikan'   => 0,
+            'total_disetujui'         => 0,
         ];
 
         $rekapOpd = [];
         $rekapKegiatan = [];
 
         foreach ($opds as $opd) {
-            $opdData = $groupedByOpd->get($opd->id, collect());
-            $kegiatanGroups = $opdData->groupBy('kegiatan_id');
+            $opdKegMap = $countsByOpdAndKeg[$opd->id] ?? [];
 
-            $totalKegiatan = $kegiatanGroups->count();
+            $validKegList = [];
+            foreach ($opdKegMap as $kegiatanId => $dataCount) {
+                $keg = $kegiatansById->get($kegiatanId);
+                if ($keg && (int) $keg->opd_id === (int) $opd->id) {
+                    $validKegList[] = ['keg' => $keg, 'count' => $dataCount];
+                }
+            }
+
+            $totalKegiatan = count($validKegList);
             $totalTarget = $totalKegiatan * 3;
             $belumUpload = 0;
             $belumDitelaah = 0;
@@ -217,11 +251,9 @@ class PelaporanController extends Controller
             $disetujui = 0;
             $latestActivityAt = null;
 
-            foreach ($kegiatanGroups as $kegiatanId => $items) {
-                $keg = $items->first()->kegiatan;
-                if (!$keg) {
-                    continue;
-                }
+            foreach ($validKegList as $entry) {
+                $keg = $entry['keg'];
+                $jumlahData = $entry['count'];
 
                 $tipeDetails = [];
                 $kegHasPendingReview = false;
@@ -310,7 +342,7 @@ class PelaporanController extends Controller
                     'opd'                    => $opd,
                     'pembina'                => $opd->pembina,
                     'kegiatan'               => $keg,
-                    'jumlah_data'            => $items->count(),
+                    'jumlah_data'            => $jumlahData,
                     'tipe'                   => $tipeDetails,
                     'has_pending_review'     => $kegHasPendingReview,
                 ];

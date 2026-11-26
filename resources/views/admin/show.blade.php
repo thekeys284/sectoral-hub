@@ -147,15 +147,25 @@
         </div>
 
         <!-- Kolom Kanan: Tabs Soal & Evaluasi -->
+        @php
+            $activeTab = session('active_tab', request('tab', 'soal'));
+        @endphp
         <div class="col-lg-8">
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show text-white text-sm shadow-sm mb-3" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
             <ul class="nav nav-pills custom-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active px-4" id="pills-soal-tab" data-bs-toggle="pill" data-bs-target="#pills-soal" type="button" role="tab">
+                    <button class="nav-link {{ $activeTab === 'soal' ? 'active' : '' }} px-4" id="pills-soal-tab" data-bs-toggle="pill" data-bs-target="#pills-soal" type="button" role="tab">
                         <i class="fas fa-file-alt me-1"></i> Bank Soal Pre/Posttest ({{ $event->questions->count() }})
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link px-4" id="pills-eval-tab" data-bs-toggle="pill" data-bs-target="#pills-eval" type="button" role="tab">
+                    <button class="nav-link {{ $activeTab === 'eval' ? 'active' : '' }} px-4" id="pills-eval-tab" data-bs-toggle="pill" data-bs-target="#pills-eval" type="button" role="tab">
                         <i class="fas fa-poll me-1"></i> Instrumen Evaluasi ({{ $event->evaluations->count() }})
                     </button>
                 </li>
@@ -163,7 +173,7 @@
 
             <div class="tab-content" id="pills-tabContent">
                 <!-- TAB 1: BANK SOAL -->
-                <div class="tab-pane fade show active" id="pills-soal" role="tabpanel">
+                <div class="tab-pane fade {{ $activeTab === 'soal' ? 'show active' : '' }}" id="pills-soal" role="tabpanel">
                     <div class="card shadow-sm">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center mb-3"> 
@@ -230,14 +240,14 @@
                 </div>
 
                 <!-- TAB 2: KUESIONER EVALUASI -->
-                <div class="tab-pane fade" id="pills-eval" role="tabpanel">
+                <div class="tab-pane fade {{ $activeTab === 'eval' ? 'show active' : '' }}" id="pills-eval" role="tabpanel">
                     
                     <!-- 1. PERTANYAAN STANDAR / MASTER -->
                     <div class="card shadow-sm mb-4">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <h6 class="font-weight-bold mb-0"><i class="fas fa-check-square text-success me-1"></i> Pertanyaan Evaluasi Standar (Template Master)</h6>
-                                <span class="badge bg-gradient-success text-success border border-success">Global Template</span>
+                                <span class="badge bg-gradient-success text-black border border-success">Global Template</span>
                             </div>
                             <p class="text-secondary text-sm mb-3">Centang pertanyaan standar yang ingin digunakan/diterapkan untuk event ini.</p>
 
@@ -370,65 +380,92 @@
                     <!-- 3. CARD UTAMA: PERTANYAAN EVALUASI YANG DIPAKAI EVENT INI -->
                     <div class="card shadow-sm">
                         <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <h6 class="font-weight-bold mb-0 text-success">
-                                        <i class="fas fa-list-check me-1"></i> Pertanyaan Evaluasi yang Dipakai Event Ini
-                                    </h6>
-                                    <small class="text-muted">
-                                        Daftar akhir kuesioner yang akan ditampilkan dan diisi oleh peserta event ini (Total: {{ $event->evaluations->count() }} pertanyaan).
-                                    </small>
-                                </div>
-                                <span class="badge bg-gradient-success text-white">
-                                    {{ $event->evaluations->count() }} Pertanyaan Aktif
-                                </span>
-                            </div>
+                            <form action="{{ route('admin.events.evaluations.reorder', $event->id) }}" method="POST" id="formReorderEval">
+                                @csrf
+                                @method('PATCH')
 
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="bg-light">
-                                        <tr>
-                                            <th class="ps-3 width-20" style="width: 50px;">#</th>
-                                            <th>Butir Pertanyaan Evaluasi</th>
-                                            <th style="width: 140px;">Bentuk Jawaban</th>
-                                            <th style="width: 120px;" class="text-center">Kategori</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($event->evaluations as $index => $activeEval)
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                    <div>
+                                        <h6 class="font-weight-bold mb-0 text-success">
+                                            <i class="fas fa-list-check me-1"></i> Pertanyaan Evaluasi yang Dipakai Event Ini
+                                        </h6>
+                                        <small class="text-muted">
+                                            Gunakan tombol panah <strong><i class="fas fa-arrow-up"></i> / <i class="fas fa-arrow-down"></i></strong> atau geser baris untuk mengatur urutan nomor pertanyaan, lalu klik <strong>Simpan Urutan</strong>.
+                                        </small>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-gradient-success text-white">
+                                            {{ $event->evaluations->count() }} Pertanyaan Aktif
+                                        </span>
+                                        @if($event->evaluations->count() > 1)
+                                            <button type="submit" class="btn btn-sm bg-gradient-dark text-white mb-0 font-weight-bold" id="btnSaveOrder">
+                                                <i class="fas fa-sort-numeric-down me-1"></i> Simpan Urutan
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0" id="tableActiveEvaluations">
+                                        <thead class="bg-light">
                                             <tr>
-                                                <td class="ps-3 font-weight-bold text-secondary">{{ $index + 1 }}</td>
-                                                <td>
-                                                    <span class="font-weight-bold text-dark">{{ $activeEval->question_text }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="badge badge-sm bg-gradient-secondary">
-                                                        {{ $activeEval->type == 'scale' ? 'Skala Rating (1–5)' : 'Uraian Teks' }}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center">
-                                                    @if($activeEval->is_master)
-                                                        <span class="badge bg-gradient-success text-success border border-success">
-                                                            Standar
-                                                        </span>
-                                                    @else
-                                                        <span class="badge badge-sm bg-gradient-info">
-                                                            Khusus
-                                                        </span>
-                                                    @endif
-                                                </td>
+                                                <th class="ps-3" style="width: 90px;">Urutan</th>
+                                                <th>Butir Pertanyaan Evaluasi</th>
+                                                <th style="width: 140px;">Bentuk Jawaban</th>
+                                                <th style="width: 110px;" class="text-center">Kategori</th>
+                                                <th style="width: 110px;" class="text-center">Atur Posisi</th>
                                             </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="4" class="text-center py-4 text-muted">
-                                                    <i class="fas fa-clipboard-list fa-2x mb-2 d-block text-secondary"></i>
-                                                    Belum ada pertanyaan evaluasi yang diaktifkan/ditambahkan untuk event ini.
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody id="sortableEvaluations">
+                                            @forelse($event->evaluations as $index => $activeEval)
+                                                <tr class="eval-row" style="cursor: grab;">
+                                                    <td class="ps-3 font-weight-bold text-secondary">
+                                                        <input type="hidden" name="ordered_ids[]" value="{{ $activeEval->id }}">
+                                                        <i class="fas fa-grip-vertical text-muted me-2"></i>
+                                                        <span class="badge bg-dark text-white eval-number">#{{ $index + 1 }}</span>
+                                                    </td>
+                                                    <td class="text-wrap">
+                                                        <span class="font-weight-bold text-dark">{{ $activeEval->question_text }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge badge-sm bg-gradient-secondary">
+                                                            {{ $activeEval->type == 'scale' ? 'Skala Rating (1–5)' : 'Uraian Teks' }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @if($activeEval->is_master)
+                                                            <span class="badge bg-gradient-success text-primaryborder border-success">
+                                                                Standar
+                                                            </span>
+                                                        @else
+                                                            <span class="badge badge-sm bg-gradient-info">
+                                                                Khusus
+                                                            </span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="btn-group btn-group-sm" role="group">
+                                                            <button type="button" class="btn btn-outline-secondary btn-xs mb-0 px-2 btn-move-up" title="Geser Naik">
+                                                                <i class="fas fa-arrow-up"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-secondary btn-xs mb-0 px-2 btn-move-down" title="Geser Turun">
+                                                                <i class="fas fa-arrow-down"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-4 text-muted">
+                                                        <i class="fas fa-clipboard-list fa-2x mb-2 d-block text-secondary"></i>
+                                                        Belum ada pertanyaan evaluasi yang diaktifkan/ditambahkan untuk event ini.
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </form>
                         </div>
                     </div>
 
@@ -483,5 +520,63 @@
     .bg-gradient-success { background-color: #ccfbf1; }
     .border-success { border-color: #99f6e4 !important; }
     .cursor-pointer { cursor: pointer; }
+    .eval-row.sortable-ghost { opacity: 0.4; background-color: #e0f2fe; }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tbody = document.getElementById('sortableEvaluations');
+        if (!tbody) return;
+
+        function refreshEvalNumbers() {
+            const rows = tbody.querySelectorAll('tr.eval-row');
+            rows.forEach((row, idx) => {
+                const badge = row.querySelector('.eval-number');
+                if (badge) {
+                    badge.textContent = '#' + (idx + 1);
+                }
+                const upBtn = row.querySelector('.btn-move-up');
+                const downBtn = row.querySelector('.btn-move-down');
+                if (upBtn) upBtn.disabled = (idx === 0);
+                if (downBtn) downBtn.disabled = (idx === rows.length - 1);
+            });
+        }
+
+        // Inisialisasi Drag & Drop dengan SortableJS
+        if (typeof Sortable !== 'undefined') {
+            Sortable.create(tbody, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: function() {
+                    refreshEvalNumbers();
+                }
+            });
+        }
+
+        // Event klik tombol Naik (↑) dan Turun (↓)
+        tbody.addEventListener('click', function(e) {
+            const upBtn = e.target.closest('.btn-move-up');
+            const downBtn = e.target.closest('.btn-move-down');
+
+            if (upBtn) {
+                const row = upBtn.closest('tr.eval-row');
+                const prevRow = row.previousElementSibling;
+                if (prevRow && prevRow.classList.contains('eval-row')) {
+                    tbody.insertBefore(row, prevRow);
+                    refreshEvalNumbers();
+                }
+            } else if (downBtn) {
+                const row = downBtn.closest('tr.eval-row');
+                const nextRow = row.nextElementSibling;
+                if (nextRow && nextRow.classList.contains('eval-row')) {
+                    tbody.insertBefore(nextRow, row);
+                    refreshEvalNumbers();
+                }
+            }
+        });
+
+        refreshEvalNumbers();
+    });
+</script>
 @endsection

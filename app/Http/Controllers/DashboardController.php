@@ -13,20 +13,23 @@ class DashboardController extends Controller
 { 
     public function index()
     {
-        $monitoringData = Kegiatan::with(['opd', 'metadata', 'romantik'])->latest()->get();
+        $kegStats = \Illuminate\Support\Facades\DB::table('kegiatan')
+            ->selectRaw('COUNT(*) as total, COUNT(romantik_id) as with_romantik, COUNT(metadata_id) as with_metadata')
+            ->first();
 
-        $total_kegiatan = Kegiatan::count();
-        $kegiatan_with_romantik = Kegiatan::whereNotNull('romantik_id')->count();
-        $kegiatan_with_metadata = Kegiatan::whereNotNull('metadata_id')->count();
+        $ddStats = \Illuminate\Support\Facades\DB::table('daftar_data')
+            ->leftJoin('kegiatan', 'daftar_data.kegiatan_id', '=', 'kegiatan.id')
+            ->selectRaw('COUNT(*) as total, COUNT(daftar_data.kegiatan_id) as eligible, COUNT(kegiatan.romantik_id) as with_romantik, COUNT(kegiatan.metadata_id) as with_metadata')
+            ->first();
 
-        $total_daftardata = \App\Models\DaftarData::count();
-        $daftardata_eligible = \App\Models\DaftarData::whereNotNull('kegiatan_id')->count();
-        $daftardata_with_romantik = \App\Models\DaftarData::whereHas('kegiatan', function($q) {
-            $q->whereNotNull('romantik_id');
-        })->count();
-        $daftardata_with_metadata = \App\Models\DaftarData::whereHas('kegiatan', function($q) {
-            $q->whereNotNull('metadata_id');
-        })->count();
+        $total_kegiatan = (int) ($kegStats->total ?? 0);
+        $kegiatan_with_romantik = (int) ($kegStats->with_romantik ?? 0);
+        $kegiatan_with_metadata = (int) ($kegStats->with_metadata ?? 0);
+
+        $total_daftardata = (int) ($ddStats->total ?? 0);
+        $daftardata_eligible = (int) ($ddStats->eligible ?? 0);
+        $daftardata_with_romantik = (int) ($ddStats->with_romantik ?? 0);
+        $daftardata_with_metadata = (int) ($ddStats->with_metadata ?? 0);
 
         $stats = [
             'total_kegiatan' => $total_kegiatan,
@@ -36,14 +39,14 @@ class DashboardController extends Controller
         ];
 
         $charts = [
-            'kegiatan_romantik' => [$kegiatan_with_romantik, $total_kegiatan - $kegiatan_with_romantik],
-            'kegiatan_metadata' => [$kegiatan_with_metadata, $total_kegiatan - $kegiatan_with_metadata],
-            'daftardata_eligible' => [$daftardata_eligible, $total_daftardata - $daftardata_eligible],
-            'daftardata_romantik' => [$daftardata_with_romantik, $total_daftardata - $daftardata_with_romantik],
-            'daftardata_metadata' => [$daftardata_with_metadata, $total_daftardata - $daftardata_with_metadata],
+            'kegiatan_romantik'   => [$kegiatan_with_romantik, max(0, $total_kegiatan - $kegiatan_with_romantik)],
+            'kegiatan_metadata'   => [$kegiatan_with_metadata, max(0, $total_kegiatan - $kegiatan_with_metadata)],
+            'daftardata_eligible' => [$daftardata_eligible, max(0, $total_daftardata - $daftardata_eligible)],
+            'daftardata_romantik' => [$daftardata_with_romantik, max(0, $total_daftardata - $daftardata_with_romantik)],
+            'daftardata_metadata' => [$daftardata_with_metadata, max(0, $total_daftardata - $daftardata_with_metadata)],
         ];
 
-        return view('pages.dashboard', compact('monitoringData', 'stats', 'charts'));
+        return view('pages.dashboard', compact('stats', 'charts'));
     }
     
     public function rekapitulasi()

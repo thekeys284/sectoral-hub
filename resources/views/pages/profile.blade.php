@@ -1,5 +1,18 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 
+@push('css')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+<style>
+    .select2-container--bootstrap-5 .select2-selection {
+        border-radius: 0.5rem;
+        padding: 0.45rem 0.75rem;
+        height: auto;
+        font-size: 0.875rem;
+    }
+</style>
+@endpush
+
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => 'Profil Saya'])
     <div class="container-fluid py-4">
@@ -42,12 +55,21 @@
                                 </div>
                                 @php
                                     $originOpd = $user->origin_opd;
+                                    $rawOpdId = $user->getRawOriginal('opd_id');
                                     $parentOpd = $originOpd ? $originOpd->parent : null;
                                 @endphp
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Dinas / Satker Asal</label>
-                                        <input type="text" class="form-control" value="{{ $originOpd->name ?? 'Tidak Terdaftar di OPD' }}" readonly>
+                                        <label>Dinas / Satker Asal (OPD)</label>
+                                        <select name="opd_id" class="form-control select2-opd">
+                                            <option value="">-- Pilih Dinas / OPD --</option>
+                                            @foreach($opds as $opdItem)
+                                                <option value="{{ $opdItem->id }}" {{ old('opd_id', $rawOpdId) == $opdItem->id ? 'selected' : '' }}>
+                                                    {{ $opdItem->name }}{{ $opdItem->parent ? ' (Induk: ' . $opdItem->parent->name . ')' : '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('opd_id') <small class="text-danger d-block mt-1">{{ $message }}</small> @enderror
                                         @if($parentOpd)
                                             <small class="text-info font-weight-bold d-block mt-1">
                                                 <i class="fas fa-sitemap me-1"></i>Instansi Induk (Delegasi Produsen): {{ $parentOpd->name }}
@@ -138,7 +160,7 @@
                                 <select name="target_role" class="form-control me-3">
                                     @foreach($roles as $r)
                                         <option value="{{ $r }}" {{ $activeRole === $r ? 'selected' : '' }}>
-                                            {{ strtoupper($r) }}
+                                            {{ $r === 'operator' ? 'AKUN PRIBADI (OPERATOR)' : ($r === 'produsen' ? 'AKUN INSTANSI (PRODUSEN)' : strtoupper($r)) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -148,6 +170,36 @@
                     </div>
                 </div>
                 @endif
+
+                {{-- Card Klaim Kode Referal Pengelola Data Sektoral (Produsen / Pembina / Walidata) --}}
+                @php
+                    $hasDataRole = count(array_intersect($roles, ['produsen', 'pembina', 'walidata'])) > 0;
+                @endphp
+                <div class="card mb-4 border border-primary shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0 text-primary"><i class="fas fa-key me-2"></i>Kode Referal Akses Data</h6>
+                            @if($hasDataRole)
+                                <span class="badge badge-xs bg-gradient-success">Sudah Aktif</span>
+                            @endif
+                        </div>
+                        <p class="text-xxs text-secondary mb-3">
+                            Masukkan kode referal khusus untuk menambahkan akses <strong>Produsen Data / Pembina / Walidata</strong> sesuai Dinas/OPD Anda.
+                        </p>
+                        <form action="{{ route('profile.referral.claim') }}" method="POST">
+                            @csrf
+                            <div class="input-group mb-2">
+                                <input type="text" name="referral_code" class="form-control form-control-sm" placeholder="Masukkan Kode Referal..." required>
+                                <button type="submit" class="btn btn-primary btn-sm mb-0">Aktifkan</button>
+                            </div>
+                            @if(!$rawOpdId)
+                                <small class="text-xxs text-danger d-block">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Pilih &amp; simpan <strong>Dinas / Satker Asal (OPD)</strong> di form sebelah kiri terlebih dahulu.
+                                </small>
+                            @endif
+                        </form>
+                    </div>
+                </div>
 
                 <div class="card card-profile">
                     <img src="{{ asset('img/bg-profile.jpg') }}" alt="Image placeholder" class="card-img-top">
@@ -281,8 +333,19 @@
 @endsection
 
 @push('js')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    $(document).ready(function() {
+        $('.select2-opd').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih Dinas / OPD --',
+            allowClear: true
+        });
+    });
+
     document.addEventListener("DOMContentLoaded", function() {
         @if (session('success'))
             Swal.fire({

@@ -21,7 +21,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        $opds = Opd::all(); // Ambil semua data OPD
+        $opds = Opd::select('id', 'name')->orderBy('name', 'asc')->get();
 
         return view('auth.register', compact('opds'));
     }
@@ -38,52 +38,39 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'referral_code' => ['nullable', 'string', 'max:255'],
-            'nip' => ['nullable', 'string', 'max:255', 'unique:users,nip'],
         ];
 
         $isSpecialReferral = ($request->referral_code === 'PSSEPSS35');
 
         if ($isSpecialReferral) {
             $rules['opd_id'] = ['required', 'exists:opd,id'];
+            $rules['nip'] = ['required', 'string', 'max:255', 'unique:users,nip'];
         } else {
-            // Tanpa kode referral khusus, opd_id opsional (user jadi 'operator', tidak terikat OPD)
+            // Tanpa kode referral khusus, opd_id & nip opsional
             $rules['opd_id'] = ['nullable', 'exists:opd,id'];
+            $rules['nip'] = ['nullable', 'string', 'max:255', 'unique:users,nip'];
         }
 
         $request->validate($rules);
 
         $opdId = $isSpecialReferral ? $request->opd_id : null;
+        $nip = $isSpecialReferral ? $request->nip : null;
 
         // ------------------------------------------------------------------
-        // Penentuan role:
-        // - Tanpa kode referral               -> operator
-        // - Pakai kode referral + OPD = BPS    -> pembina
-        // - Pakai kode referral + OPD = Diskominfo -> walidata
-        // - Pakai kode referral + OPD lainnya  -> produsen
+        // Penentuan role saat Register (Opsi A):
+        // - Baik tanpa kode referral maupun dengan kode PSSEPSS35,
+        //   pendaftar baru masuk dengan role awal 'operator' (Akun Pribadi / Pelatihan,
+        //   tanpa akses pengelolaan data sektoral).
+        // - Untuk mendapatkan role 'produsen' / 'pembina' / 'walidata', user dapat
+        //   memasukkan kode referal DATASEKTORAL35 di halaman Profil (atau diatur Admin).
         // ------------------------------------------------------------------
-        if ($isSpecialReferral) {
-            $opd = Opd::find($opdId);
-            $opdName = strtolower($opd->name ?? '');
-
-            if (str_contains($opdName, 'badan pusat statistik')) {
-                $role = 'pembina';
-            } elseif (str_contains($opdName, 'diskominfo')) {
-                $role = 'walidata';
-            } else {
-                $role = 'produsen';
-            }
-        } else {
-            $role = 'operator';
-        }
+        $role = 'operator';
 
         $user = User::create([
             'name' => $request->name,
-            'nip' => $request->nip,
+            'nip' => $nip,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
-            // JANGAN json_encode manual di sini -> kolom 'role' sudah di-cast 'array' di Model User,
-            // Eloquent otomatis json_encode saat disimpan. Kalau di-encode manual, hasilnya
-            // ke-encode DUA KALI dan data role di database jadi rusak (sama seperti bug di UserController).
+            'password' => $request->password, // Otomatis di-hash sekali saja melalui cast 'password' => 'hashed' di Model User
             'role' => [$role],
             'opd_id' => $opdId,
         ]);
@@ -91,6 +78,7 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+        session(['active_role' => $role]);
 
         return redirect()->route('dashboard');
     }

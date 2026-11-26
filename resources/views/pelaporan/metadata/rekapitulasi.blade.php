@@ -394,26 +394,26 @@
 <script>
     $(document).ready(function() {
         var tableOpd = $('#table-rekap-opd').DataTable({
-            pageLength: 25,
+            paging: false,
             order: [],
             language: {
                 search: "Cari Dinas / Pembina:",
-                lengthMenu: "Tampilkan _MENU_ dinas",
-                info: "Menampilkan _START_ - _END_ dari _TOTAL_ dinas",
-                zeroRecords: "Tidak ada dinas yang sesuai filter",
-                paginate: { previous: "<", next: ">" }
+                info: "Menampilkan seluruh _TOTAL_ dinas",
+                infoEmpty: "Tidak ada data",
+                infoFiltered: "(disaring dari _MAX_ total dinas)",
+                zeroRecords: "Tidak ada dinas yang sesuai filter"
             }
         });
 
         var tableKegiatan = $('#table-rekap-kegiatan').DataTable({
-            pageLength: 25,
+            paging: false,
             order: [],
             language: {
                 search: "Cari Kegiatan / Dinas / Pembina:",
-                lengthMenu: "Tampilkan _MENU_ kegiatan",
-                info: "Menampilkan _START_ - _END_ dari _TOTAL_ kegiatan",
-                zeroRecords: "Tidak ada kegiatan yang sesuai filter",
-                paginate: { previous: "<", next: ">" }
+                info: "Menampilkan seluruh _TOTAL_ kegiatan",
+                infoEmpty: "Tidak ada data",
+                infoFiltered: "(disaring dari _MAX_ total kegiatan)",
+                zeroRecords: "Tidak ada kegiatan yang sesuai filter"
             }
         });
 

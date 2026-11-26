@@ -48,11 +48,12 @@ class UserEvaluationController extends Controller
                 ->with('error', 'Silakan selesaikan Ujian Posttest terlebih dahulu sebelum mengisi evaluasi.');
         }
 
-        // 4. Ambil pertanyaan evaluasi yang aktif untuk event ini (termasuk master/khusus)
-        $evaluations = EventEvaluation::where(function ($query) use ($eventId) {
-            $query->where('event_id', $eventId)
-                  ->orWhere('is_master', true);
-        })->where('is_active', true)->get();
+        // 4. Ambil pertanyaan evaluasi yang aktif untuk event ini sesuai urutan sort_order
+        $evaluations = EventEvaluation::where('event_id', $eventId)
+            ->where('is_active', true)
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
 
         return view('user.evaluations.create', compact('event', 'evaluations', 'registration'));
     }

@@ -13,6 +13,7 @@ class ProfileController extends Controller
     public function edit()
     {
         $user = Auth::user()->load('opd'); // Eager load relasi OPD
+        $opds = \App\Models\Opd::with('parent')->orderBy('name', 'asc')->get();
         $opdBinaan = [];
 
         $roles = is_string($user->role) ? json_decode($user->role, true) ?? [$user->role] : (array) $user->role;
@@ -31,7 +32,7 @@ class ProfileController extends Controller
             }
         }
 
-        return view('pages.profile', compact('user', 'opdBinaan', 'roles', 'activeRole'));
+        return view('pages.profile', compact('user', 'opds', 'opdBinaan', 'roles', 'activeRole'));
     }
 
     // Mengupdate informasi profil
@@ -40,16 +41,19 @@ class ProfileController extends Controller
         $user = Auth::user();
         
         $validatedData = $request->validate([
-            'name'  => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'username' => ['nullable', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'no_hp' => ['nullable', 'string', 'max:20'],
-            // 'dinas' tidak divalidasi karena akan diambil dari relasi OPD dan tidak diedit langsung
-            'nip'   => ['nullable', 'string', 'max:255', Rule::unique('users')->ignore($user->id)], // NIP sudah ada dan divalidasi
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'], // Tambahkan validasi untuk gambar
+            'no_hp'    => ['nullable', 'string', 'max:20'],
+            'opd_id'   => ['nullable', 'exists:opd,id'],
+            'nip'      => ['nullable', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'image'    => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ]);
 
         $dataToUpdate = $validatedData;
+        if (empty($dataToUpdate['opd_id'])) {
+            $dataToUpdate['opd_id'] = null;
+        }
 
         // Handle file upload untuk foto profil
         if ($request->hasFile('image')) {
@@ -67,6 +71,60 @@ class ProfileController extends Controller
         $user->update($dataToUpdate); // Update user dengan data yang sudah divalidasi dan path foto profil
 
         return redirect()->route('profile')->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    // Klaim kode referal DATASEKTORAL35 untuk menambahkan role Produsen / Pembina / Walidata sesuai OPD
+    public function claimReferral(Request $request)
+    {
+        $request->validate([
+            'referral_code' => ['required', 'string', 'max:100'],
+        ]);
+
+        $code = strtoupper(trim($request->referral_code));
+
+        if ($code !== 'DATASEKTORAL35') {
+            return redirect()->route('profile')->with('error', 'Kode referal tidak valid. Pastikan kode yang Anda masukkan benar.');
+        }
+
+        $user = Auth::user();
+        $rawOpdId = $user->getRawOriginal('opd_id');
+        $originOpd = $rawOpdId ? \App\Models\Opd::find($rawOpdId) : null;
+
+        if (!$originOpd) {
+            return redirect()->route('profile')->with('error', 'Silakan pilih dan simpan Dinas / Satker Asal Anda pada Informasi Profil terlebih dahulu sebelum memasukkan kode referal.');
+        }
+
+        $opdName = strtolower(trim($originOpd->name ?? ''));
+        if ($opdName === 'bps' || str_contains($opdName, 'badan pusat statistik')) {
+            $targetRole = 'pembina';
+        } elseif (str_contains($opdName, 'diskominfo') || str_contains($opdName, 'kominfo')) {
+            $targetRole = 'walidata';
+        } else {
+            $targetRole = 'produsen';
+        }
+
+        $currentRoles = is_string($user->role)
+            ? (json_decode($user->role, true) ?? [$user->role])
+            : (is_array($user->role) ? $user->role : []);
+
+        if (!in_array('operator', $currentRoles)) {
+            $currentRoles[] = 'operator';
+        }
+
+        if (in_array($targetRole, $currentRoles)) {
+            session(['active_role' => $targetRole]);
+            return redirect()->route('profile')->with('success', 'Role ' . strtoupper($targetRole) . ' sudah aktif pada akun Anda.');
+        }
+
+        $currentRoles[] = $targetRole;
+
+        $user->update([
+            'role' => array_values(array_unique($currentRoles)),
+        ]);
+
+        session(['active_role' => $targetRole]);
+
+        return redirect()->route('profile')->with('success', 'Kode referal berhasil diverifikasi! Role ' . strtoupper($targetRole) . ' telah ditambahkan dan diaktifkan.');
     }
     // Mengupdate Password
     public function updatePassword(Request $request)

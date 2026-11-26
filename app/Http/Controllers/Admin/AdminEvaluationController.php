@@ -29,15 +29,19 @@ class AdminEvaluationController extends Controller
             'type'          => 'required|in:scale,text',
         ]);
 
+        $maxOrder = EventEvaluation::where('event_id', $event->id)->max('sort_order') ?? 0;
+
         EventEvaluation::create([
             'event_id'      => $event->id,
             'question_text' => $request->question_text,
             'type'          => $request->type,
             'is_master'     => false,
             'is_active'     => true,
+            'sort_order'    => $maxOrder + 1,
         ]);
 
         return redirect()->route('admin.events.show', $event->id)
+            ->with('active_tab', 'eval')
             ->with('success', 'Pertanyaan evaluasi khusus berhasil ditambahkan!');
     }
 
@@ -60,6 +64,7 @@ class AdminEvaluationController extends Controller
         ]);
 
         return redirect()->route('admin.events.show', $event->id)
+            ->with('active_tab', 'eval')
             ->with('success', 'Pertanyaan evaluasi berhasil diperbarui!');
     }
 
@@ -92,18 +97,50 @@ class AdminEvaluationController extends Controller
             ->delete();
 
         // 3. Tambahkan pertanyaan master yang BARU DICENTANG (jika belum ada di event ini)
+        $maxOrder = EventEvaluation::where('event_id', $event->id)->max('sort_order') ?? 0;
         foreach ($selectedMasters as $master) {
-            EventEvaluation::firstOrCreate([
-                'event_id'      => $event->id,
-                'question_text' => $master->question_text,
-            ], [
-                'type'          => $master->type,
-                'is_master'     => true, // Tandai sebagai evaluasi bawaan
-            ]);
+            $exists = EventEvaluation::where('event_id', $event->id)
+                ->where('question_text', $master->question_text)
+                ->exists();
+            if (!$exists) {
+                $maxOrder++;
+                EventEvaluation::create([
+                    'event_id'      => $event->id,
+                    'question_text' => $master->question_text,
+                    'type'          => $master->type,
+                    'is_master'     => true,
+                    'is_active'     => true,
+                    'sort_order'    => $maxOrder,
+                ]);
+            }
         }
 
         return redirect()->route('admin.events.show', $event->id)
+            ->with('active_tab', 'eval')
             ->with('success', 'Pertanyaan evaluasi standar untuk event ini berhasil disimpan!');
+    }
+
+    /**
+     * Mengatur ulang urutan (sort_order) pertanyaan evaluasi yang dipakai event ini
+     */
+    public function reorder(Request $request, $eventId)
+    {
+        $event = Event::findOrFail($eventId);
+
+        $request->validate([
+            'ordered_ids'   => 'required|array',
+            'ordered_ids.*' => 'integer',
+        ]);
+
+        foreach ($request->ordered_ids as $index => $evalId) {
+            EventEvaluation::where('event_id', $event->id)
+                ->where('id', $evalId)
+                ->update(['sort_order' => $index + 1]);
+        }
+
+        return redirect()->route('admin.events.show', $event->id)
+            ->with('active_tab', 'eval')
+            ->with('success', 'Urutan nomor pertanyaan evaluasi berhasil diperbarui!');
     }
 
     /**
@@ -115,6 +152,7 @@ class AdminEvaluationController extends Controller
         $evaluation->delete();
 
         return redirect()->route('admin.events.show', $eventId)
+            ->with('active_tab', 'eval')
             ->with('success', 'Pertanyaan evaluasi berhasil dihapus!');
     }
 }

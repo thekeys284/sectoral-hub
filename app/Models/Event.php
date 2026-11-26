@@ -39,7 +39,9 @@ class Event extends Model
     }
 
     public function evaluations():HasMany{
-        return $this->hasMany(EventEvaluation::class, 'event_id');
+        return $this->hasMany(EventEvaluation::class, 'event_id')
+                    ->orderBy('sort_order', 'asc')
+                    ->orderBy('id', 'asc');
     }
 
     public function registrations():HasMany{

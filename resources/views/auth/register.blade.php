@@ -30,11 +30,11 @@
                             <form method="POST" action="{{ route('register.perform') }}">
                                 @csrf
                                 <div class="flex flex-col mb-3">
-                                    <input type="text" name="name" class="form-control" placeholder="Name" aria-label="Name" value="{{ old('name') }}" >
+                                    <input type="text" name="name" class="form-control" placeholder="Name" aria-label="Name" value="{{ old('name') }}" required>
                                     @error('name') <p class='text-danger text-xs pt-1'> {{ $message }} </p> @enderror
                                 </div>
                                 <div class="flex flex-col mb-3">
-                                    <input type="email" name="email" class="form-control" placeholder="Email" aria-label="Email" value="{{ old('email') }}" >
+                                    <input type="email" name="email" class="form-control" placeholder="Email" aria-label="Email" value="{{ old('email') }}" required>
                                     @error('email') <p class='text-danger text-xs pt-1'> {{ $message }} </p> @enderror
                                 </div>
                                 <div class="flex flex-col mb-3">
@@ -51,7 +51,7 @@
                                 </div>
                                 <div id="opd_selection_container" class="flex flex-col mb-3" style="display: none;">
                                     <div class="flex flex-col mb-3">
-                                        <label for="opd_id" class="form-label">Pilih Dinas/OPD</label>
+                                        <label for="opd_id" class="form-label">Pilih Dinas/OPD <span class="text-danger">*</span></label>
                                         <select name="opd_id" id="opd_id" class="form-control select2-searchable">
                                             <option value="">-- Pilih Dinas/OPD --</option>
                                             @foreach($opds as $opd)
@@ -63,7 +63,8 @@
                                         @error('opd_id') <p class='text-danger text-xs pt-1'> {{ $message }} </p> @enderror
                                     </div>
                                     <div class="flex flex-col mb-3">
-                                        <input type="text" name="nip" class="form-control" placeholder="NIP/NIK" aria-label="NIP" value="{{ old('nip') }}">
+                                        <label for="nip_input" class="form-label">NIP / NIK <span class="text-danger">*</span></label>
+                                        <input type="text" name="nip" id="nip_input" class="form-control" placeholder="Masukkan NIP / NIK (Wajib Diisi)" aria-label="NIP" value="{{ old('nip') }}">
                                         @error('nip') <p class='text-danger text-xs pt-1'> {{ $message }} </p> @enderror
                                     </div>
                                 </div> 
@@ -94,16 +95,20 @@
             const referralCodeInput = document.getElementById('referral_code');
             const opdSelectionContainer = document.getElementById('opd_selection_container');
             const opdSelect = document.getElementById('opd_id');
+            const nipInput = document.getElementById('nip_input');
             const requiredReferralCode = 'PSSEPSS35';
 
             function toggleOpdSelection() {
                 if (referralCodeInput.value === requiredReferralCode) {
                     opdSelectionContainer.style.display = 'block';
                     opdSelect.setAttribute('required', 'required');
+                    nipInput.setAttribute('required', 'required');
                 } else {
                     opdSelectionContainer.style.display = 'none';
                     opdSelect.removeAttribute('required');
+                    nipInput.removeAttribute('required');
                     opdSelect.value = ''; // Reset pilihan OPD jika kode referal tidak sesuai
+                    nipInput.value = '';  // Reset NIP jika kode referal tidak sesuai
                 }
             }
 

@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::post('/profile/referral', [ProfileController::class, 'claimReferral'])->name('profile.referral.claim');
     Route::post('/role/switch', [ProfileController::class, 'switchRole'])->name('role.switch');
     Route::get('/metadata-list', [MetadataController::class, 'table'])->name('metadata.table');  
     Route::get('/romantik-list', [RomantikController::class, 'table'])->name('romantik.table');   
@@ -129,6 +130,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('events.questions', AdminQuestionController::class);
     Route::patch('events/{id}/evaluations/status', [AdminEvaluationController::class, 'updateStatus'])
         ->name('events.evaluations.status');
+    Route::patch('events/{id}/evaluations/reorder', [AdminEvaluationController::class, 'reorder'])
+        ->name('events.evaluations.reorder');
     Route::resource('events.evaluations', AdminEvaluationController::class);
 
     // Custom Route untuk Rekap Penilaian Peserta Pelatihan
