@@ -168,6 +168,7 @@ class UserExamController extends Controller
             ]);
         }
 
-        return view('user.exams.result', compact('event', 'type', 'score', 'isPassed'));
+        return redirect()->route('user.events.show', $event->id)
+            ->with('success', 'Ujian ' . ucfirst($type) . ' selesai dikerjakan! Nilai Anda: ' . $score);
     }    
 }

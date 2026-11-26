@@ -36,8 +36,8 @@
                     </div>
 
                     <div class="d-flex justify-content-center gap-2">
-                        <a href="{{ route('user.events.index') }}" class="btn btn-emerald text-white rounded-3 fw-bold px-4 py-2">
-                            <i class="fas fa-arrow-left me-1"></i> Kembali ke Pelatihan Saya
+                        <a href="{{ route('user.events.show', $event->id) }}" class="btn btn-emerald text-white rounded-3 fw-bold px-4 py-2">
+                            <i class="fas fa-arrow-left me-1"></i> Kembali ke Detail Pelatihan
                         </a>
                     </div>
 
